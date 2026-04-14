@@ -60,9 +60,9 @@ En la tabla <b>registros</b> se alamcenan todas los pago que una vivienda ha rea
           <li>Cualquier otra cosa que se pueda presentar</li>
         </ul>       
     </ul>
-    <li>Se debe enviar notificaciones a los propietarios</li>
+    <li>Se debe enviar notificaciones a los propietarios por whatsapp/sms</li>
       <ul>
-        <li>cuando se active una nueva cuota por whatsapp/sms</li>
+        <li>cuando se active una nueva cuota</li>
         <li>cuando un propietario pague una couta</li>  
         <li>cuando un propietario no pague en la fecha limite</li> 
       </ul>
