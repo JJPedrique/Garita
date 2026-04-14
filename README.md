@@ -60,15 +60,17 @@ En la tabla <b>registros</b> se alamcenan todas los pago que una vivienda ha rea
           <li>Cualquier otra cosa que se pueda presentar</li>
         </ul>       
     </ul>
-    <li>cuando se active una nueva cuota, se debe enviar un mensaje por whatsapp/msm a los propetarios</li>
-    <li>cuando un propietario pague una couta, se debe enviar un mensaje por whatsapp/msm a los propetario</li>  
-    <li>cuando un propietario no pague en la fecha limite, se debe enviar un mensaje por whatsapp/msm a los propetario</li> 
-    <li>Se deberia hacer un boton para aquel que no pague se baje a presionarlo</li>
+    <li>Se debe enviar notificaciones a los propietarios</li>
+      <ul>
+        <li>cuando se active una nueva cuota por whatsapp/sms</li>
+        <li>cuando un propietario pague una couta</li>  
+        <li>cuando un propietario no pague en la fecha limite</li> 
+      </ul>
     <li>Agregar,Actualizar,Borrar son pantallas emergentes:</li>
         <ul>
           <li>En la pantallas de vivienda, Se puede agregar y borar carnets referidos a dicha casa</li>
           <li>En la pantallas vivienda, Sale otra pantalla emergente para el crud de propietarios (pensar esto mejor)</li>
-        </ul>             
+        </ul>
 </ul>
 
 ### Diagrama de Caso de Uso
