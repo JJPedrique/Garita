@@ -16,7 +16,7 @@ En la tabla <b>registros</b> se almacenan todas los pago que una vivienda ha rea
 <img src ="https://github.com/JJPedrique/Garita/blob/main/DIAGRAMA%20CASOS%20DE%20USO.png">
 
 ### Diagrama de BDD
-<img src ="https://github.com/JJPedrique/Garita/blob/main/BDD%20Diagram%20v4.png">
+<img src ="https://github.com/JJPedrique/Garita/blob/main/BDD%20Diagram%20v5.svg">
 
 ### TO DO
 <ul>
