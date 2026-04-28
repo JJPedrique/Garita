@@ -13,7 +13,7 @@ public class ConexionPostgres {
     
     // Configuración de la base de datos
     // El puerto por defecto de PostgreSQL es 5432                
-    private static final String URL = "jdbc:postgresql://localhost:5433/SimCityBD"; 
+    private static final String URL = "jdbc:postgresql://localhost:5433/GaritaBD"; 
     private static final String USUARIO = "postgres";
     private static final String PASSWORD = "root1234";
 
