@@ -79,5 +79,3 @@ En la tabla <b>registros</b> se almacenan todas los pago que una vivienda ha rea
           <li>En la pantallas vivienda, Sale otra pantalla emergente para el crud de propietarios (pensar esto mejor)</li>
         </ul>
 </ul>
-
-Nota: en el diagrama existe la tabla propietarios, la idea es que pueda haber una alternativa en caso de que una persona no este. De ser descartada la idea, colocar los datos de esa tabla en la tabla vivienda
