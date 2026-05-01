@@ -13,7 +13,7 @@ El sistema debe permtir el acceso a la vivienda de manera automatica si estas so
 En la tabla <b>registros</b> se almacenan todas los pago que una vivienda ha realizado, la cantidad de pagos realizaodos debe coincidir con la cantidad de <b>pagos</b> que se han emitido (o guardados en la tabla de pagos), de lo contrario esta "moroso"
 
 ### Diagrama de BDD
-<img src ="https://github.com/JJPedrique/Garita/blob/main/BDD%20Diagram%20v5.svg">
+<img src ="https://github.com/JJPedrique/Garita/blob/main/BDD%20Diagram%20v6.svg">
 
 ### TO DO
 <ul>
@@ -76,6 +76,3 @@ En la tabla <b>registros</b> se almacenan todas los pago que una vivienda ha rea
           <li>En la pantallas vivienda, Sale otra pantalla emergente para el crud de propietarios (pensar esto mejor)</li>
         </ul>
 </ul>
-
-### Diagrama de Caso de Uso
-<img src ="https://github.com/JJPedrique/Garita/blob/main/DIAGRAMA%20CASOS%20DE%20USO.png">
