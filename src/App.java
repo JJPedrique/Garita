@@ -1,15 +1,21 @@
+import java.awt.*;
 import javax.swing.*;
-import Reportes.*;
+
+import Frontend.MenuPrincipal;
 
 public class App {
+    
+    static int WIDTH=500,HEIGHT=400;
+
     public static void main(String[] args) throws Exception {
         JFrame window = new JFrame("Garita");
-        window.setSize(500,300);
+        window.setSize(WIDTH,HEIGHT);
+        window.setMinimumSize(new Dimension(WIDTH,HEIGHT));
+
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        window.add(new MenuReporte());
+        window.add(new MenuPrincipal());
         
         window.setVisible(true);
-        System.out.println("Hello, World!");
     }
 }
