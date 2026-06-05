@@ -1,18 +1,22 @@
 import java.awt.*;
+import java.io.File;
 import javax.swing.*;
 
 import Backend.ThemeManager;
 
 /*
 PENDIENTE:
-* Corregir ToogleButton
-* Meter los Iconos en los labels y al ToggleButton
+* Corregir ToogleButton (Modo Toggled)
 * Meterle eventos a los botones
-* Crear el modulo de restauracion de clave
 */
 
 public class MenuInicioSesion extends JPanel {
     
+    private final int BORDER_RADIUS_PX = 16;
+    private final int ICON_WIDTH_PX = 24;
+    private final int ICON_HEIGHT_PX = 24;
+    
+    //region Componentes
     private final GridBagLayout GBL = new GridBagLayout();
     private final GridBagConstraints GBC = new GridBagConstraints();
 
@@ -21,62 +25,91 @@ public class MenuInicioSesion extends JPanel {
 
     private final JPanel pInput = new JPanel();
     private final JLabel lSubTitulo = new JLabel("INICIAR SESIÓN");
-    private final JLabel lInputUsuario = new RoundIconLabel("U");
+    private final JLabel lInputUsuario = new RoundIconLabel("src/img/user.png");
     private final JTextField tfInputUsuario = TF_Username("Usuario");
-    private final JLabel lInputClave = new RoundIconLabel("C");
-    private final JPasswordField pfClave = PF_Password();
-    private final JToggleButton tbMostrarClave = TG_ShowPassword("S");
+    private final JLabel lInputClave = new RoundIconLabel("src/img/key.png");
+    private final JPasswordField pfClave = PF_Password("Clave");
+    private final JToggleButton tbMostrarClave = TGB_ShowPassword();
+    private Icon iconShowPW = SetImgIcon("src\\img\\show_pw.png", ICON_WIDTH_PX, ICON_HEIGHT_PX);
+    private Icon iconHidePW = SetImgIcon("src\\img\\hide_pw.png", ICON_WIDTH_PX, ICON_HEIGHT_PX);
     private final JButton bOlvidaClave = JB_ForgottenPassword("¿Olvidó su clave?");
 
     private final JPanel pButton = new JPanel();
-    private final JButton bAcceder = JB("Acceder");
-    private final JButton bSalir = JB("Salir");
+    private final JButton bAcceder = JB_Default("Acceder");
+    private final JButton bSalir = JB_Default("Salir");
 
+
+    //region Panel
     public MenuInicioSesion() {
 
         setLayout(GBL);
         GBC.fill = GridBagConstraints.BOTH;
         GBC.anchor = GridBagConstraints.CENTER;
-        addJComponent(this, pHeader, 0, 0, 1, 1, new Insets(0, 0, 0, 0), 0, 40, 1.0, 0.0);
-        addJComponent(this, pInput, 0, 1, 1, 1, new Insets(0, 0, 0, 0), 0, 0, 1.0, 1.0);
-        addJComponent(this, pButton, 0, 2, 1, 1, new Insets(0, 0, 0, 0), 0, 30, 1.0, 0.0);
 
+        GBC.weightx=1.0;
+        GBC.gridx=0; GBC.gridy=0; GBC.ipady=40; GBC.weighty=0.0; add(pHeader, GBC);
+        GBC.gridx=0; GBC.gridy=1; GBC.ipady=0; GBC.weighty=1.0; add(pInput, GBC);
+        GBC.gridx=0; GBC.gridy=2; GBC.ipady=30; GBC.weighty=0.0; add(pButton, GBC);
 
+        
         pHeader.setLayout(GBL);
         lHeaderTitle.setHorizontalAlignment(JLabel.CENTER);
-        addJComponent(pHeader, lHeaderTitle, 0, 0, 1, 1, new Insets(0, 0, 0, 0), 0, 0, 1.0, 0.0);
+        GBC.gridx=0; GBC.gridy=0; GBC.ipady=0; GBC.weighty=0.0; pHeader.add(lHeaderTitle, GBC);
 
 
         pInput.setLayout(GBL);
+        GBC.gridwidth=2;
         lSubTitulo.setHorizontalAlignment(JLabel.CENTER);
-        addJComponent(pInput, lSubTitulo, 0, 0, 2, 1, new Insets(20, 0, 20, 0), 0, 0, 1.0, 0.0);
-        addJComponent(pInput, lInputUsuario, 0, 1, 1, 1, new Insets(6, 48, 8, 8), 0, 0, 0.0, 0.0);
-        addJComponent(pInput, tfInputUsuario, 1, 1, 1, 1, new Insets(6, 8, 8, 48), 0, 0, 0.0, 0.0);
+        GBC.insets = new Insets(20, 0, 20, 0);
+        GBC.gridx=0; GBC.gridy=0; GBC.weighty=0.0;  pInput.add(lSubTitulo, GBC);
+        
+        GBC.gridwidth=1; GBC.weightx=0.0;
+
+        GBC.insets = new Insets(6, 48, 8, 8);
+        GBC.gridx=0; GBC.gridy=1; GBC.weighty=0.0;  pInput.add(lInputUsuario, GBC);
+
+        GBC.insets = new Insets(6, 8, 8, 48);
+        GBC.gridx=1; GBC.gridy=1; GBC.weighty=0.0;  pInput.add(tfInputUsuario, GBC);
 
         pfClave.setLayout(new BorderLayout());
+        tbMostrarClave.setIcon(iconHidePW);
 
         char echoCharDefault = pfClave.getEchoChar();
         tbMostrarClave.addActionListener(e -> {
             if (tbMostrarClave.isSelected()) {
                 pfClave.setEchoChar((char) 0); 
-                tbMostrarClave.setText("H");
+                tbMostrarClave.setIcon(iconShowPW);
             } else {
                 pfClave.setEchoChar(echoCharDefault); 
-                tbMostrarClave.setText("S");
+                tbMostrarClave.setIcon(iconHidePW);
             }
         });
         pfClave.add(tbMostrarClave, BorderLayout.EAST);
 
-        addJComponent(pInput, lInputClave, 0, 2, 1, 1, new Insets(8, 48, 8, 8), 0, 0, 0.0, 0.0);
-        addJComponent(pInput, pfClave, 1, 2, 1, 1, new Insets(8, 8, 8, 48), 0, 0, 0.0, 0.0);
-        addJComponent(pInput, bOlvidaClave, 0, 3, 2, 1, new Insets(8, 48, 48, 48), 0, 0, 1.0, 0.0);
+        GBC.insets = new Insets(8, 48, 8, 8);
+        GBC.gridx=0; GBC.gridy=2; GBC.weighty=0.0;  pInput.add(lInputClave, GBC);
 
+        GBC.insets = new Insets(8, 8, 8, 48);
+        GBC.gridx=1; GBC.gridy=2; GBC.weighty=0.0;  pInput.add(pfClave, GBC);
+
+        GBC.gridwidth=2; GBC.weightx=1.0;
+
+        GBC.insets = new Insets(8, 48, 48, 48);
+        GBC.gridx=0; GBC.gridy=3; GBC.weighty=0.0;  pInput.add(bOlvidaClave, GBC);
+
+
+        GBC.gridwidth=1; GBC.weightx=1.0;
 
         pButton.setLayout(GBL);
-        addJComponent(pButton, bAcceder, 0, 1, 1, 1, new Insets(4, 30, 8, 30), 0, 0, 1.0, 1.0);
-        addJComponent(pButton, bSalir, 0, 2, 1, 1, new Insets(8, 30, 30, 30), 0, 0, 1.0, 1.0);
+
+        GBC.insets = new Insets(4, 30, 8, 30);
+        GBC.gridx=0; GBC.gridy=0; GBC.weighty=1.0;  pButton.add(bAcceder, GBC);
+
+        GBC.insets = new Insets(8, 30, 30, 30);
+        GBC.gridx=0; GBC.gridy=1; GBC.weighty=1.0;  pButton.add(bSalir, GBC);
 
         SetTheme();
+        SetupEvents();
     }
 
     public void SetTheme() {
@@ -92,27 +125,71 @@ public class MenuInicioSesion extends JPanel {
         lSubTitulo.setForeground(ThemeManager.COLOR_TEXT);
     }
 
-    private void addJComponent(JPanel JParent, JComponent JChild, int X, int Y, int ColSpan, int RowSpan, Insets Margin, int PadX, int PadY, double WeightX, double WeightY) {
-        GBC.gridx = X;          
-        GBC.gridy = Y;
-        GBC.gridwidth = ColSpan;    
-        GBC.gridheight = RowSpan;
-        GBC.ipadx = PadX;       
-        GBC.ipady = PadY;
-        GBC.weightx = WeightX;    
-        GBC.weighty = WeightY;
-        GBC.insets = Margin;     
-        JParent.add(JChild, GBC);
+    private void SetupEvents() {
+        bSalir.addActionListener(e -> {
+            int confirmacion = JOptionPane.showConfirmDialog(
+                this, "¿Está seguro que desea salir del Sistema Garita?",  "Confirmar Salida", JOptionPane.YES_NO_OPTION,JOptionPane.QUESTION_MESSAGE);
+            if (confirmacion == JOptionPane.YES_OPTION) {
+                System.exit(0);
+            }
+        });
+
+        bAcceder.addActionListener(e -> {
+            String usuario = tfInputUsuario.getText().trim();
+            String clave = new String(pfClave.getPassword()).trim();
+
+            if (usuario.isEmpty() && clave.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Por favor, introduzca su usuario y su contraseña.","Campos Vacíos", JOptionPane.WARNING_MESSAGE);
+            } else if (usuario.isEmpty()) {
+                JOptionPane.showMessageDialog(this,"El campo de usuario no puede quedar vacío.","Usuario Requerido",JOptionPane.WARNING_MESSAGE);
+                tfInputUsuario.requestFocusInWindow();
+            } else if (clave.isEmpty()) {
+                JOptionPane.showMessageDialog(this,"El campo de contraseña no puede quedar vacío.","Clave Requerida", JOptionPane.WARNING_MESSAGE);
+                pfClave.requestFocusInWindow();
+            } else {
+                JOptionPane.showMessageDialog(this,"¡Inicio de sesión exitoso!\nBienvenido, "+usuario+".","Acceso Concedido",JOptionPane.INFORMATION_MESSAGE);
+            }
+        });
+
+        bOlvidaClave.addActionListener(e -> {
+            Container parent = this.getParent();
+            if (parent != null) {
+                parent.remove(this);
+
+                // parent.add(new PanelVerificarTelefono());
+
+                parent.revalidate();
+                parent.repaint();
+            } else {
+                System.err.println("Error: El panel actual no está contenido en ningún componente padre.");
+            }
+        });
     }
 
-    private JButton JB(String texto) {
+    //region Helper Functions
+    private ImageIcon SetImgIcon(String resourcePath, int width, int height) {
+        try {
+            File file = new File(resourcePath);
+            if (file.exists()) {
+                ImageIcon originalIcon = new ImageIcon(file.getAbsolutePath());
+                Image scaledImg = originalIcon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH);
+                return new ImageIcon(scaledImg);
+            }
+        } catch (Exception e) {
+            System.err.println("Error al procesar el icono " + resourcePath + ": " + e.getMessage());
+        }
+        return null;
+    }
+
+    private JButton JB_Default(String texto) {
         JButton JB = new JButton(texto) {
             @Override
+            //JButton - Border Radius
             protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g2.setColor(getBackground());
-                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 16, 16);
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), BORDER_RADIUS_PX, BORDER_RADIUS_PX);
                 g2.dispose();
                 super.paintComponent(g);
             }
@@ -128,6 +205,7 @@ public class MenuInicioSesion extends JPanel {
         JB.setAlignmentX(Component.CENTER_ALIGNMENT);
         JB.setHorizontalAlignment(SwingConstants.CENTER);
 
+        //JButton - Hover
         JB.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseEntered(java.awt.event.MouseEvent evt) {
@@ -154,6 +232,7 @@ public class MenuInicioSesion extends JPanel {
         button.setAlignmentX(Component.CENTER_ALIGNMENT);
         button.setHorizontalAlignment(SwingConstants.CENTER);
 
+        //JButton - Hover
         button.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseEntered(java.awt.event.MouseEvent evt) {
@@ -168,28 +247,46 @@ public class MenuInicioSesion extends JPanel {
         return button;
     }
 
-    private JToggleButton TG_ShowPassword(String ico) {
-        JToggleButton JTG = new JToggleButton(ico);
-        JTG.setPreferredSize(new Dimension(45, 50));
-        JTG.setOpaque(false);
-        JTG.setContentAreaFilled(false);
-        JTG.setBorderPainted(false);
-        JTG.setFocusPainted(false);
-        JTG.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-
-        return JTG;
+    private JToggleButton TGB_ShowPassword() {
+        JToggleButton JTGB = new JToggleButton();
+        JTGB.setPreferredSize(new Dimension(40, 35));
+        JTGB.setOpaque(false);
+        JTGB.setContentAreaFilled(true);
+        JTGB.setBackground(ThemeManager.COLOR_INPUT);
+        JTGB.setBorderPainted(false);
+        JTGB.setFocusPainted(false);
+        JTGB.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        return JTGB;
     }
 
-    private JTextField TF_Username(String text) {
-        JTextField TF = new JTextField(text) {
+    private JTextField TF_Username(String placeholder) {
+        JTextField TF = new JTextField("") {
             @Override
             protected void paintComponent(Graphics g) {
+                // Input - Border Radius
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g2.setColor(getBackground());
-                g2.fillRoundRect(0, 0, getWidth()-1, getHeight()-1, 16, 16);
+                g2.fillRoundRect(0, 0, getWidth()-1, getHeight()-1, BORDER_RADIUS_PX, BORDER_RADIUS_PX); 
                 g2.dispose();
                 super.paintComponent(g);
+
+                // Placeholder - Campo Vacio o Sin Focus
+                if (getText().isEmpty()) {
+                    Graphics2D gPlaceholder = (Graphics2D) g.create();
+                    gPlaceholder.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                    gPlaceholder.setColor(ThemeManager.COLOR_PLACEHOLDER);
+                    gPlaceholder.setFont(getFont());
+                    
+                    // Calcular centrado vertical basándonos en las fuentes e insets
+                    FontMetrics fm = gPlaceholder.getFontMetrics();
+                    Insets insets = getInsets();
+                    int x = insets.left;
+                    int y = (getHeight() - fm.getHeight()) / 2 + fm.getAscent();
+                    
+                    gPlaceholder.drawString(placeholder, x, y);
+                    gPlaceholder.dispose();
+                }
             }
         };
 
@@ -201,19 +298,44 @@ public class MenuInicioSesion extends JPanel {
         TF.setForeground(ThemeManager.COLOR_TEXT_DARK);
         TF.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
 
+        // Repintar al ganar o perder foco para refrescar el placeholder
+        TF.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusGained(java.awt.event.FocusEvent evt) {TF.repaint(); }
+            @Override
+            public void focusLost(java.awt.event.FocusEvent evt) { TF.repaint(); }
+        });
+
         return TF;
     }
 
-    private JPasswordField PF_Password() {
-        JPasswordField PF = new JPasswordField() {
+    private JPasswordField PF_Password(String placeholder) {
+        JPasswordField PF = new JPasswordField("") {
             @Override
             protected void paintComponent(Graphics g) {
+                // Input - Border Radius
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g2.setColor(getBackground());
-                g2.fillRoundRect(0, 0, getWidth()-1, getHeight()-1, 15, 15);
+                g2.fillRoundRect(0, 0, getWidth()-1 , getHeight()-1, BORDER_RADIUS_PX, BORDER_RADIUS_PX);
                 g2.dispose();
                 super.paintComponent(g);
+
+                // Placeholder - Campo Vacio o Sin Focus
+                if (getPassword().length == 0) {
+                    Graphics2D gPlaceholder = (Graphics2D) g.create();
+                    gPlaceholder.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                    gPlaceholder.setColor(Color.GRAY);
+                    gPlaceholder.setFont(getFont());
+                    
+                    FontMetrics fm = gPlaceholder.getFontMetrics();
+                    Insets insets = getInsets();
+                    int x = insets.left;
+                    int y = (getHeight() - fm.getHeight()) / 2 + fm.getAscent();
+                    
+                    gPlaceholder.drawString(placeholder, x, y);
+                    gPlaceholder.dispose();
+                }
             }
         };
         
@@ -224,17 +346,32 @@ public class MenuInicioSesion extends JPanel {
         PF.setBackground(ThemeManager.COLOR_INPUT);
         PF.setForeground(ThemeManager.COLOR_TEXT_DARK);
         PF.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
+
+        // Repintar al ganar o perder foco para refrescar el placeholder
+        PF.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusGained(java.awt.event.FocusEvent evt) { PF.repaint(); }
+            @Override
+            public void focusLost(java.awt.event.FocusEvent evt) { PF.repaint(); }
+        });
         
         return PF;
     }
 
+    // Soportar imágenes PNG redondeadas
     private class RoundIconLabel extends JLabel {
-        public RoundIconLabel(String iconText) {
-            super(iconText, SwingConstants.CENTER);
+        private Icon customIcon = null;
+
+        public RoundIconLabel(String iconPath) {
+            super("", SwingConstants.CENTER);
             setOpaque(false);
             setPreferredSize(new Dimension(35, 35));
             setMinimumSize(new Dimension(35, 35));
             setMaximumSize(new Dimension(35, 35));
+
+            ImageIcon imgIcon = SetImgIcon(iconPath, ICON_WIDTH_PX, ICON_HEIGHT_PX);
+            if (imgIcon != null) this.customIcon = imgIcon;
+            
         }
 
         @Override
@@ -242,12 +379,20 @@ public class MenuInicioSesion extends JPanel {
             Graphics2D g2 = (Graphics2D) g.create();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             
-            g2.setColor(getBackground());
+            // Fondo circular
+            g2.setColor(ThemeManager.COLOR_LABEL);
             g2.fillOval(0, 0, getWidth()-1, getHeight()-1);
             
-            g2.dispose();
+            // Poner el ícono centrado
+            if (customIcon != null) {
+                int iconWidth = customIcon.getIconWidth();
+                int iconHeight = customIcon.getIconHeight();
+                int x = (getWidth()-iconWidth) / 2;
+                int y = (getHeight()-iconHeight) / 2;
+                customIcon.paintIcon(this, g2, x, y);
+            }
             
-            super.paintComponent(g);
+            g2.dispose();
         }
     }
 }

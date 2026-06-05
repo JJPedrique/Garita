@@ -14,6 +14,7 @@ public class ThemeManager {
     public static final Color COLOR_TEXT_DARK        = Color.decode("#000000");
     public static final Color COLOR_PLACEHOLDER      = Color.decode("#676767");
     public static final Color COLOR_INPUT            = Color.decode("#E9E9E9");
+    public static final Color COLOR_LABEL            = Color.decode("#B8B8B8");
 
     public static final Font TEXT_TITLE              = new Font("Verdana", Font.BOLD, 20);
     public static final Font TEXT_SUBTITLE           = new Font("Verdana", Font.BOLD, 16);
