@@ -3,10 +3,10 @@ import javax.swing.*;
 
 public class App {
     
-    static int WIDTH=500,HEIGHT=400;
+    static int WIDTH=500,HEIGHT=550;
 
     public static void main(String[] args) throws Exception {
-        JFrame window = new JFrame("Garita");
+        JFrame window = new JFrame("Sistema Garita");
         window.setSize(WIDTH,HEIGHT);
         window.setMinimumSize(new Dimension(WIDTH,HEIGHT));
 
