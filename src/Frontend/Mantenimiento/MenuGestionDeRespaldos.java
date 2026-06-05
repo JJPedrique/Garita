@@ -1,13 +1,15 @@
 package Frontend.Mantenimiento;
 import javax.swing.*;
 
+import Backend.ConexionPostgres;
 import Backend.ThemeManager;
 
 import java.awt.*;
-import java.io.IOException;
-import java.util.Map;
+import java.awt.event.*;
+
 
 public class MenuGestionDeRespaldos extends JPanel {
+    ConexionPostgres DB = new ConexionPostgres();
     JLabel Last = new JLabel("Ultima Modificación: XXXX-XX-XX XX:XXxx");
 
     public MenuGestionDeRespaldos(){
@@ -21,6 +23,12 @@ public class MenuGestionDeRespaldos extends JPanel {
         this.setBackground(ThemeManager.COLOR_BACKGROUND);
         
         JButton BtnRespladar = BTN("Generar Respaldo de la Base de Datos");
+        BtnRespladar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.out.println(ConexionPostgres.backupDatabase());
+            }
+        });
         this.add(BtnRespladar,gbc);
 
         gbc.gridy = 1; gbc.weightx =1; gbc.gridwidth =2;
@@ -30,6 +38,12 @@ public class MenuGestionDeRespaldos extends JPanel {
 
         gbc.gridy =2; gbc.weightx =0; gbc.gridwidth =1;
         JButton BtnRestaurar = BTN("Restaurar de la Base de Datos");
+        BtnRestaurar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                ConexionPostgres.restoreDatabase();
+            }
+        });
         this.add(BtnRestaurar,gbc);
 
         gbc.gridy = 3;gbc.weightx =1; gbc.gridwidth =2;
@@ -66,49 +80,6 @@ public class MenuGestionDeRespaldos extends JPanel {
     }
 
 
-    public boolean generarRespaldo(String pgDumpPath, String host, String port, 
-                                          String user, String password, String dbName, 
-                                          String outputPath) throws IOException, InterruptedException {
-        
-        // Construimos el comando pg_dump
-        // --clean: Incluye comandos para borrar (DROP) los objetos antes de crearlos
-        // --file: Indica la ruta del archivo de salida
-        ProcessBuilder pb = new ProcessBuilder(
-            pgDumpPath,
-            "--host=" + host,
-            "--port=" + port,
-            "--username=" + user,
-            "--clean",
-            "--file=" + outputPath,
-            dbName
-        );
-
-        /*
-            ProcessBuilder pb = new ProcessBuilder(
-                "psql", 
-                "--host=" + host, 
-                "--port=" + port, 
-                "--username=" + user, 
-                "--dbname=" + dbName, 
-                "--file=" + outputPath
-            );
-        */
-
-        // Pasamos la contraseña de forma segura mediante variables de entorno
-        Map<String, String> env = pb.environment();
-        env.put("PGPASSWORD", password);
-
-        // Redirigimos los errores para poder verlos en la consola de Java si algo falla
-        pb.redirectErrorStream(true);
-
-        // Iniciamos el proceso
-        Process proceso = pb.start();
-
-        // Esperamos a que termine y obtenemos el código de salida (0 significa éxito)
-        int codigoSalida = proceso.waitFor();
-        
-        return codigoSalida == 0;
-    }
-
+   
 
 }

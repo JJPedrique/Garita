@@ -1,20 +1,27 @@
 package Backend;
+import java.io.File;
+import java.io.IOException;
 import java.sql.*;
+import java.util.Map;
+
 import javax.swing.JOptionPane;
 
 public class ConexionPostgres {
     
     Connection conexion = null;
-    
+
     // Configuración de la base de datos
     // El puerto por defecto de PostgreSQL es 5432      
-    private static final String HOST = "localhost";
-    private static final String PORT = "5432"; 
-    private static final String USER = "postgres";
-    private static final String DB_NAME = "Garita";
+    public static final String HOST = "localhost";
+    public static final String PORT = "5432"; 
+    public static final String USER = "postgres";
+    public static final String DB_NAME = "Garita";
     private static final String PASSWORD = "1234";
 
     private static final String URL = "jdbc:postgresql://"+HOST+":"+PORT+"/"+DB_NAME+""; 
+    static final String userHome = System.getProperty("user.home");
+    static final String DEST_PATH = "C:/respaldos/Garita.backup";
+
 
     public Connection conectar() {
         this.conexion = null;
@@ -97,4 +104,90 @@ public class ConexionPostgres {
             return null;
         }
     }
+
+   public static boolean backupDatabase() {
+        try {
+            // Asegurar que el directorio de destino exista
+            File outputFile = new File(DEST_PATH);
+            if (outputFile.getParentFile() != null) {
+                outputFile.getParentFile().mkdirs();
+            }       
+            // pg_dump -F c (formato personalizado, ideal para pg_restore)
+            ProcessBuilder pb = new ProcessBuilder(
+                "C:\\Program Files\\PostgreSQL\\16\\bin\\pg_dump.exe",
+                "-h", HOST,
+                "-p", PORT,
+                "-U", USER,
+                "-F", "c", 
+                "-b", // Incluir blobs grandes
+                "-v", // Modo detallado (verbose)
+                "-f",  DEST_PATH,
+                DB_NAME
+            );
+
+            // Inyectar la contraseña de forma segura en las variables de entorno del proceso
+            Map<String, String> env = pb.environment();
+            env.put("PGPASSWORD", PASSWORD);
+
+            // Redirigir errores al flujo estándar para poder leerlos si algo falla
+            pb.redirectErrorStream(true);
+            
+            Process process = pb.start();
+            
+            // Esperar a que el proceso termine
+            int exitCode = process.waitFor();
+            
+            if (exitCode == 0) {
+                System.out.println("Respaldo creado exitosamente en: " + DEST_PATH);
+                return true;
+            } else {
+                System.err.println("Error al crear el respaldo. Código de salida: " + exitCode);
+                return false;
+            }
+
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+            Thread.currentThread().interrupt();
+            return false;
+        }
+    }
+
+    public static boolean restoreDatabase() {
+        try {
+            // pg_restore -c (limpia/elimina objetos antes de recrearlos) -d (base de datos destino)
+            ProcessBuilder pb = new ProcessBuilder(
+                "pg_restore",
+                "-h", HOST,
+                "-p", PORT,
+                "-U", USER,
+                "-d", DB_NAME,
+                "-c", // Limpia la base de datos antes de restaurar (opcional)
+                "-v", // Modo detallado
+                DEST_PATH
+            );
+
+            // Inyectar la contraseña
+            Map<String, String> env = pb.environment();
+            env.put("PGPASSWORD", PASSWORD);
+
+            pb.redirectErrorStream(true);
+            
+            Process process = pb.start();
+            int exitCode = process.waitFor();
+
+            if (exitCode == 0) {
+                System.out.println("Base de datos restaurada exitosamente desde: " + DEST_PATH);
+                return true;
+            } else {
+                System.err.println("Error al restaurar la base de datos. Código de salida: " + exitCode);
+                return false;
+            }
+
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+            Thread.currentThread().interrupt();
+            return false;
+        }
+    }
+
 }
