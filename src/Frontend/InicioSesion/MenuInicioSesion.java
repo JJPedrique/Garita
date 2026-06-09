@@ -4,11 +4,6 @@ import javax.swing.*;
 
 import Backend.ThemeManager;
 
-/*
-PENDIENTE:
-* Corregir ToogleButton (Modo Toggled)
-* Meterle eventos a los botones
-*/
 
 public class MenuInicioSesion extends JPanel {
     
@@ -25,13 +20,13 @@ public class MenuInicioSesion extends JPanel {
 
     private final JPanel pInput = new JPanel();
     private final JLabel lSubTitulo = new JLabel("INICIAR SESIÓN");
-    private final JLabel lInputUsuario = new RoundIconLabel("src/img/user.png");
+    private final JLabel lInputUsuario = new RoundIconLabel("img\\user.png");
     private final JTextField tfInputUsuario = TF_Username("Usuario");
-    private final JLabel lInputClave = new RoundIconLabel("src/img/key.png");
+    private final JLabel lInputClave = new RoundIconLabel("img\\key.png");
     private final JPasswordField pfClave = PF_Password("Clave");
     private final JToggleButton tbMostrarClave = TGB_ShowPassword();
-    private Icon iconShowPW = SetImgIcon("src\\img\\show_pw.png", ICON_WIDTH_PX, ICON_HEIGHT_PX);
-    private Icon iconHidePW = SetImgIcon("src\\img\\hide_pw.png", ICON_WIDTH_PX, ICON_HEIGHT_PX);
+    private Icon iconShowPW = SetImgIcon("img\\show_pw.png", ICON_WIDTH_PX, ICON_HEIGHT_PX);
+    private Icon iconHidePW = SetImgIcon("img\\hide_pw.png", ICON_WIDTH_PX, ICON_HEIGHT_PX);
     private final JButton bOlvidaClave = JB_ForgottenPassword("¿Olvidó su clave?");
 
     private final JPanel pButton = new JPanel();
