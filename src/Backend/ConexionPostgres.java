@@ -1,6 +1,5 @@
 package Backend;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.sql.*;
 import java.util.Map;
 
@@ -12,13 +11,10 @@ public class ConexionPostgres {
 
     // Configuración de la base de datos
     // El puerto por defecto de PostgreSQL es 5432      
-    public static final String HOST = "localhost";
-    public static final String PORT = "5432"; 
     public static final String USER = "postgres";
-    public static final String DB_NAME = "Garita";
     private static final String PASSWORD = "1234";
 
-    private static final String URL = "jdbc:postgresql://"+HOST+":"+PORT+"/"+DB_NAME+""; 
+    private static final String URL = "jdbc:postgresql://localhost:5432/Garita"; 
     static final String userHome = System.getProperty("user.home");
     static final String DEST_PATH = "C:/respaldos/Garita.backup";
 
@@ -105,89 +101,86 @@ public class ConexionPostgres {
         }
     }
 
-   public static boolean backupDatabase() {
+   public static void backupDatabase() {
         try {
-            // Asegurar que el directorio de destino exista
-            File outputFile = new File(DEST_PATH);
-            if (outputFile.getParentFile() != null) {
-                outputFile.getParentFile().mkdirs();
-            }       
-            // pg_dump -F c (formato personalizado, ideal para pg_restore)
+            // 1. Conseguimos la ruta de la carpeta de Descargas de forma nativa
+            String rutaUsuario = System.getProperty("user.home");
+            File carpetaDescargas = new File(rutaUsuario, "Downloads");
+
+            // 2. Definimos el comando pg_dump como un arreglo de argumentos
             ProcessBuilder pb = new ProcessBuilder(
-                "C:\\Program Files\\PostgreSQL\\16\\bin\\pg_dump.exe",
-                "-h", HOST,
-                "-p", PORT,
-                "-U", USER,
-                "-F", "c", 
-                "-b", // Incluir blobs grandes
-                "-v", // Modo detallado (verbose)
-                "-f",  DEST_PATH,
-                DB_NAME
+                "pg_dump", 
+                "-h", "localhost", 
+                "-U", "postgres", 
+                "-F", "p", 
+                "-f", "GaritaRespaldo.sql", 
+                "Garita"
             );
 
-            // Inyectar la contraseña de forma segura en las variables de entorno del proceso
-            Map<String, String> env = pb.environment();
-            env.put("PGPASSWORD", PASSWORD);
+            // Reemplaza el comando 'cd': le dice a Java dónde guardar el archivo
+            pb.directory(carpetaDescargas);
 
-            // Redirigir errores al flujo estándar para poder leerlos si algo falla
-            pb.redirectErrorStream(true);
+            // 3. LE PASAMOS LA CONTRASEÑA "DE UNA"
+            // Inyectamos la variable de entorno PGPASSWORD directamente al proceso
+            Map<String, String> entorno = pb.environment();
+            entorno.put("PGPASSWORD", PASSWORD);
+
+            // Esto hace que los errores de Postgres se muestren en la consola de Java
+            pb.inheritIO(); 
+
+            // 4. Arrancamos el proceso
+            System.out.println("Iniciando respaldo en: " + carpetaDescargas.getAbsolutePath());
+            Process proceso = pb.start();
             
-            Process process = pb.start();
-            
-            // Esperar a que el proceso termine
-            int exitCode = process.waitFor();
-            
-            if (exitCode == 0) {
-                System.out.println("Respaldo creado exitosamente en: " + DEST_PATH);
-                return true;
+            // Esperamos a que termine de ejecutarse
+            int codigoSalida = proceso.waitFor();
+
+            if (codigoSalida == 0) {
+                System.out.println("¡Respaldo creado con éxito!");
             } else {
-                System.err.println("Error al crear el respaldo. Código de salida: " + exitCode);
-                return false;
+                System.out.println("Hubo un error. Código de salida de Postgres: " + codigoSalida);
+            }
+
+        } catch (IOException | InterruptedException e) {
+            System.out.println("Error al ejecutar el proceso: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public static void restoreDatabase() {
+        try {
+            String rutaUsuario = System.getProperty("user.home");
+            File carpetaDescargas = new File(rutaUsuario, "Downloads");
+
+            // CAMBIO: Ahora usamos 'psql' y el parámetro '-d' para la base de datos de destino
+            ProcessBuilder pb = new ProcessBuilder(
+                "psql", 
+                "-h", "localhost", 
+                "-U", "postgres", 
+                "-d", "Garita",            // La base de datos donde vas a meter los datos
+                "-f", "mi_respaldo.sql"       // El archivo que vas a leer
+            );
+
+            pb.directory(carpetaDescargas);
+
+            // La contraseña se pasa exactamente igual
+            Map<String, String> entorno = pb.environment();
+            entorno.put("PGPASSWORD", "TU_CONTRASENA_AQUÍ");
+
+            pb.inheritIO(); 
+
+            System.out.println("Iniciando restauración desde: " + carpetaDescargas.getAbsolutePath());
+            Process proceso = pb.start();
+            int codigoSalida = proceso.waitFor();
+
+            if (codigoSalida == 0) {
+                System.out.println("¡Base de datos restaurada con éxito!");
+            } else {
+                System.out.println("Hubo un error al restaurar. Código: " + codigoSalida);
             }
 
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
-            Thread.currentThread().interrupt();
-            return false;
         }
     }
-
-    public static boolean restoreDatabase() {
-        try {
-            // pg_restore -c (limpia/elimina objetos antes de recrearlos) -d (base de datos destino)
-            ProcessBuilder pb = new ProcessBuilder(
-                "pg_restore",
-                "-h", HOST,
-                "-p", PORT,
-                "-U", USER,
-                "-d", DB_NAME,
-                "-c", // Limpia la base de datos antes de restaurar (opcional)
-                "-v", // Modo detallado
-                DEST_PATH
-            );
-
-            // Inyectar la contraseña
-            Map<String, String> env = pb.environment();
-            env.put("PGPASSWORD", PASSWORD);
-
-            pb.redirectErrorStream(true);
-            
-            Process process = pb.start();
-            int exitCode = process.waitFor();
-
-            if (exitCode == 0) {
-                System.out.println("Base de datos restaurada exitosamente desde: " + DEST_PATH);
-                return true;
-            } else {
-                System.err.println("Error al restaurar la base de datos. Código de salida: " + exitCode);
-                return false;
-            }
-
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-            Thread.currentThread().interrupt();
-            return false;
-        }
-    }
-
 }

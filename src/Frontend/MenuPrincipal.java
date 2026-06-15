@@ -11,6 +11,7 @@ import Frontend.Bitacora.MenuBitacora;
 import Frontend.ControlDeAcceso.MenuControlDeAcceso;
 import Frontend.Cuotas.MenuCuotas;
 import Frontend.Mantenimiento.MenuMantenimiento;
+import Frontend.Reportes.MenuFinalReporte;
 import Frontend.Reportes.MenuReporte;
 import Frontend.Residencia.MenuResidencia;
 
@@ -26,7 +27,7 @@ public class MenuPrincipal extends JPanel {
         Main.add("Residencia", new MenuResidencia());
         Main.add("ControlDeAcceso", new MenuControlDeAcceso());
         Main.add("Cuotas", new MenuCuotas());
-        Main.add("Reportes", new MenuReporte());
+        Main.add("Reportes", new MenuFinalReporte());
         Main.add("Bitacora", new MenuBitacora());
         Main.add("Mantenimiento", new MenuMantenimiento());
         

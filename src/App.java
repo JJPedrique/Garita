@@ -1,6 +1,8 @@
 import java.awt.*;
 import javax.swing.*;
 
+import Frontend.MenuPrincipal;
+
 public class App {
     
     static int WIDTH=500,HEIGHT=550;
@@ -12,7 +14,7 @@ public class App {
 
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        window.add(new MenuInicioSesion());
+        window.add(new MenuPrincipal());
         
         window.setVisible(true);
     }

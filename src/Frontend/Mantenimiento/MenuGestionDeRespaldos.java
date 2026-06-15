@@ -26,7 +26,7 @@ public class MenuGestionDeRespaldos extends JPanel {
         BtnRespladar.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                System.out.println(ConexionPostgres.backupDatabase());
+                ConexionPostgres.backupDatabase();
             }
         });
         this.add(BtnRespladar,gbc);

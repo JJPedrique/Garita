@@ -42,11 +42,6 @@ public class ReporteGeneral extends JPanel{
         this.add(new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,Inspector(),Preview()),BorderLayout.CENTER);
 
 
-
-
-        //this.add(I,BorderLayout.WEST);
-        //this.add(,BorderLayout.CENTER);
-
         //UPDATES
         KeyStroke enterKey = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
         this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(enterKey, "executeSearch");
