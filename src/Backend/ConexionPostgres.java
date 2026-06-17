@@ -3,7 +3,8 @@ import java.io.*;
 import java.sql.*;
 import java.util.Map;
 
-import javax.swing.JOptionPane;
+import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 public class ConexionPostgres {
     
@@ -149,38 +150,69 @@ public class ConexionPostgres {
 
     public static void restoreDatabase() {
         try {
-            String rutaUsuario = System.getProperty("user.home");
-            File carpetaDescargas = new File(rutaUsuario, "Downloads");
+            try {
+                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            } catch (Exception e) {
+                // Si falla por alguna razón, continuará con la apariencia por defecto
+                System.out.println("No se pudo cargar el aspecto nativo de Windows.");
+            }
 
-            // CAMBIO: Ahora usamos 'psql' y el parámetro '-d' para la base de datos de destino
+
+        // 1. Configurar y abrir el explorador de archivos (JFileChooser)
+        JFileChooser selector = new JFileChooser();
+        selector.setDialogTitle("Seleccione el archivo de respaldo (.sql)");
+        
+        // Filtrar para que el usuario solo pueda seleccionar archivos .sql
+        FileNameExtensionFilter filtro = new FileNameExtensionFilter("Respaldos SQL (*.sql)", "sql");
+        selector.setFileFilter(filtro);
+        
+        // Abrir por defecto en la carpeta de Descargas del usuario
+        String rutaUsuario = System.getProperty("user.home");
+        selector.setCurrentDirectory(new File(rutaUsuario, "Downloads"));
+
+        // Mostrar el explorador
+        int resultado = selector.showOpenDialog(null);
+
+        // 2. Si el usuario selecciona un archivo y presiona "Abrir"
+        if (resultado == JFileChooser.APPROVE_OPTION) {
+            File archivoSeleccionado = selector.getSelectedFile();
+            
+            // Obtenemos la ruta absoluta del archivo y el directorio donde se encuentra
+            String rutaArchivoSql = archivoSeleccionado.getAbsolutePath();
+            File directorioArchivo = archivoSeleccionado.getParentFile();
+
+            // 3. Configurar el ProcessBuilder con el archivo dinámico
             ProcessBuilder pb = new ProcessBuilder(
                 "psql", 
                 "-h", "localhost", 
                 "-U", "postgres", 
-                "-d", "Garita",            // La base de datos donde vas a meter los datos
-                "-f", "mi_respaldo.sql"       // El archivo que vas a leer
+                "-d", "Garita",            // La base de datos destino
+                "-f", rutaArchivoSql       // Pasamos la ruta completa del archivo seleccionado
             );
 
-            pb.directory(carpetaDescargas);
+            // Establecemos el directorio de trabajo donde está el archivo
+            pb.directory(directorioArchivo);
 
-            // La contraseña se pasa exactamente igual
+            // Configurar la contraseña de PostgreSQL
             Map<String, String> entorno = pb.environment();
-            entorno.put("PGPASSWORD", "TU_CONTRASENA_AQUÍ");
+            entorno.put("PGPASSWORD", PASSWORD);
 
             pb.inheritIO(); 
 
-            System.out.println("Iniciando restauración desde: " + carpetaDescargas.getAbsolutePath());
+            System.out.println("Iniciando restauración desde el archivo: " + rutaArchivoSql);
             Process proceso = pb.start();
             int codigoSalida = proceso.waitFor();
 
             if (codigoSalida == 0) {
-                System.out.println("¡Base de datos restaurada con éxito!");
+                System.out.println("¡Base de datos restaurada con éxito desde el archivo seleccionado!");
             } else {
-                System.out.println("Hubo un error al restaurar. Código: " + codigoSalida);
+                System.out.println("Hubo un error al restaurar. Código de salida: " + codigoSalida);
             }
-
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
+        } else {
+            System.out.println("Restauración cancelada por el usuario.");
         }
+
+    } catch (IOException | InterruptedException e) {
+        e.printStackTrace();
     }
-}
+}}

@@ -54,6 +54,9 @@ public class MenuGestionDeRespaldos extends JPanel {
         Last.setFont(ThemeManager.TEXT_NORMAL);
         Last.setForeground(ThemeManager.COLOR_TEXT);
         this.add(Last,gbc);
+
+        gbc.gridy=5; gbc.weighty=1;gbc.fill=GridBagConstraints.BOTH;
+        this.add(new JLabel(),gbc);
     }
 
     JButton BTN(String texto){

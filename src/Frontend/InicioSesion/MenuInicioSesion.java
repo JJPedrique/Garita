@@ -1,7 +1,6 @@
 import java.awt.*;
 import java.io.File;
 import javax.swing.*;
-
 import Backend.ThemeManager;
 
 
