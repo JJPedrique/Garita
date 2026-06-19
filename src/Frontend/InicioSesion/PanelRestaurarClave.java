@@ -22,7 +22,7 @@ public class PanelRestaurarClave extends JPanel{
     private final JPanel pInput = new JPanel();
     private final JLabel lSubTitulo = new JLabel("temp");
     private final JLabel lSubTituloPwrd = new JLabel("temp2");
-    private final JLabel lInputUsuario = new RoundIconLabel("img\\user.png");
+    private final JLabel lInputUsuario = new RoundIconLabel("img\\key.png");
     private final JPasswordField pfInputpwrd = PF_Password("Clave");
     private final JLabel lInputClave = new RoundIconLabel("img\\key.png");
     private final JPasswordField pfConfirmarClave = PF_Password("Confirmar Clave");
@@ -278,7 +278,7 @@ public class PanelRestaurarClave extends JPanel{
         };
         
         PF.setPreferredSize(new Dimension(250, 35));
-        PF.setBorder(BorderFactory.createEmptyBorder(6, 12, 6, 40)); 
+        PF.setBorder(BorderFactory.createEmptyBorder(6, 12, 6, 1)); 
         PF.setOpaque(false);
         PF.setFont(ThemeManager.TEXT_NORMAL);
         PF.setBackground(ThemeManager.COLOR_INPUT);
