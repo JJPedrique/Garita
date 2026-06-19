@@ -1,6 +1,12 @@
 import java.awt.*;
 import java.io.File;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+
 import javax.swing.*;
+
+import Backend.ConexionPostgres;
 import Backend.ThemeManager;
 
 public class MenuInicioSesion extends JPanel {
@@ -106,7 +112,7 @@ public class MenuInicioSesion extends JPanel {
         SetEvents();
     }
 
-    public void SetTheme() { // Aplciar Estilo, los colores vienen de la clase ThemeManager
+    public void SetTheme() { // Aplicar Estilo, los colores vienen de la clase ThemeManager
         setBackground(ThemeManager.COLOR_BACKGROUND);
         pHeader.setBackground(ThemeManager.COLOR_PRIMARY);
         pInput.setOpaque(false);
@@ -134,31 +140,63 @@ public class MenuInicioSesion extends JPanel {
 
             if (usuario.isEmpty() && clave.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Por favor, introduzca su usuario y su contraseña.","Campos Vacíos", JOptionPane.WARNING_MESSAGE);
-            } else if (usuario.isEmpty()) {
+                return;
+            }
+            if (usuario.isEmpty()) {
                 JOptionPane.showMessageDialog(this,"El campo de usuario no puede quedar vacío.","Usuario Requerido",JOptionPane.WARNING_MESSAGE);
                 tfInputUsuario.requestFocusInWindow();
-            } else if (clave.isEmpty()) {
-                JOptionPane.showMessageDialog(this,"El campo de contraseña no puede quedar vacío.","Clave Requerida", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            if (clave.isEmpty()) {
+                JOptionPane.showMessageDialog(this,"El campo de clave no puede quedar vacío.","Clave Requerida", JOptionPane.WARNING_MESSAGE);
                 pfClave.requestFocusInWindow();
-            } else {
+                return;
+            }
 
-                // VALIDAR EXISTENCIA DEL USUARIO EN LA BDD
+            String Query = "SELECT concat(nombre,' ',apellido) AS nombre_completo FROM usuarios WHERE cedula = ? AND clave = ? LIMIT 1;";
+            Object Parametros[] = {usuario,clave};
+            try {
+                ConexionPostgres BDD = new ConexionPostgres();
+                ResultSet RS = BDD.consultar(Query,Parametros);
 
-                JOptionPane.showMessageDialog(this,"¡Inicio de sesión exitoso!\nBienvenido, "+usuario+".","Acceso Concedido",JOptionPane.INFORMATION_MESSAGE);
+                ArrayList<Object> TUPLA = new ArrayList<>();
+                while(RS != null && RS.next()){
+                    TUPLA.add(RS.getString("nombre_completo"));
+                }
+
+                if(TUPLA.isEmpty()){
+                    JOptionPane.showMessageDialog(this,"Clave o Usuario incorrecto.","ERROR",JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                JOptionPane.showMessageDialog(this,"¡Inicio de sesión exitoso!\nBienvenido, "+TUPLA.get(0)+".","Acceso Concedido",JOptionPane.INFORMATION_MESSAGE);
+                
+                JFrame ventanaPadre = (JFrame) SwingUtilities.getWindowAncestor(this);
+                if (ventanaPadre != null) {
+                    ventanaPadre.remove(this);
+                    ventanaPadre.dispose();
+                }
+                else {
+                    System.err.println("Error: El panel actual no está contenido en ningún componente padre.");
+                    return;
+                }
+
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(this,ex.getMessage());
+                return;
             }
         });
 
         bOlvidaClave.addActionListener(e -> {
-            Container parent = this.getParent();
-            if (parent != null) {
-                JFrame ventanaPadre = (JFrame) SwingUtilities.getWindowAncestor(this);
-                    if (ventanaPadre != null) {
-                        ventanaPadre.remove(this); 
-                        ventanaPadre.add(new PanelVerificarTelefono());
-                        ventanaPadre.revalidate();
-                        ventanaPadre.repaint();
-                    }
-            } else {
+            JFrame ventanaPadre = (JFrame) SwingUtilities.getWindowAncestor(this);
+            if (ventanaPadre != null) {
+                ventanaPadre.remove(this); 
+                ventanaPadre.add(new PanelVerificarTelefono());
+                ventanaPadre.revalidate();
+                ventanaPadre.repaint();
+            }
+            else {
                 System.err.println("Error: El panel actual no está contenido en ningún componente padre.");
             }
         });
