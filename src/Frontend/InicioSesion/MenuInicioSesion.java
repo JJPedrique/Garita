@@ -3,6 +3,7 @@ import java.io.File;
 import javax.swing.*;
 import Backend.ThemeManager;
 
+
 public class MenuInicioSesion extends JPanel {
     
     private final int BORDER_RADIUS_PX = 16;
@@ -35,7 +36,6 @@ public class MenuInicioSesion extends JPanel {
     //region Panel
     public MenuInicioSesion() {
 
-        // Layout Base de los paneles
         setLayout(GBL);
         GBC.fill = GridBagConstraints.BOTH;
         GBC.anchor = GridBagConstraints.CENTER;
@@ -45,30 +45,29 @@ public class MenuInicioSesion extends JPanel {
         GBC.gridx=0; GBC.gridy=1; GBC.ipady=0; GBC.weighty=1.0; add(pInput, GBC);
         GBC.gridx=0; GBC.gridy=2; GBC.ipady=30; GBC.weighty=0.0; add(pButton, GBC);
 
-        // Panel Header
+        
         pHeader.setLayout(GBL);
         lHeaderTitle.setHorizontalAlignment(JLabel.CENTER);
         GBC.gridx=0; GBC.gridy=0; GBC.ipady=0; GBC.weighty=0.0; pHeader.add(lHeaderTitle, GBC);
 
-        // Panel Entrada de datos
+
         pInput.setLayout(GBL);
         GBC.gridwidth=2;
         lSubTitulo.setHorizontalAlignment(JLabel.CENTER);
         GBC.insets = new Insets(20, 0, 20, 0);
-        GBC.gridx=0; GBC.gridy=0; GBC.weighty=0.0; pInput.add(lSubTitulo, GBC);
+        GBC.gridx=0; GBC.gridy=0; GBC.weighty=0.0;  pInput.add(lSubTitulo, GBC);
         
         GBC.gridwidth=1; GBC.weightx=0.0;
 
         GBC.insets = new Insets(6, 48, 8, 8);
-        GBC.gridx=0; GBC.gridy=1; GBC.weighty=0.0; pInput.add(lInputUsuario, GBC);
+        GBC.gridx=0; GBC.gridy=1; GBC.weighty=0.0;  pInput.add(lInputUsuario, GBC);
 
         GBC.insets = new Insets(6, 8, 8, 48);
-        GBC.gridx=1; GBC.gridy=1; GBC.weighty=0.0; pInput.add(tfInputUsuario, GBC);
+        GBC.gridx=1; GBC.gridy=1; GBC.weighty=0.0;  pInput.add(tfInputUsuario, GBC);
 
         pfClave.setLayout(new BorderLayout());
         tbMostrarClave.setIcon(iconHidePW);
 
-        // Togglebutton - Mostrar/Ocultar clave
         char echoCharDefault = pfClave.getEchoChar();
         tbMostrarClave.addActionListener(e -> {
             if (tbMostrarClave.isSelected()) {
@@ -82,31 +81,32 @@ public class MenuInicioSesion extends JPanel {
         pfClave.add(tbMostrarClave, BorderLayout.EAST);
 
         GBC.insets = new Insets(8, 48, 8, 8);
-        GBC.gridx=0; GBC.gridy=2; GBC.weighty=0.0; pInput.add(lInputClave, GBC);
+        GBC.gridx=0; GBC.gridy=2; GBC.weighty=0.0;  pInput.add(lInputClave, GBC);
 
         GBC.insets = new Insets(8, 8, 8, 48);
-        GBC.gridx=1; GBC.gridy=2; GBC.weighty=0.0; pInput.add(pfClave, GBC);
+        GBC.gridx=1; GBC.gridy=2; GBC.weighty=0.0;  pInput.add(pfClave, GBC);
 
         GBC.gridwidth=2; GBC.weightx=1.0;
 
         GBC.insets = new Insets(8, 48, 48, 48);
-        GBC.gridx=0; GBC.gridy=3; GBC.weighty=0.0; pInput.add(bOlvidaClave, GBC);
+        GBC.gridx=0; GBC.gridy=3; GBC.weighty=0.0;  pInput.add(bOlvidaClave, GBC);
 
-        // Panel Botones
-        pButton.setLayout(GBL);
+
         GBC.gridwidth=1; GBC.weightx=1.0;
 
+        pButton.setLayout(GBL);
+
         GBC.insets = new Insets(4, 30, 8, 30);
-        GBC.gridx=0; GBC.gridy=0; GBC.weighty=1.0; pButton.add(bAcceder, GBC);
+        GBC.gridx=0; GBC.gridy=0; GBC.weighty=1.0;  pButton.add(bAcceder, GBC);
 
         GBC.insets = new Insets(8, 30, 30, 30);
-        GBC.gridx=0; GBC.gridy=1; GBC.weighty=1.0; pButton.add(bSalir, GBC);
+        GBC.gridx=0; GBC.gridy=1; GBC.weighty=1.0;  pButton.add(bSalir, GBC);
 
         SetTheme();
-        SetEvents();
+        SetupEvents();
     }
 
-    public void SetTheme() { // Aplciar Estilo, los colores vienen de la clase ThemeManager
+    public void SetTheme() {
         setBackground(ThemeManager.COLOR_BACKGROUND);
         pHeader.setBackground(ThemeManager.COLOR_PRIMARY);
         pInput.setOpaque(false);
@@ -119,7 +119,7 @@ public class MenuInicioSesion extends JPanel {
         lSubTitulo.setForeground(ThemeManager.COLOR_TEXT);
     }
 
-    private void SetEvents() { // Configurar los eventos en los botones
+    private void SetupEvents() {
         bSalir.addActionListener(e -> {
             int confirmacion = JOptionPane.showConfirmDialog(
                 this, "¿Está seguro que desea salir del Sistema Garita?",  "Confirmar Salida", JOptionPane.YES_NO_OPTION,JOptionPane.QUESTION_MESSAGE);
@@ -141,9 +141,6 @@ public class MenuInicioSesion extends JPanel {
                 JOptionPane.showMessageDialog(this,"El campo de contraseña no puede quedar vacío.","Clave Requerida", JOptionPane.WARNING_MESSAGE);
                 pfClave.requestFocusInWindow();
             } else {
-
-                // VALIDAR EXISTENCIA DEL USUARIO EN LA BDD
-
                 JOptionPane.showMessageDialog(this,"¡Inicio de sesión exitoso!\nBienvenido, "+usuario+".","Acceso Concedido",JOptionPane.INFORMATION_MESSAGE);
             }
         });
@@ -151,13 +148,12 @@ public class MenuInicioSesion extends JPanel {
         bOlvidaClave.addActionListener(e -> {
             Container parent = this.getParent();
             if (parent != null) {
-                JFrame ventanaPadre = (JFrame) SwingUtilities.getWindowAncestor(this);
-                    if (ventanaPadre != null) {
-                        ventanaPadre.remove(this); 
-                        ventanaPadre.add(new PanelVerificarTelefono());
-                        ventanaPadre.revalidate();
-                        ventanaPadre.repaint();
-                    }
+                parent.remove(this);
+
+                // parent.add(new PanelVerificarTelefono());
+
+                parent.revalidate();
+                parent.repaint();
             } else {
                 System.err.println("Error: El panel actual no está contenido en ningún componente padre.");
             }
@@ -369,6 +365,7 @@ public class MenuInicioSesion extends JPanel {
 
             ImageIcon imgIcon = SetImgIcon(iconPath, ICON_WIDTH_PX, ICON_HEIGHT_PX);
             if (imgIcon != null) this.customIcon = imgIcon;
+            
         }
 
         @Override

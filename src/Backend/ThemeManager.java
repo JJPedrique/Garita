@@ -1,5 +1,6 @@
 package Backend;
 import java.awt.*;
+import javax.swing.*;
 
 public class ThemeManager {
     public static final Color COLOR_BACKGROUND_DARK  = Color.decode("#121212");
@@ -20,4 +21,41 @@ public class ThemeManager {
     public static final Font TEXT_SUBTITLE           = new Font("Verdana", Font.BOLD, 16);
     public static final Font TEXT_NORMAL             = new Font("Verdana", Font.PLAIN, 12);
     public static final Font TEXT_SMALL              = new Font("Verdana", Font.PLAIN, 10);
+
+    public static JButton Button(String text){
+        JButton newButton = new JButton(text);
+        newButton.setFont(ThemeManager.TEXT_NORMAL);
+        newButton.setForeground(ThemeManager.COLOR_TEXT);
+        newButton.setBackground(ThemeManager.COLOR_PRIMARY);
+        newButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                newButton.setBackground(ThemeManager.COLOR_SECONDARY);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                newButton.setBackground(ThemeManager.COLOR_PRIMARY);
+            }
+        });
+        return newButton;
+    }
+
+    public static JLabel Label(String text){
+        JLabel newLabel = new JLabel(text);
+        newLabel.setFont(ThemeManager.TEXT_NORMAL);
+        newLabel.setForeground(ThemeManager.COLOR_TEXT);        
+        return newLabel;
+    }
+
+    public static JComboBox<String> StringComboBox(){
+        JComboBox<String> newComboBox = new JComboBox<>();
+        newComboBox.setFont(ThemeManager.TEXT_NORMAL);
+        newComboBox.setForeground(ThemeManager.COLOR_TEXT_DARK);
+        newComboBox.setBackground(ThemeManager.COLOR_SECONDARY);
+        return newComboBox;
+    }
+
+    public static JPanel Panel(LayoutManager LM){
+        JPanel newPanel = new JPanel(LM);
+        newPanel.setBackground(ThemeManager.COLOR_BACKGROUND_LIGHT);
+        return newPanel;
+    }
 }

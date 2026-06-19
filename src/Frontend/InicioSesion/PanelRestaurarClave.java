@@ -1,9 +1,3 @@
-import javax.swing.*;
-
-public class PanelRestaurarClave extends JPanel{
+public class PanelRestaurarClave {
     
-    PanelRestaurarClave(){
-        // VAMOS JUAN, TÚ PUEDES ! :)
-    }
-
 }
