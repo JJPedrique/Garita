@@ -16,7 +16,7 @@ En la tabla <b>registros</b> se almacenan todas los pago que una vivienda ha rea
 <ul>
   <li>VsCode</li>
   <li>java version "1.8.0_51"</li>
-  <li>Postgre 16</li>
+  <li>Postgre 15/16</li>
 </ul>
 
 ### Diagrama de BDD
