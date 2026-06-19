@@ -13,7 +13,7 @@ CREATE TABLE "usuarios" (
 
 CREATE TABLE "bitacoras" (
   "id" integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  "usuario" varchar(13) UNIQUE NOT NULL,
+  "usuario" varchar(13) NOT NULL,
   "accion" varchar(6) NOT NULL,
   "tabla_modificada" varchar(16) NOT NULL,
   "fecha_modificacion" timestamp NOT NULL
