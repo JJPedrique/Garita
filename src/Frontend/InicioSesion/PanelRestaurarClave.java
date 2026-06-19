@@ -1,4 +1,3 @@
-
 import java.awt.*;
 import java.io.File;
 import javax.swing.*;
@@ -153,6 +152,14 @@ public class PanelRestaurarClave extends JPanel{
                 JOptionPane.showMessageDialog(this, "Las contraseñas no coinciden. Por favor, verifíquelas.", "Error de Coincidencia", JOptionPane.ERROR_MESSAGE);
             } else {
                 JOptionPane.showMessageDialog(this, "¡Clave restaurada con éxito!", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+            
+                JFrame ventanaPadre = (JFrame) SwingUtilities.getWindowAncestor(this);
+                if (ventanaPadre != null) {
+                    ventanaPadre.remove(this); 
+                    ventanaPadre.add(new MenuInicioSesion());
+                    ventanaPadre.revalidate();
+                    ventanaPadre.repaint();
+                }
             }
         });
 

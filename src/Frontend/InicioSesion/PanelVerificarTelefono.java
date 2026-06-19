@@ -4,7 +4,6 @@ import javax.swing.*;
 import Backend.ThemeManager;
 
 public class PanelVerificarTelefono extends JPanel {
-
     
     private final int BORDER_RADIUS_PX = 16;
     private final int ICON_WIDTH_PX = 24;
@@ -109,7 +108,7 @@ public class PanelVerificarTelefono extends JPanel {
                 return;
             }
 
-            // SI TELEFONO NO EXISTE, RETURN
+            // VERIFICAR BDD - SI TELEFONO NO EXISTE, RETURN
 
             Container parent = this.getParent();
             if (parent != null) {

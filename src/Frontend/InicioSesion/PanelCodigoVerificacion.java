@@ -36,7 +36,7 @@ public class PanelCodigoVerificacion extends JPanel{
 
     PanelCodigoVerificacion(){
 
-        randCode = r.nextInt(100000, 1000000);
+        randCode = r.nextInt(1000000);
         System.out.println(randCode);
 
         
