@@ -1,9 +1,0 @@
-TRUNCATE TABLE accesos;
-TRUNCATE TABLE bitacoras;
-TRUNCATE TABLE usuarios;
-TRUNCATE TABLE carnets;
-TRUNCATE TABLE representantes;
-TRUNCATE TABLE pagos_realizados;
-TRUNCATE TABLE cuotas;
-TRUNCATE TABLE viviendas;
-TRUNCATE TABLE categorias;
