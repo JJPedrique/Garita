@@ -1,5 +1,5 @@
 --LISTA DE MOROSOS
-SELECT viviendas.categoria,viviendas.numero_vivienda,
+SELECT viviendas.calle,viviendas.numero_vivienda,
 		(
 		SELECT CONCAT(representantes.nombre,' ',representantes.apellido)
 		FROM representantes
@@ -34,7 +34,7 @@ FROM ResumenFinanciero;
 -- OBTENER COLUMNAS Y TIPOS
 CREATE OR REPLACE TEMP VIEW vista_analisis_columnas AS
 
-SELECT viviendas.categoria AS Calle,
+SELECT viviendas.calle AS Calle,
  		viviendas.numero_vivienda AS Vivienda, 
  		carnets.codigo AS Codigo
 FROM carnets
@@ -54,17 +54,17 @@ DROP VIEW vista_analisis_columnas;
 
 
 --VIVIENDAS
-SELECT viviendas.categoria AS Calle, 
+SELECT viviendas.calle AS Calle, 
 		viviendas.numero_vivienda AS Vivienda , 
 		COUNT(representantes.id) AS  Representantes, 
 		COUNT(carnets.id) AS Carntes
 FROM viviendas
 JOIN representantes ON viviendas.id = representantes.id_vivienda
 JOIN carnets ON viviendas.id = carnets.id_vivienda
-GROUP BY viviendas.categoria, viviendas.numero_vivienda
+GROUP BY viviendas.calle, viviendas.numero_vivienda
 
 --REPRESENTANTES
-SELECT viviendas.categoria AS Calle, 
+SELECT viviendas.calle AS Calle, 
 		viviendas.numero_vivienda AS Vivienda,
 		representantes.nombre AS Nombre,
 		representantes.apellido AS Apellido,
@@ -74,7 +74,7 @@ FROM representantes
 JOIN viviendas ON viviendas.id = representantes.id_vivienda 
 
 --CARNETS
-SELECT viviendas.categoria AS Calle,
+SELECT viviendas.calle AS Calle,
  		viviendas.numero_vivienda AS Vivienda, 
  		carnets.codigo AS Codigo
 FROM carnets
@@ -84,7 +84,7 @@ JOIN viviendas ON viviendas.id = carnets.id_vivienda
 SELECT accesos.fecha_hora AS "Fecha de Acceso",
  		accesos.tipo AS Tipo,
 		accesos.estado AS Estado, 
- 		viviendas.categoria AS Calle, 
+ 		viviendas.calle AS Calle, 
  		viviendas.numero_vivienda AS Vivienda, 
  		carnets.codigo AS Codigo, 
  		accesos.nombre_visita AS Visita
@@ -104,7 +104,7 @@ LEFT JOIN pagos_realizados ON cuotas.id = pagos_realizados.id_cuota
 GROUP BY descripcion,fecha_emision, monto, fecha_limite
 
 --PAGOS REALIZADOS
-SELECT viviendas.categoria AS Calle,
+SELECT viviendas.calle AS Calle,
 		viviendas.numero_vivienda AS Vivienda, 
 		cuotas.monto AS Monto,
 		cuotas.descripcion AS Descripcion, 

@@ -1,33 +1,36 @@
 package Frontend.Reportes;
-import java.awt.*;
-import java.awt.event.*;
+import java.io.*;
 import java.sql.*;
+import java.awt.*;
 import java.util.*;
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
+import java.awt.event.*;
 
+import javax.swing.table.DefaultTableModel;
+import org.xhtmlrenderer.pdf.ITextRenderer;
 import Backend.*;
-import Backend.BDD.DataInputs.*;
+import Backend.DataInputs.*;
+
 
 public class ReporteAvanzado extends JPanel {
     ConexionPostgres DB = new ConexionPostgres();
 
-//#region SQL QUERY
-public static final Map<String, String> CONSULTAS;
+    //#region SQL QUERY
+    public static final Map<String, String> CONSULTAS;
 
     static {
         Map<String, String> mapaTemporal = new HashMap<>();
         
-        mapaTemporal.put("Vivienda", "SELECT viviendas.categoria AS Calle, " +
+        mapaTemporal.put("Vivienda", "SELECT viviendas.calle AS Calle, " +
                 "viviendas.numero_vivienda AS Vivienda, " +
                 "COUNT(representantes.id) AS Representantes, " +
                 "COUNT(carnets.id) AS Carnets " +
                 "FROM viviendas " +
                 "JOIN representantes ON viviendas.id = representantes.id_vivienda " +
                 "JOIN carnets ON viviendas.id = carnets.id_vivienda " +
-                "GROUP BY viviendas.categoria, viviendas.numero_vivienda");
+                "GROUP BY viviendas.calle, viviendas.numero_vivienda");
 
-        mapaTemporal.put("Vecinos", "SELECT viviendas.categoria AS Calle, " +
+        mapaTemporal.put("Vecinos", "SELECT viviendas.calle AS Calle, " +
                 "viviendas.numero_vivienda AS Vivienda, " +
                 "representantes.nombre AS Nombre, " +
                 "representantes.apellido AS Apellido, " +
@@ -36,7 +39,7 @@ public static final Map<String, String> CONSULTAS;
                 "FROM representantes " +
                 "JOIN viviendas ON viviendas.id = representantes.id_vivienda ");
 
-        mapaTemporal.put("Carnets", "SELECT viviendas.categoria AS Calle, " + 
+        mapaTemporal.put("Carnets", "SELECT viviendas.calle AS Calle, " + 
                 "viviendas.numero_vivienda AS Vivienda, " +
                 "carnets.codigo AS Codigo " + 
                 "FROM carnets " +
@@ -45,7 +48,7 @@ public static final Map<String, String> CONSULTAS;
         mapaTemporal.put("RegistrosAcceso", "SELECT accesos.fecha_hora AS \"Fecha de Acceso\"," + 
                 " accesos.tipo AS Tipo, " + 
                 " accesos.estado AS Estado, " + 
-                " viviendas.categoria AS Calle, " + 
+                " viviendas.calle AS Calle, " + 
                 " viviendas.numero_vivienda AS Vivienda, " + 
                 " carnets.codigo AS Codigo, " + 
                 " accesos.nombre_visita AS Visita " + 
@@ -63,7 +66,7 @@ public static final Map<String, String> CONSULTAS;
                 "LEFT JOIN pagos_realizados ON cuotas.id = pagos_realizados.id_cuota " + 
                 "GROUP BY descripcion,fecha_emision, monto, fecha_limite");
 
-        mapaTemporal.put("PagosRealizado", "SELECT viviendas.categoria AS Calle, " + 
+        mapaTemporal.put("PagosRealizado", "SELECT viviendas.calle AS Calle, " + 
                 "viviendas.numero_vivienda AS Vivienda, " + 
                 "cuotas.monto AS Monto, " + 
                 "cuotas.descripcion AS Descripcion, " + 
@@ -79,6 +82,18 @@ public static final Map<String, String> CONSULTAS;
                 "bitacoras.tabla_modificada AS \"Tabla Modificada\", " + 
                 "bitacoras.fecha_modificacion AS \"Fecha de Modificacion\" " + 
                 "FROM bitacoras");
+
+        mapaTemporal.put("Lista de Morosos", "SELECT viviendas.calle,viviendas.numero_vivienda, " + //
+                        "( " + //
+                        "SELECT CONCAT(representantes.nombre,' ',representantes.apellido) " + //
+                        "FROM representantes " + //
+                        "WHERE representantes.id_vivienda = viviendas.id " + //
+                        "ORDER BY representantes.id " + //
+                        "LIMIT 1 " + //
+                        ") as Representante, " + //
+                        "solvencia(viviendas.id) AS Estado, " + //
+                        "deuda(viviendas.id) AS Debe " + //
+                        "FROM viviendas ");
 
         CONSULTAS = Collections.unmodifiableMap(mapaTemporal);
     }
@@ -135,8 +150,8 @@ public static final Map<String, String> CONSULTAS;
     }
 
     JPanel Preview(){
-        JPanel newPanel = new JPanel(new BorderLayout());
-        newPanel.add(new JScrollPane(new JTable(DATA)),BorderLayout.CENTER);
+        JPanel newPanel = ThemeManager.Panel(new BorderLayout());
+        newPanel.add(ThemeManager.ScrollPanel(ThemeManager.Table(DATA)),BorderLayout.CENTER);
         return newPanel;
     } 
 
@@ -324,7 +339,7 @@ public static final Map<String, String> CONSULTAS;
             case "character varying": tempCondition = new StringInput(Column); break;
             case "bigint": tempCondition = new IntegerInput(Column); break;
             case "numeric": tempCondition = new DecimalInput(Column); break;
-            case "timestamp with time zone": tempCondition = new DateInput(Column); break;
+            case "timestamp without time zone": tempCondition = new DateInput(Column); break;
             default: tempCondition = new StringInput(Column); break;
         }
 
@@ -367,13 +382,16 @@ public static final Map<String, String> CONSULTAS;
         }
         if (isVList.size()==0) {JOptionPane.showMessageDialog(this, "DEBE MOSTRAR AL MENOS UNA COLUMNA");return;}
         SELECT = SELECT + String.join(", ", isVList);
-  
 
         String WHERE = "WHERE ";
         ArrayList<String> cond = new ArrayList<>();
         for (Input C : Condition) {
+            System.out.println(C.getClass().getName());
+            if(C.GetInput()==""){continue;}
+            if(C.GetInput()=="???"){return;}
             cond.add(C.GetInput());
-        }if(cond.size()==0){WHERE="";}
+        }WHERE = WHERE + String.join(" AND ", cond);
+        if(cond.size()==0){WHERE="";}
 
         String ORDER_BY = "ORDER BY "+ OrderColumn.getSelectedItem();
         if(OrderBy.getSelectedItem()=="Ascendente"){ORDER_BY += " ASC";}
@@ -383,6 +401,7 @@ public static final Map<String, String> CONSULTAS;
         String OFFSET = "OFFSET "+ LimitFrom.getValue().toString();
 
         String MAIN_QUERY = SELECT+" FROM ("+ CONSULTAS.get(Modulos.getSelectedItem().toString()) +") as xd "+WHERE+" "+ORDER_BY+" "+LIMIT+" "+OFFSET;
+        System.out.println(MAIN_QUERY);
 
         try {DATA.setDataVector(GetData(MAIN_QUERY,isVList), isVList.toArray());
         } catch (SQLException e1) {e1.printStackTrace();}
@@ -413,8 +432,81 @@ public static final Map<String, String> CONSULTAS;
 //#endregion
 
 //#region EXPORTAR PDF
-    void ImprimirPDF(){
-        System.out.println("Proximamente...");
+    public static void ImprimirPDF() {
+        String outputPath = System.getProperty("user.home") + File.separator + "Downloads" + File.separator + "MiReporteFancioso.pdf";
+        String htmlContent = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+                + "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" "
+                + "\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">"
+                + "<html xmlns=\"http://www.w3.org/1999/xhtml\">"
+                + "<head>"
+                + "  <style type=\"text/css\">"
+                + "    @page { size: letter; margin: 20mm; }" // Define el tamaño de página con CSS
+                + "    body { font-family: 'Helvetica', 'Arial', sans-serif; color: #333333; }"
+                + "    h1 { color: #1a365d; border-bottom: 2px solid #2b6cb0; padding-bottom: 5px; }"
+                + "    table { width: 100%; border-collapse: collapse; margin-top: 20px; }"
+                + "    th { background-color: #2b6cb0; color: white; padding: 8px; text-align: left; }"
+                + "    td { border-bottom: 1px solid #e2e8f0; padding: 8px; }"
+                + "    .total { font-weight: bold; color: #1a365d; }"
+                + "  </style>"
+                + "</head>"
+                + "<body>"
+                + "  <h1>Reporte de Sistema</h1>"
+                + "  <p>Este documento fue renderizado utilizando <strong>Flying Saucer</strong> y <strong>OpenPDF</strong>.</p>"
+                + "  "
+                + "  <table>"
+                + "    <thead>"
+                + "      <tr>"
+                + "        <th>Módulo</th>"
+                + "        <th>Estado</th>"
+                + "      </tr>"
+                + "    </thead>"
+                + "    <tbody>"
+                + "      <tr>"
+                + "        <td>Autenticación</td>"
+                + "        <td>Operacional</td>"
+                + "      </tr>"
+                + "      <tr>"
+                + "        <td>Base de Datos</td>"
+                + "        <td>Conectado</td>"
+                + "      </tr>"
+                + "      <tr class=\"total\">"
+                + "        <td>Resultado General</td>"
+                + "        <td>Exitoso</td>"
+                + "      </tr>"
+                + "    </tbody>"
+                + "  </table>"
+                + "</body>"
+                + "</html>";
+
+        // Flying Saucer requiere un OutputStream para escribir el archivo
+        try (OutputStream outputStream = new FileOutputStream(outputPath)) {
+            
+            ITextRenderer renderer = new ITextRenderer();
+            
+            // 2. Asignar el contenido HTML
+            // El segundo parámetro es la URL base para buscar recursos relativos (como imágenes o CSS externos).
+            // Usamos null si todo el CSS está incrustado en la etiqueta <style>.
+            renderer.setDocumentFromString(htmlContent, null);
+            
+            // 3. Procesar el diseño del documento (Layout)
+            renderer.layout();
+            
+            // 4. Crear y escribir el PDF final en el flujo de salida
+            // Usamos reflexión para invocar createPDF(OutputStream) y así evitar
+            // una referencia directa a DocumentException en tiempo de compilación.
+            try {
+                java.lang.reflect.Method m = renderer.getClass().getMethod("createPDF", java.io.OutputStream.class);
+                m.invoke(renderer, outputStream);
+            } catch (NoSuchMethodException | IllegalAccessException | java.lang.reflect.InvocationTargetException ex) {
+                throw new RuntimeException("Error invoking createPDF via reflection", ex);
+            }
+            
+            System.out.println("¡PDF creado con éxito en: " + outputPath);
+            
+        } catch (Exception e) {
+            System.err.println("Error al generar el PDF: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 //#endregion
 }

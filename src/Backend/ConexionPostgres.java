@@ -102,27 +102,27 @@ public class ConexionPostgres {
         }
     }
 
-   public static void backupDatabase() {
+    public static void backupDatabase() {
         try {
             // 1. Conseguimos la ruta de la carpeta de Descargas de forma nativa
             String rutaUsuario = System.getProperty("user.home");
             File carpetaDescargas = new File(rutaUsuario, "Downloads");
 
-            // 2. Definimos el comando pg_dump como un arreglo de argumentos
+            // 2. Definimos el comando pg_dump
+            // CORRECCIÓN: Se cambió "-F", "p" por "-F", "c" (Formato Custom/Binario)
             ProcessBuilder pb = new ProcessBuilder(
                 "pg_dump", 
                 "-h", "localhost", 
                 "-U", "postgres", 
-                "-F", "p", 
-                "-f", "GaritaRespaldo.sql", 
+                "-F", "c",                 // <--- CAMBIADO A FORMATO BINARIO 'c'
+                "-f", "GaritaRespaldo.backup", 
                 "Garita"
             );
 
-            // Reemplaza el comando 'cd': le dice a Java dónde guardar el archivo
+            // Le dice a Java dónde guardar el archivo
             pb.directory(carpetaDescargas);
 
-            // 3. LE PASAMOS LA CONTRASEÑA "DE UNA"
-            // Inyectamos la variable de entorno PGPASSWORD directamente al proceso
+            // 3. Inyectamos la variable de entorno PGPASSWORD directamente al proceso
             Map<String, String> entorno = pb.environment();
             entorno.put("PGPASSWORD", PASSWORD);
 
@@ -153,66 +153,68 @@ public class ConexionPostgres {
             try {
                 UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
             } catch (Exception e) {
-                // Si falla por alguna razón, continuará con la apariencia por defecto
                 System.out.println("No se pudo cargar el aspecto nativo de Windows.");
             }
 
-
-        // 1. Configurar y abrir el explorador de archivos (JFileChooser)
-        JFileChooser selector = new JFileChooser();
-        selector.setDialogTitle("Seleccione el archivo de respaldo (.sql)");
-        
-        // Filtrar para que el usuario solo pueda seleccionar archivos .sql
-        FileNameExtensionFilter filtro = new FileNameExtensionFilter("Respaldos SQL (*.sql)", "sql");
-        selector.setFileFilter(filtro);
-        
-        // Abrir por defecto en la carpeta de Descargas del usuario
-        String rutaUsuario = System.getProperty("user.home");
-        selector.setCurrentDirectory(new File(rutaUsuario, "Downloads"));
-
-        // Mostrar el explorador
-        int resultado = selector.showOpenDialog(null);
-
-        // 2. Si el usuario selecciona un archivo y presiona "Abrir"
-        if (resultado == JFileChooser.APPROVE_OPTION) {
-            File archivoSeleccionado = selector.getSelectedFile();
+            // 1. Configurar y abrir el explorador de archivos (JFileChooser)
+            JFileChooser selector = new JFileChooser();
+            // CORRECCIÓN: Modificado el título del diálogo
+            selector.setDialogTitle("Seleccione el archivo de respaldo (.backup)");
             
-            // Obtenemos la ruta absoluta del archivo y el directorio donde se encuentra
-            String rutaArchivoSql = archivoSeleccionado.getAbsolutePath();
-            File directorioArchivo = archivoSeleccionado.getParentFile();
+            // CORRECCIÓN: Ahora el filtro busca archivos .backup reales
+            FileNameExtensionFilter filtro = new FileNameExtensionFilter("Respaldos Postgres (*.backup)", "backup");
+            selector.setFileFilter(filtro);
+            
+            // Abrir por defecto en la carpeta de Descargas del usuario
+            String rutaUsuario = System.getProperty("user.home");
+            selector.setCurrentDirectory(new File(rutaUsuario, "Downloads"));
 
-            // 3. Configurar el ProcessBuilder con el archivo dinámico
-            ProcessBuilder pb = new ProcessBuilder(
-                "psql", 
-                "-h", "localhost", 
-                "-U", "postgres", 
-                "-d", "Garita",            // La base de datos destino
-                "-f", rutaArchivoSql       // Pasamos la ruta completa del archivo seleccionado
-            );
+            // Mostrar el explorador
+            int resultado = selector.showOpenDialog(null);
 
-            // Establecemos el directorio de trabajo donde está el archivo
-            pb.directory(directorioArchivo);
+            // 2. Si el usuario selecciona un archivo y presiona "Abrir"
+            if (resultado == JFileChooser.APPROVE_OPTION) {
+                File archivoSeleccionado = selector.getSelectedFile();
+                
+                // Obtenemos la ruta absoluta del archivo y el directorio donde se encuentra
+                String rutaArchivoBackup = archivoSeleccionado.getAbsolutePath();
+                File directorioArchivo = archivoSeleccionado.getParentFile();
 
-            // Configurar la contraseña de PostgreSQL
-            Map<String, String> entorno = pb.environment();
-            entorno.put("PGPASSWORD", PASSWORD);
+                // 3. Configurar el ProcessBuilder con el archivo dinámico
+                // Aquí el uso de pg_restore y --clean es 100% correcto porque el archivo ahora sí es binario
+                ProcessBuilder pb = new ProcessBuilder(
+                    "pg_restore", 
+                    "-h", "localhost", 
+                    "-U", "postgres", 
+                    "--clean",             
+                    "-d", "Garita", 
+                    rutaArchivoBackup      
+                );
 
-            pb.inheritIO(); 
+                // Establecemos el directorio de trabajo donde está el archivo
+                pb.directory(directorioArchivo);
 
-            System.out.println("Iniciando restauración desde el archivo: " + rutaArchivoSql);
-            Process proceso = pb.start();
-            int codigoSalida = proceso.waitFor();
+                // Configurar la contraseña de PostgreSQL
+                Map<String, String> entorno = pb.environment();
+                entorno.put("PGPASSWORD", PASSWORD);
 
-            if (codigoSalida == 0) {
-                System.out.println("¡Base de datos restaurada con éxito desde el archivo seleccionado!");
+                pb.inheritIO(); 
+
+                System.out.println("Iniciando restauración desde el archivo: " + rutaArchivoBackup);
+                Process proceso = pb.start();
+                int codigoSalida = proceso.waitFor();
+
+                if (codigoSalida == 0) {
+                    System.out.println("¡Base de datos restaurada con éxito desde el archivo seleccionado!");
+                } else {
+                    System.out.println("Hubo un error al restaurar. Código de salida: " + codigoSalida);
+                }
             } else {
-                System.out.println("Hubo un error al restaurar. Código de salida: " + codigoSalida);
+                System.out.println("Restauración cancelada por el usuario.");
             }
-        } else {
-            System.out.println("Restauración cancelada por el usuario.");
-        }
 
-    } catch (IOException | InterruptedException e) {
-        e.printStackTrace();
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
     }
-}}
+}

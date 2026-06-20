@@ -10,7 +10,7 @@ public class MenuReporte extends JPanel{
         this.setLayout(new BorderLayout());
         JTabbedPane TabMenu = new JTabbedPane();
 
-        TabMenu.addTab("Basico",new ReporteBasico());
+        //TabMenu.addTab("Basico",new ReporteBasico());
         TabMenu.addTab("General",new ReporteAvanzado());
 
         this.add(new JLabel("Módulo - Reportes"),BorderLayout.NORTH);

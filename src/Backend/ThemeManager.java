@@ -1,6 +1,7 @@
 package Backend;
 import java.awt.*;
 import javax.swing.*;
+import javax.swing.table.TableModel;
 
 public class ThemeManager {
     public static final Color COLOR_BACKGROUND_DARK  = Color.decode("#121212");
@@ -24,15 +25,15 @@ public class ThemeManager {
 
     public static JButton Button(String text){
         JButton newButton = new JButton(text);
-        newButton.setFont(ThemeManager.TEXT_NORMAL);
-        newButton.setForeground(ThemeManager.COLOR_TEXT);
-        newButton.setBackground(ThemeManager.COLOR_PRIMARY);
+        newButton.setFont(TEXT_NORMAL);
+        newButton.setForeground(COLOR_TEXT);
+        newButton.setBackground(COLOR_PRIMARY);
         newButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
-                newButton.setBackground(ThemeManager.COLOR_SECONDARY);
+                newButton.setBackground(COLOR_SECONDARY);
             }
             public void mouseExited(java.awt.event.MouseEvent evt) {
-                newButton.setBackground(ThemeManager.COLOR_PRIMARY);
+                newButton.setBackground(COLOR_PRIMARY);
             }
         });
         return newButton;
@@ -40,22 +41,47 @@ public class ThemeManager {
 
     public static JLabel Label(String text){
         JLabel newLabel = new JLabel(text);
-        newLabel.setFont(ThemeManager.TEXT_NORMAL);
-        newLabel.setForeground(ThemeManager.COLOR_TEXT);        
+        newLabel.setFont(TEXT_NORMAL);
+        newLabel.setForeground(COLOR_TEXT);        
         return newLabel;
     }
 
     public static JComboBox<String> StringComboBox(){
         JComboBox<String> newComboBox = new JComboBox<>();
-        newComboBox.setFont(ThemeManager.TEXT_NORMAL);
-        newComboBox.setForeground(ThemeManager.COLOR_TEXT_DARK);
-        newComboBox.setBackground(ThemeManager.COLOR_SECONDARY);
+        newComboBox.setFont(TEXT_NORMAL);
+        newComboBox.setForeground(COLOR_TEXT_DARK);
+        newComboBox.setBackground(COLOR_SECONDARY);
         return newComboBox;
     }
 
     public static JPanel Panel(LayoutManager LM){
         JPanel newPanel = new JPanel(LM);
-        newPanel.setBackground(ThemeManager.COLOR_BACKGROUND_LIGHT);
+        newPanel.setBackground(COLOR_BACKGROUND_LIGHT);
         return newPanel;
+    }
+
+    public static JScrollPane ScrollPanel(JTable Table){
+        JScrollPane newScrollPane = new JScrollPane(Table);
+        newScrollPane.setBackground(COLOR_BACKGROUND_LIGHT);
+        newScrollPane.setForeground(COLOR_BACKGROUND);
+        return newScrollPane;
+    }
+
+
+    public static JTextField Textfield(){
+        JTextField newTextField = new JTextField();
+        newTextField.setFont(TEXT_NORMAL);
+        newTextField.setForeground(COLOR_TEXT);
+        newTextField.setBackground(COLOR_BACKGROUND);
+        return newTextField;
+    }
+
+    public static JTable Table(TableModel DTM){
+        JTable newTable = new JTable();
+        newTable.setModel(DTM);
+        newTable.setForeground(COLOR_TEXT);
+        newTable.setBackground(COLOR_BACKGROUND);
+        newTable.setFont(TEXT_NORMAL);
+        return newTable;
     }
 }

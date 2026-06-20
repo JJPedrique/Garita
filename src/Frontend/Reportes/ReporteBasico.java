@@ -8,7 +8,7 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
 import Backend.ConexionPostgres;
-import Backend.BDD.DataInputs.*;
+import Backend.DataInputs.*;
 
 public class ReporteBasico extends JPanel {
    ConexionPostgres DB = new ConexionPostgres();
@@ -20,7 +20,7 @@ public class ReporteBasico extends JPanel {
         gbc.fill=GridBagConstraints.BOTH;
         gbc.insets = new Insets(10,10,10,10);
 
-        DateInput Date = new DateInput("Balance");
+        Input Date = new DateInput("Balance");
         this.add(Date,gbc);
 
         gbc.gridy=1;
@@ -28,7 +28,7 @@ public class ReporteBasico extends JPanel {
         this.add(BtnBalance,gbc);
 
         gbc.gridy=0;gbc.gridx=1;
-        StringInput Str = new StringInput("Calle"); 
+        Input Str = new StringInput("Calle"); 
         this.add(Str,gbc);
 
         gbc.gridy=1;
