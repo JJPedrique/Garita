@@ -1,6 +1,10 @@
 import java.awt.*;
 import java.io.File;
+import java.sql.SQLException;
+
 import javax.swing.*;
+
+import Backend.ConexionPostgres;
 import Backend.ThemeManager;
 
 public class PanelRestaurarClave extends JPanel{
@@ -19,14 +23,17 @@ public class PanelRestaurarClave extends JPanel{
     private final JButton bRegresar = JB_Regreso();
 
     private final JPanel pInput = new JPanel();
-    private final JLabel lSubTitulo = new JLabel("temp");
-    private final JLabel lSubTituloPwrd = new JLabel("temp2");
-    private final JLabel lInputUsuario = new RoundIconLabel("img\\key.png");
-    private final JPasswordField pfInputpwrd = PF_Password("Clave");
-    private final JLabel lInputClave = new RoundIconLabel("img\\key.png");
-    private final JPasswordField pfConfirmarClave = PF_Password("Confirmar Clave");
-    private final JToggleButton tbMostrarOgClave = TGB_ShowPassword();
-    private final JToggleButton tbMostrarClave = TGB_ShowPassword();
+
+    private final JLabel lNuevaClave = new RoundIconLabel("img\\key.png");
+    private final JLabel lSubTituloNuevaClave = new JLabel("Nueva Clave");
+    private final JPasswordField pfInputpwrd = PF_Password("********");
+    private final JToggleButton tbMostrarClave1 = TGB_ShowPassword();
+
+    private final JLabel lConfirmarClave = new RoundIconLabel("img\\key.png");
+    private final JLabel lSubtituloConfirmarClave = new JLabel("Confirmar Clave");
+    private final JPasswordField pfConfirmarClave = PF_Password("********");
+    private final JToggleButton tbMostrarClave2 = TGB_ShowPassword();
+
     private Icon iconShowPW = SetImgIcon("img\\show_pw.png", ICON_WIDTH_PX, ICON_HEIGHT_PX);
     private Icon iconHidePW = SetImgIcon("img\\hide_pw.png", ICON_WIDTH_PX, ICON_HEIGHT_PX);
 
@@ -61,14 +68,14 @@ public class PanelRestaurarClave extends JPanel{
         
         GBC.gridwidth = 2;
         GBC.weightx = 1.0;
-        lSubTitulo.setHorizontalAlignment(JLabel.CENTER);
+        lSubTituloNuevaClave.setHorizontalAlignment(JLabel.CENTER);
         GBC.insets = new Insets(20, 0, 10, 0);
-        GBC.gridx = 0; GBC.gridy = 0; GBC.weighty = 0.0; pInput.add(lSubTitulo, GBC);
+        GBC.gridx = 0; GBC.gridy = 0; GBC.weighty = 0.0; pInput.add(lSubTituloNuevaClave, GBC);
         
         GBC.gridwidth = 1; 
         GBC.weightx = 0.0;
         GBC.insets = new Insets(6, 48, 6, 8);
-        GBC.gridx = 0; GBC.gridy = 1; pInput.add(lInputUsuario, GBC);
+        GBC.gridx = 0; GBC.gridy = 1; pInput.add(lNuevaClave, GBC);
 
         GBC.weightx = 1.0;
         GBC.insets = new Insets(6, 8, 6, 48);
@@ -76,14 +83,14 @@ public class PanelRestaurarClave extends JPanel{
 
         GBC.gridwidth = 2;
         GBC.weightx = 1.0;
-        lSubTituloPwrd.setHorizontalAlignment(JLabel.CENTER);
+        lSubtituloConfirmarClave.setHorizontalAlignment(JLabel.CENTER);
         GBC.insets = new Insets(15, 0, 10, 0);
-        GBC.gridx = 0; GBC.gridy = 2; pInput.add(lSubTituloPwrd, GBC);
+        GBC.gridx = 0; GBC.gridy = 2; pInput.add(lSubtituloConfirmarClave, GBC);
 
         GBC.gridwidth = 1; 
         GBC.weightx = 0.0;
         GBC.insets = new Insets(6, 48, 20, 8);
-        GBC.gridx = 0; GBC.gridy = 3; pInput.add(lInputClave, GBC);
+        GBC.gridx = 0; GBC.gridy = 3; pInput.add(lConfirmarClave, GBC);
 
         GBC.weightx = 1.0;
         GBC.insets = new Insets(6, 8, 20, 48);
@@ -91,31 +98,31 @@ public class PanelRestaurarClave extends JPanel{
 
         pfInputpwrd.setLayout(new BorderLayout());
         pfConfirmarClave.setLayout(new BorderLayout());
-        tbMostrarOgClave.setIcon(iconHidePW);
-        tbMostrarClave.setIcon(iconHidePW);
+        tbMostrarClave1.setIcon(iconHidePW);
+        tbMostrarClave2.setIcon(iconHidePW);
         char echoCharDefault = pfConfirmarClave.getEchoChar();
 
-        tbMostrarOgClave.addActionListener(e -> {
-            if (tbMostrarOgClave.isSelected()) {
+        tbMostrarClave1.addActionListener(e -> {
+            if (tbMostrarClave1.isSelected()) {
                 pfInputpwrd.setEchoChar((char) 0); 
-                tbMostrarOgClave.setIcon(iconShowPW);
+                tbMostrarClave1.setIcon(iconShowPW);
             } else {
                 pfInputpwrd.setEchoChar(echoCharDefault); 
-                tbMostrarOgClave.setIcon(iconHidePW);
+                tbMostrarClave1.setIcon(iconHidePW);
             }
         });
-        pfInputpwrd.add(tbMostrarOgClave, BorderLayout.EAST);
+        pfInputpwrd.add(tbMostrarClave1, BorderLayout.EAST);
 
-        tbMostrarClave.addActionListener(e -> {
-            if (tbMostrarClave.isSelected()) {
+        tbMostrarClave2.addActionListener(e -> {
+            if (tbMostrarClave2.isSelected()) {
                 pfConfirmarClave.setEchoChar((char) 0); 
-                tbMostrarClave.setIcon(iconShowPW);
+                tbMostrarClave2.setIcon(iconShowPW);
             } else {
                 pfConfirmarClave.setEchoChar(echoCharDefault); 
-                tbMostrarClave.setIcon(iconHidePW);
+                tbMostrarClave2.setIcon(iconHidePW);
             }
         });
-        pfConfirmarClave.add(tbMostrarClave, BorderLayout.EAST);
+        pfConfirmarClave.add(tbMostrarClave2, BorderLayout.EAST);
 
         pButton.setLayout(GBL);
         GBC.gridwidth = 1; GBC.weightx = 1.0;
@@ -135,32 +142,48 @@ public class PanelRestaurarClave extends JPanel{
         lHeaderTitle.setFont(ThemeManager.TEXT_TITLE);
         lHeaderTitle.setForeground(ThemeManager.COLOR_TEXT);
 
-        lSubTitulo.setFont(ThemeManager.TEXT_SUBTITLE);
-        lSubTitulo.setForeground(ThemeManager.COLOR_TEXT);
+        lSubTituloNuevaClave.setFont(ThemeManager.TEXT_SUBTITLE);
+        lSubTituloNuevaClave.setForeground(ThemeManager.COLOR_TEXT);
         
-        lSubTituloPwrd.setFont(ThemeManager.TEXT_SUBTITLE);
-        lSubTituloPwrd.setForeground(ThemeManager.COLOR_TEXT);
+        lSubtituloConfirmarClave.setFont(ThemeManager.TEXT_SUBTITLE);
+        lSubtituloConfirmarClave.setForeground(ThemeManager.COLOR_TEXT);
     }
 
     private void SetEvents() { 
         bRestaurar.addActionListener(e -> {
-            String ogClave = new String(pfInputpwrd.getPassword()).trim();
-            String clave = new String(pfConfirmarClave.getPassword()).trim();
-            if (ogClave.isEmpty() || clave.isEmpty()) {
+            String nuevaClave = new String(pfInputpwrd.getPassword()).trim();
+            String confirmarClave = new String(pfConfirmarClave.getPassword()).trim();
+
+            if (nuevaClave.isEmpty() || confirmarClave.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Por favor, complete ambos campos de contraseña.", "Campos Vacíos", JOptionPane.WARNING_MESSAGE);
-            } else if (!ogClave.equals(clave)) {
-                JOptionPane.showMessageDialog(this, "Las contraseñas no coinciden. Por favor, verifíquelas.", "Error de Coincidencia", JOptionPane.ERROR_MESSAGE);
-            } else {
-                JOptionPane.showMessageDialog(this, "¡Clave restaurada con éxito!", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                return;
+            } 
             
-                JFrame ventanaPadre = (JFrame) SwingUtilities.getWindowAncestor(this);
-                if (ventanaPadre != null) {
-                    ventanaPadre.remove(this); 
-                    ventanaPadre.add(new MenuInicioSesion());
-                    ventanaPadre.revalidate();
-                    ventanaPadre.repaint();
-                }
+            if (!nuevaClave.equals(confirmarClave)) {
+                JOptionPane.showMessageDialog(this, "Las contraseñas no coinciden. Por favor, verifíquelas.", "Error de Coincidencia", JOptionPane.ERROR_MESSAGE);
+                return;
             }
+            
+            String Query = "UPDATE usuarios SET clave = ? WHERE id = ?;";
+            Object Parametros[] = {nuevaClave,PanelVerificarTelefono.idUsuario};
+            try {
+                ConexionPostgres BDD = new ConexionPostgres();
+                BDD.comandoDML(Query,Parametros);
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(this,ex.getMessage(),"ERROR",JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            JOptionPane.showMessageDialog(this, "¡Clave restaurada con éxito!", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+        
+            JFrame ventanaPadre = (JFrame) SwingUtilities.getWindowAncestor(this);
+            if (ventanaPadre != null) {
+                ventanaPadre.remove(this); 
+                ventanaPadre.add(new MenuInicioSesion());
+                ventanaPadre.revalidate();
+                ventanaPadre.repaint();
+            }
+            
         });
 
         bRegresar.addActionListener(e -> {
