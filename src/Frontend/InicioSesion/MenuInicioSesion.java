@@ -25,9 +25,9 @@ public class MenuInicioSesion extends JPanel {
     private final JPanel pInput = new JPanel();
     private final JLabel lSubTitulo = new JLabel("INICIAR SESIÓN");
     private final JLabel lInputUsuario = new RoundIconLabel("img\\user.png");
-    private final JTextField tfInputUsuario = TF_Username("Usuario");
+    private final JTextField tfInputUsuario = TF_Username("V-12345678");
     private final JLabel lInputClave = new RoundIconLabel("img\\key.png");
-    private final JPasswordField pfClave = PF_Password("Clave");
+    private final JPasswordField pfClave = PF_Password("********");
     private final JToggleButton tbMostrarClave = TGB_ShowPassword();
     private Icon iconShowPW = SetImgIcon("img\\show_pw.png", ICON_WIDTH_PX, ICON_HEIGHT_PX);
     private Icon iconHidePW = SetImgIcon("img\\hide_pw.png", ICON_WIDTH_PX, ICON_HEIGHT_PX);
@@ -126,6 +126,7 @@ public class MenuInicioSesion extends JPanel {
     }
 
     private void SetEvents() { // Configurar los eventos en los botones
+        //region Boton Salir
         bSalir.addActionListener(e -> {
             int confirmacion = JOptionPane.showConfirmDialog(
                 this, "¿Está seguro que desea salir del Sistema Garita?",  "Confirmar Salida", JOptionPane.YES_NO_OPTION,JOptionPane.QUESTION_MESSAGE);
@@ -134,8 +135,9 @@ public class MenuInicioSesion extends JPanel {
             }
         });
 
+        //region Boton Acceder
         bAcceder.addActionListener(e -> {
-            String usuario = tfInputUsuario.getText().trim();
+            String usuario = tfInputUsuario.getText().trim().toUpperCase();
             String clave = new String(pfClave.getPassword()).trim();
 
             if (usuario.isEmpty() && clave.isEmpty()) {
@@ -151,6 +153,12 @@ public class MenuInicioSesion extends JPanel {
             if (clave.isEmpty()) {
                 JOptionPane.showMessageDialog(this,"El campo de clave no puede quedar vacío.","Clave Requerida", JOptionPane.WARNING_MESSAGE);
                 pfClave.requestFocusInWindow();
+                return;
+            }
+
+            if (!usuario.matches("(?i)^V-[1-9]\\d{0,7}$")){
+                JOptionPane.showMessageDialog(this,"Formato de usuario invalido. \nSiga el siguiente ejemplo: V-12345678","Usuario Inválido", JOptionPane.WARNING_MESSAGE);
+                tfInputUsuario.requestFocusInWindow();
                 return;
             }
 
@@ -188,6 +196,7 @@ public class MenuInicioSesion extends JPanel {
             }
         });
 
+        //region Clave olvidada
         bOlvidaClave.addActionListener(e -> {
             JFrame ventanaPadre = (JFrame) SwingUtilities.getWindowAncestor(this);
             if (ventanaPadre != null) {

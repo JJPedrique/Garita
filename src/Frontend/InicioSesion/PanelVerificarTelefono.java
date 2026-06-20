@@ -1,6 +1,12 @@
 import java.awt.*;
 import java.io.File;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+
 import javax.swing.*;
+
+import Backend.ConexionPostgres;
 import Backend.ThemeManager;
 
 public class PanelVerificarTelefono extends JPanel {
@@ -20,14 +26,16 @@ public class PanelVerificarTelefono extends JPanel {
     private final JButton bRegresar = JB_Regreso();
     
     private final JPanel pInput = new JPanel();
-    private final JLabel lSubTitulo = new JLabel("<html><center>Ingrese su Número Telefónico <br> para recibir un código.</center></html>");
+    private final JLabel lSubTitulo = new JLabel("<html><center>Ingrese su usuario y número telefónico <br> para recibir un código.</center></html>");
+    private final JLabel lInputUsuario = new RoundIconLabel("img\\user.png");
+    private final JTextField tfInputUsuario = TF_Username("V-12345678");
     private final JLabel lInputTelefono = new RoundIconLabel("img\\phone.png");
-    private final JTextField tfInputTelefono = TF_Telefono(" 0414-1234567");
+    private final JTextField tfInputTelefono = TF_Telefono("0414-1234567");
 
     private final JPanel pButton = new JPanel();
     private final JButton bRecibirCodigo = JB_Default("Recibir Código");
-    
 
+    public static int idUsuario;
 
     //region Panel
     public PanelVerificarTelefono() {
@@ -69,10 +77,16 @@ public class PanelVerificarTelefono extends JPanel {
         GBC.gridwidth=1; GBC.weightx=0.0;
 
         GBC.insets = new Insets(6, 48, 8, 8);
-        GBC.gridx=0; GBC.gridy=1; GBC.weighty=0.0; pInput.add(lInputTelefono, GBC);
+        GBC.gridx=0; GBC.gridy=1; GBC.weighty=0.0; pInput.add(lInputUsuario, GBC);
 
         GBC.insets = new Insets(6, 8, 8, 48);
-        GBC.gridx=1; GBC.gridy=1; GBC.weighty=0.0;  pInput.add(tfInputTelefono, GBC);
+        GBC.gridx=1; GBC.gridy=1; GBC.weighty=0.0;  pInput.add(tfInputUsuario, GBC);
+
+        GBC.insets = new Insets(6, 48, 8, 8);
+        GBC.gridx=0; GBC.gridy=2; GBC.weighty=0.0; pInput.add(lInputTelefono, GBC);
+
+        GBC.insets = new Insets(6, 8, 8, 48);
+        GBC.gridx=1; GBC.gridy=2; GBC.weighty=0.0;  pInput.add(tfInputTelefono, GBC);
 
         GBC.gridwidth=1; GBC.weightx=1.0;
 
@@ -99,42 +113,83 @@ public class PanelVerificarTelefono extends JPanel {
     }
 
     private void SetupEvents() {
+        //region Recibir Codigo
         bRecibirCodigo.addActionListener(e -> {
-
+            String usuario = tfInputUsuario.getText().trim().toUpperCase();
             String telefono = tfInputTelefono.getText().trim();
 
-            if (telefono.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Por favor, introduzca su teléfono","Campos Vacíos", JOptionPane.WARNING_MESSAGE);
+            if (usuario.isEmpty() && telefono.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Por favor, introduzca su usuario y teléfono.","Campos Vacíos", JOptionPane.WARNING_MESSAGE);
                 return;
             }
 
-            // VERIFICAR BDD - SI TELEFONO NO EXISTE, RETURN
+            if (usuario.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Por favor, introduzca su usuario.","Campos Vacíos", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
 
-            Container parent = this.getParent();
-            if (parent != null) {
+            if (telefono.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Por favor, introduzca su teléfono.","Campos Vacíos", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            if (!usuario.matches("(?i)^V-[1-9]\\d{0,7}$")){
+                JOptionPane.showMessageDialog(this,"Formato de usuario invalido. \nSiga el siguiente ejemplo: V-12345678","Usuario Inválido", JOptionPane.WARNING_MESSAGE);
+                tfInputUsuario.requestFocusInWindow();
+                return;
+            }
+
+            if (!telefono.matches("^(0414|0424|0412|0416|0426|02\\d{2})-\\d{7}$")){
+                JOptionPane.showMessageDialog(this,"Formato de teléfono invalido. \nSiga el siguiente ejemplo: V-12345678","Usuario Inválido", JOptionPane.WARNING_MESSAGE);
+                tfInputUsuario.requestFocusInWindow();
+                return;
+            }
+
+            String Query = "SELECT id FROM usuarios WHERE cedula = ? AND telefono = ? LIMIT 1";
+            Object Parametros[] = {usuario,telefono};
+            try {
+                ConexionPostgres BDD = new ConexionPostgres();
+                ResultSet RS = BDD.consultar(Query,Parametros);
+
+                ArrayList<Object> TUPLA = new ArrayList<>();
+                while(RS != null && RS.next()){
+                    TUPLA.add(RS.getInt("id"));
+                }
+
+                if(TUPLA.isEmpty()){
+                    JOptionPane.showMessageDialog(this,"Usuario o Teléfono incorrecto.","ERROR",JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                idUsuario = Integer.parseInt(TUPLA.get(0).toString());
+                JOptionPane.showMessageDialog(this,"Datos verificados correctamente.","Verificado",JOptionPane.INFORMATION_MESSAGE);
+
                 JFrame ventanaPadre = (JFrame) SwingUtilities.getWindowAncestor(this);
-                    if (ventanaPadre != null) {
-                        ventanaPadre.remove(this); 
-                        ventanaPadre.add(new PanelCodigoVerificacion());
-                        ventanaPadre.revalidate();
-                        ventanaPadre.repaint();
-                    }
-            } else {
-                System.err.println("Error: El panel actual no está contenido en ningún componente padre.");
+                if (ventanaPadre != null) {
+                    ventanaPadre.remove(this); 
+                    ventanaPadre.add(new PanelCodigoVerificacion());
+                    ventanaPadre.revalidate();
+                    ventanaPadre.repaint();
+                }
+                else {
+                    System.err.println("Error: El panel actual no está contenido en ningún componente padre.");
+                }
+
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(this,ex.getMessage());
+                return;
             }
         });
 
         bRegresar.addActionListener(e -> {
-            Container parent = this.getParent();
-            if (parent != null) {
-                JFrame ventanaPadre = (JFrame) SwingUtilities.getWindowAncestor(this);
-                    if (ventanaPadre != null) {
-                        ventanaPadre.remove(this); 
-                        ventanaPadre.add(new MenuInicioSesion());
-                        ventanaPadre.revalidate();
-                        ventanaPadre.repaint();
-                    }
-            } else {
+            JFrame ventanaPadre = (JFrame) SwingUtilities.getWindowAncestor(this);
+            if (ventanaPadre != null) {
+                ventanaPadre.remove(this); 
+                ventanaPadre.add(new MenuInicioSesion());
+                ventanaPadre.revalidate();
+                ventanaPadre.repaint();
+            }
+            else {
                 System.err.println("Error: El panel actual no está contenido en ningún componente padre.");
             }
         });
@@ -211,6 +266,55 @@ public class PanelVerificarTelefono extends JPanel {
         return JB;
     }
 
+    private JTextField TF_Username(String placeholder) {
+        JTextField TF = new JTextField("") {
+            @Override
+            protected void paintComponent(Graphics g) {
+                // Input - Border Radius
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(getBackground());
+                g2.fillRoundRect(0, 0, getWidth()-1, getHeight()-1, BORDER_RADIUS_PX, BORDER_RADIUS_PX); 
+                g2.dispose();
+                super.paintComponent(g);
+
+                // Placeholder - Campo Vacio o Sin Focus
+                if (getText().isEmpty()) {
+                    Graphics2D gPlaceholder = (Graphics2D) g.create();
+                    gPlaceholder.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                    gPlaceholder.setColor(ThemeManager.COLOR_PLACEHOLDER);
+                    gPlaceholder.setFont(getFont());
+                    
+                    // Calcular centrado vertical basándonos en las fuentes e insets
+                    FontMetrics fm = gPlaceholder.getFontMetrics();
+                    Insets insets = getInsets();
+                    int x = insets.left;
+                    int y = (getHeight() - fm.getHeight()) / 2 + fm.getAscent();
+                    
+                    gPlaceholder.drawString(placeholder, x, y);
+                    gPlaceholder.dispose();
+                }
+            }
+        };
+
+        TF.setPreferredSize(new Dimension(250, 35));
+        TF.setBorder(BorderFactory.createEmptyBorder(6, 12, 6, 12));
+        TF.setOpaque(false);
+        TF.setFont(ThemeManager.TEXT_NORMAL);
+        TF.setBackground(ThemeManager.COLOR_INPUT);
+        TF.setForeground(ThemeManager.COLOR_TEXT_DARK);
+        TF.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
+
+        // Repintar al ganar o perder foco para refrescar el placeholder
+        TF.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusGained(java.awt.event.FocusEvent evt) {TF.repaint(); }
+            @Override
+            public void focusLost(java.awt.event.FocusEvent evt) { TF.repaint(); }
+        });
+
+        return TF;
+    }
 
     private JTextField TF_Telefono(String placeholder) {
         JTextField TF = new JTextField("") {
