@@ -1,3 +1,5 @@
+package Frontend.InicioSesion;
+
 import java.awt.*;
 import java.sql.SQLException;
 

@@ -1,4 +1,5 @@
 package Frontend.ControlDeAcceso;
+
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
@@ -7,19 +8,20 @@ import Backend.ConexionPostgres;
 import Backend.ThemeManager;
 
 import java.awt.*;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.sql.*;
 import java.util.ArrayList;
 
 //region JComponentes
-class JCarnet{
+class JCarnet {
     JLabel Codigo;
     JLabel NumCasa;
     JLabel Calle;
     JLabel Propietario;
     JButton Borrar;
 
-    public JCarnet(String Codigo, String NumCasa, String Calle, String Propietario){
+    public JCarnet(String Codigo, String NumCasa, String Calle, String Propietario, Runnable onRecordDeleted){
         this.Codigo = ThemeManager.Label(Codigo);
         this.NumCasa = ThemeManager.Label(NumCasa);
         this.Calle = ThemeManager.Label(Calle);
@@ -35,8 +37,41 @@ class JCarnet{
         this.Borrar.setFocusPainted(false);
         this.Borrar.setContentAreaFilled(false);
         this.Borrar.setBorderPainted(false);
-        this.Borrar.setForeground(Color.WHITE);
+        this.Borrar.setForeground(ThemeManager.COLOR_TEXT);
         this.Borrar.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+        // Evento de Borrado
+        this.Borrar.addActionListener(e -> {
+            Object OPC[] = {"SÍ","NO"};  
+            int seleccion = JOptionPane.showOptionDialog(null,
+                "¿Seguro que desea eliminar el carnet "+Codigo+"?", 
+                "CONFIRMAR ELIMINACIÓN", 
+                JOptionPane.YES_NO_OPTION, 
+                JOptionPane.WARNING_MESSAGE, 
+                null, OPC, OPC[1]);  
+            
+            if (seleccion == JOptionPane.YES_OPTION) {
+                try {
+                    String Query = "UPDATE carnets SET activo = false WHERE codigo = ?;";
+                    Object Parametros[] = {Codigo};
+                    ConexionPostgres BD = new ConexionPostgres();
+                    BD.comandoDML(Query, Parametros);
+                    
+                    JOptionPane.showMessageDialog(null, "El carnet ha sido removido del sistema.");
+
+                    // Como JCarnet es una parte aislada del Front, al borrar no puedo actualizar la tabla directamente
+                    // El Runnable hace que el evento diaparará una función que desconoce, que podemos decirlo más adelante 
+                    // Ver region Tabla -> instanciando el objeto JCarnet (linea 258 aprox)
+                    if (onRecordDeleted != null) {
+                        onRecordDeleted.run();
+                    }
+
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "Error al eliminar el carnet: " + ex.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
     }
 
     public JPanel toPanel() {
@@ -85,8 +120,8 @@ public class MenuCarnets extends JPanel {
     private JButton bBuscar = ThemeManager.Button("Buscar");
 
     ArrayList<JCarnet> JCarnets = new ArrayList<>();
-
     String[] headers = {"Código", "Número Casa", "Calle", "Propietario", "Opción"};
+
     //endregion
 
     //region Theme
@@ -97,12 +132,11 @@ public class MenuCarnets extends JPanel {
         pFunctions.setOpaque(false);
         pFunctions.setLayout(GBL);
 
-        lAgregarCarnet.setForeground(Color.WHITE);
+        lAgregarCarnet.setForeground(ThemeManager.COLOR_TEXT);
         lAgregarCarnet.setFont(ThemeManager.TEXT_SUBTITLE);
         lAgregarCarnet.setHorizontalAlignment(JLabel.CENTER);
 
         bAgregarCarnet.setPreferredSize(new Dimension(0, 40));
-        
         hr.setForeground(ThemeManager.COLOR_INPUT);
         
         lBusquedaFiltro.setForeground(ThemeManager.COLOR_TEXT);
@@ -110,23 +144,24 @@ public class MenuCarnets extends JPanel {
         lBusquedaFiltro.setHorizontalAlignment(JLabel.CENTER);
         
         pInputCodigo.setOpaque(false);
-        lCodigo.setForeground(Color.WHITE);
+        lCodigo.setForeground(ThemeManager.COLOR_TEXT);
         lCodigo.setFont(ThemeManager.TEXT_NORMAL);
 
         tfCodigo.setBackground(ThemeManager.COLOR_INPUT);
-        tfCodigo.setForeground(ThemeManager.COLOR_TEXT_DARK);
+        tfCodigo.setForeground(ThemeManager.COLOR_TEXT);
         tfCodigo.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         
         pTableHeader.setBackground(ThemeManager.COLOR_PRIMARY); 
         pTableHeader.setPreferredSize(new Dimension(0, 40));
-        
         pTableBody.setBackground(ThemeManager.COLOR_BACKGROUND_DARK);
-
         pTable.setBackground(ThemeManager.COLOR_BACKGROUND_DARK);
+
+        SetEvents();
     }
     //endregion
 
     //region Config
+
     public MenuCarnets(){
         this.setLayout(new BorderLayout(20, 0));
         this.setBorder(new EmptyBorder(20, 20, 20, 20));
@@ -146,7 +181,6 @@ public class MenuCarnets extends JPanel {
         
         pInputCodigo.setLayout(new BorderLayout(10, 0));
         pInputCodigo.add(lCodigo, BorderLayout.WEST);
-        
         pInputCodigo.add(tfCodigo, BorderLayout.CENTER);
         
         GBC.gridy = 4; pFunctions.add(pInputCodigo, GBC);
@@ -159,29 +193,21 @@ public class MenuCarnets extends JPanel {
         pFunctions.add(Box.createGlue(), GBC);
 
         pTable.setLayout(new BorderLayout());
-        
         pTableHeader.setLayout(new GridLayout(1, 5));
         
         for (String h: headers) {
             int alineacion = h.equals("Opción") ? SwingConstants.CENTER : SwingConstants.LEFT;
-            
             JLabel lColumn = new JLabel(h, alineacion);
             lColumn.setForeground(ThemeManager.COLOR_TEXT);
             lColumn.setFont(ThemeManager.TEXT_SUBTITLE);
             
             if (alineacion == SwingConstants.LEFT) lColumn.setBorder(BorderFactory.createEmptyBorder(0, 15, 0, 0));
-            
             pTableHeader.add(lColumn);
         }
         pTable.add(pTableHeader, BorderLayout.NORTH);
-        
         pTableBody.setLayout(GBL);
     
-        try {
-            ActualizarTabla();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        ActualizarTabla("");
         
         JScrollPane scrollPane = new JScrollPane(pTableBody);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
@@ -190,32 +216,48 @@ public class MenuCarnets extends JPanel {
         
         pTable.add(scrollPane, BorderLayout.CENTER);
 
-        // Ensamblaje final en el contenedor principal
         this.add(pFunctions, BorderLayout.WEST);
         this.add(pTable, BorderLayout.CENTER);
-
-        SetTheme();
     }
     //endregion
 
     //region Tabla
-    public void ActualizarTabla() throws SQLException{
-        JCarnets = new ArrayList<>();
+    public void ActualizarTabla() throws SQLException {
+        ActualizarTabla("");
+    }
+
+    public void ActualizarTabla(String filtroCodigo) {
+        JCarnets.clear();
         pTableBody.removeAll();
 
-        String Query = "SELECT codigo,numero_vivienda,calle,CONCAT(nombre,' ',apellido) AS nombre_completo FROM carnets AS C\n"+
-                        "JOIN viviendas AS V ON C.id = V.id\n"+ 
-                        "JOIN representantes AS R ON R.id = V.id ORDER BY codigo ASC;";
+        // Query parametrizada para búsquedas parciales seguras
+        String Query = "SELECT codigo, numero_vivienda, calle, CONCAT(nombre, ' ', apellido) AS nombre_completo " +
+                       "FROM carnets AS C " +
+                       "JOIN viviendas AS V ON C.id_vivienda = V.id " + 
+                       "JOIN representantes AS R ON R.id_vivienda = V.id " +
+                       "WHERE C.activo = true ";
+
+        boolean tieneFiltro = (filtroCodigo != null && !filtroCodigo.trim().isEmpty());
+        if (tieneFiltro) {
+            Query += "AND C.codigo LIKE ? ";
+        }
+        Query += "ORDER BY codigo ASC;";
+
         try {
             ConexionPostgres BDD = new ConexionPostgres();
-            ResultSet RS = BDD.consultar(Query,null);
+            Object[] parametros = tieneFiltro ? new Object[]{"%" + filtroCodigo.trim() + "%"} : null;
+            ResultSet RS = BDD.consultar(Query, parametros);
             
             while(RS != null && RS.next()){
                 String sCodigo = RS.getString("codigo");
                 String sNumeroVivienda = RS.getString("numero_vivienda");
                 String sCalle = RS.getString("calle");
                 String sNombreCompleto = RS.getString("nombre_completo");
-                JCarnets.add(new JCarnet(sCodigo, sNumeroVivienda, sCalle, sNombreCompleto));
+                
+                JCarnets.add(new JCarnet(sCodigo, sNumeroVivienda, sCalle, sNombreCompleto, () -> {
+                    // Aquí definimos que la función que disparará el JCarnet, es el de actualizar la tabla
+                    ActualizarTabla(tfCodigo.getText()); 
+                }));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -226,18 +268,52 @@ public class MenuCarnets extends JPanel {
         
         for(int i=0; i<JCarnets.size(); i++){
             JCarnet actualJCarnets = JCarnets.get(i);
-    
-            int top = (i==0) ? 10 : 5;
-            GBC.gridx = 0; GBC.gridy = i; GBC.weightx = 1; GBC.insets = new Insets(top,10,5,10); pTableBody.add(actualJCarnets.toPanel(),GBC);
+            GBC.gridx = 0; GBC.gridy = i; GBC.weightx = 1; GBC.insets = new Insets((i==0) ? 10 : 5,10,5,10); 
+            pTableBody.add(actualJCarnets.toPanel(), GBC);
         }
         
         GBC.anchor = GridBagConstraints.NORTH; 
         GBC.fill = GridBagConstraints.HORIZONTAL;
         GBC.weightx = 1; GBC.weighty = 1;
-        GBC.gridx = 0; GBC.gridy = 9999; GBC.gridwidth = 2; pTableBody.add(new JLabel(""),GBC);
+        GBC.gridx = 0; GBC.gridy = 9999; GBC.gridwidth = 2; 
+        pTableBody.add(Box.createGlue(), GBC);
         
         pTableBody.revalidate();
         pTableBody.repaint();
+    }
+    //endregion
+
+    //region Eventos
+    public void SetEvents(){
+        bAgregarCarnet.addActionListener(e -> {
+            bAgregarCarnet.setEnabled(false);
+            bBuscar.setEnabled(false);
+            tfCodigo.setEnabled(false);
+
+            JDialog FrameAgregarCarnet = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Sistema Garita - Registrar Carnet", true);
+            FrameAgregarCarnet.setSize(new Dimension(600, 400));
+            FrameAgregarCarnet.setLocationRelativeTo(this);
+            FrameAgregarCarnet.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+
+            FrameAgregarCarnet.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosed(WindowEvent e) {
+                    bAgregarCarnet.setEnabled(true);
+                    bBuscar.setEnabled(true);
+                    tfCodigo.setEnabled(true);
+                    
+                    ActualizarTabla(tfCodigo.getText());
+                }
+            });
+
+            FrameAgregarCarnet.add(new FrameAgregarCarnet());
+            FrameAgregarCarnet.setVisible(true);
+        });
+
+        // Evento para el botón de Búsqueda
+        bBuscar.addActionListener(e -> {
+            ActualizarTabla(tfCodigo.getText());
+        });
     }
     //endregion
 }
