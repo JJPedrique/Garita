@@ -6,7 +6,7 @@ import Frontend.Cuotas.MenuCuotas;
 
 public class App {
     
-    static int WIDTH=500,HEIGHT=550;
+    static int WIDTH=1600,HEIGHT=900;
 
     public static void main(String[] args) throws Exception {
         JFrame window = new JFrame("Sistema Garita");
