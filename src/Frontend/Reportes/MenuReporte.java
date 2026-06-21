@@ -10,7 +10,7 @@ import org.openpdf.text.pdf.*;
 import javax.swing.table.DefaultTableModel;
 
 import Backend.*;
-import Backend.DataInputs.*;
+import Frontend.Reportes.DataInputs.*;
 
 
 public class MenuReporte extends JPanel {
