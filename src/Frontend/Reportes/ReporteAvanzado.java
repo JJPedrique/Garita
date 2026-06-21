@@ -161,6 +161,7 @@ public class ReporteAvanzado extends JPanel {
         });
 
         ChangeModule("Vivienda");
+        SearchSQL();
     }
 
     JPanel Preview(){
@@ -446,44 +447,38 @@ public class ReporteAvanzado extends JPanel {
 //#endregion
 
 //#region EXPORTAR PDF
-    public static void ImprimirPDF() {
+    public void ImprimirPDF() {
         // 1. Crear el objeto Documento
         Document documento = new Document();        
-        
         try {
-            String rutaHome = System.getProperty("user.home");
-
-            // 2. Construir la ruta apuntando a la carpeta de Descargas (Downloads)
-            // Usamos File.separator para que funcione tanto en Windows (\) como en Linux/Mac (/)
-            String rutaDescargas = rutaHome + java.io.File.separator + "Downloads" + java.io.File.separator + "Reporte_Productos.pdf";
-
-            // 3. Vincular el documento con la nueva ruta
+            String rutaDescargas = System.getProperty("user.home") + 
+                                java.io.File.separator + "Downloads" + java.io.File.separator + 
+                                "Reporte Garita -"+ Modulos.getSelectedItem().toString()+".pdf";
             PdfWriter.getInstance(documento, new FileOutputStream(rutaDescargas));
-
-            // 2. Vincular el documento con un archivo físico mediante PdfWriter
-            PdfWriter.getInstance(documento, new FileOutputStream("Reporte_Productos.pdf"));
-
-            // 3. Abrir el documento para comenzar a escribir
             documento.open();
 
-            // 4. Agregar un título principal
-            Paragraph titulo = new Paragraph("Reporte de Inventario");
+            Paragraph titulo = new Paragraph("Reporte Garita -"+ Modulos.getSelectedItem().toString());
             //titulo.setAlignment(Element.ALIGN_CENTER);
-            titulo.setSpacingAfter(20); // Margen inferior antes de la tabla
+            titulo.setSpacingAfter(20);
             documento.add(titulo);
 
-            // 5. Crear una tabla de 3 columnas
-            // Puedes definir el ancho proporcional de cada columna en un arreglo
-            float[] anchosColumnas = {1f, 3f, 2f}; // ID (estrecha), Nombre (ancha), Precio (mediana)
+            float[] anchosColumnas = new float[DATA.getColumnCount()];
+            for (int i = 0; i < DATA.getColumnCount(); i++) {anchosColumnas[i] = 1f;}
             PdfPTable tabla = new PdfPTable(anchosColumnas);
             tabla.setWidthPercentage(100); // Que ocupe el 100% del ancho de la página
 
-            // 6. Definir fuentes para el contenido
-            //Font fuenteHeader = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12, Color.WHITE);
-            //Font fuenteCuerpo = FontFactory.getFont(FontFactory.HELVETICA, 10, Color.BLACK);
+            String[] encabezados = new String[DATA.getColumnCount()];
+            for (int i = 0; i < DATA.getColumnCount(); i++) {encabezados[i] = DATA.getColumnName(i);}
+            
+        
+            String[][] datos = new String[DATA.getRowCount()][DATA.getColumnCount()];  
+            for (int i = 0; i < DATA.getRowCount(); i++) {
+                for (int j = 0; j < DATA.getColumnCount(); j++) {
+                    Object valor = DATA.getValueAt(i, j);
+                    datos[i][j] = (valor != null) ? valor.toString() : "";
+                }
+            }           
 
-            // 7. Crear los Encabezados (Headers) de la tabla
-            String[] encabezados = {"ID", "Producto", "Precio Unitario"};
             for (String textoHeader : encabezados) {
                 PdfPCell celdaHeader = new PdfPCell(new Phrase(textoHeader));
                 celdaHeader.setBackgroundColor(new Color(41, 128, 185)); // Color de fondo azul
@@ -492,43 +487,21 @@ public class ReporteAvanzado extends JPanel {
                 tabla.addCell(celdaHeader);
             }
 
-            // 8. Agregar datos ficticios a la tabla (Filas)
-            String[][] datos = {
-                {"001", "Teclado Mecánico RGB", "$85.00"},
-                {"002", "Mouse Óptico Inalámbrico", "$45.00"},
-                {"003", "Monitor 24' IPS 144Hz", "$199.99"},
-                {"004", "Auriculares Gamer con Micrófono", "$60.50"}
-            };
-
             for (String[] fila : datos) {
-                // Celda ID (Alineada al centro)
-                PdfPCell celdaId = new PdfPCell(new Phrase(fila[0]));
-                //celdaId.setHorizontalAlignment(Element.ALIGN_CENTER);
-                celdaId.setPadding(6);
-                tabla.addCell(celdaId);
-
-                // Celda Nombre (Alineada a la izquierda)
-                PdfPCell celdaNombre = new PdfPCell(new Phrase(fila[1]));
-                //celdaNombre.setHorizontalAlignment(Element.ALIGN_LEFT);
-                celdaNombre.setPadding(6);
-                tabla.addCell(celdaNombre);
-
-                // Celda Precio (Alineada a la derecha)
-                PdfPCell celdaPrecio = new PdfPCell(new Phrase(fila[2]));
-                //celdaPrecio.setHorizontalAlignment(Element.ALIGN_RIGHT);
-                celdaPrecio.setPadding(6);
-                tabla.addCell(celdaPrecio);
+                for(String columns : fila){
+                    PdfPCell newCelda = new PdfPCell(new Phrase(columns));
+                    //newCelda.setHorizontalAlignment(Element.ALIGN_CENTER);
+                    newCelda.setPadding(6);
+                    tabla.addCell(newCelda);
+                }
             }
-
-            // 9. Añadir la tabla estructurada al documento
+               
             documento.add(tabla);
-
             System.out.println("¡PDF creado con éxito con OpenPDF!");
 
         } catch (DocumentException | FileNotFoundException e) {
             e.printStackTrace();
         } finally {
-            // 10. Cerrar SIEMPRE el documento para liberar el archivo
             if (documento.isOpen()) {
                 documento.close();
             }
