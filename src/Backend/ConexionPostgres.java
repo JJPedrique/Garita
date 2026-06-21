@@ -141,68 +141,41 @@ public class ConexionPostgres {
 
     public static void restoreDatabase() {
         try {
-            try {
-                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            } catch (Exception e) {
-                System.out.println("No se pudo cargar el aspecto nativo de Windows.");
-            }
+            try {UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            } catch (Exception e) {System.out.println("No se pudo cargar el aspecto nativo de Windows.");}
 
-            // 1. Configurar y abrir el explorador de archivos (JFileChooser)
             JFileChooser selector = new JFileChooser();
-            // CORRECCIÓN: Modificado el título del diálogo
             selector.setDialogTitle("Seleccione el archivo de respaldo (.backup)");
-            
-            // CORRECCIÓN: Ahora el filtro busca archivos .backup reales
             FileNameExtensionFilter filtro = new FileNameExtensionFilter("Respaldos Postgres (*.backup)", "backup");
             selector.setFileFilter(filtro);
-            
-            // Abrir por defecto en la carpeta de Descargas del usuario
             String rutaUsuario = System.getProperty("user.home");
             selector.setCurrentDirectory(new File(rutaUsuario, "Downloads"));
 
-            // Mostrar el explorador
             int resultado = selector.showOpenDialog(null);
+            if (resultado != JFileChooser.APPROVE_OPTION) {System.out.println("Restauración cancelada por el usuario.");return;}
+            File archivoSeleccionado = selector.getSelectedFile();
+    
+            ProcessBuilder pb = new ProcessBuilder(
+                "pg_restore", 
+                "-h", "localhost", 
+                "-U", "postgres", 
+                "--clean",             
+                "-d", "Garita", 
+                archivoSeleccionado.getAbsolutePath()      
+            );
 
-            // 2. Si el usuario selecciona un archivo y presiona "Abrir"
-            if (resultado == JFileChooser.APPROVE_OPTION) {
-                File archivoSeleccionado = selector.getSelectedFile();
-                
-                // Obtenemos la ruta absoluta del archivo y el directorio donde se encuentra
-                String rutaArchivoBackup = archivoSeleccionado.getAbsolutePath();
-                File directorioArchivo = archivoSeleccionado.getParentFile();
+            Map<String, String> entorno = pb.environment();
+            entorno.put("PGPASSWORD", PASSWORD);
+            pb.inheritIO(); 
+            Process proceso = pb.start();
+            int codigoSalida = proceso.waitFor();
 
-                // 3. Configurar el ProcessBuilder con el archivo dinámico
-                // Aquí el uso de pg_restore y --clean es 100% correcto porque el archivo ahora sí es binario
-                ProcessBuilder pb = new ProcessBuilder(
-                    "pg_restore", 
-                    "-h", "localhost", 
-                    "-U", "postgres", 
-                    "--clean",             
-                    "-d", "Garita", 
-                    rutaArchivoBackup      
-                );
-
-                // Establecemos el directorio de trabajo donde está el archivo
-                pb.directory(directorioArchivo);
-
-                // Configurar la contraseña de PostgreSQL
-                Map<String, String> entorno = pb.environment();
-                entorno.put("PGPASSWORD", PASSWORD);
-
-                pb.inheritIO(); 
-
-                System.out.println("Iniciando restauración desde el archivo: " + rutaArchivoBackup);
-                Process proceso = pb.start();
-                int codigoSalida = proceso.waitFor();
-
-                if (codigoSalida == 0) {
-                    System.out.println("¡Base de datos restaurada con éxito desde el archivo seleccionado!");
-                } else {
-                    System.out.println("Hubo un error al restaurar. Código de salida: " + codigoSalida);
-                }
+            if (codigoSalida == 0) {
+                System.out.println("¡Base de datos restaurada con éxito desde el archivo seleccionado!");
             } else {
-                System.out.println("Restauración cancelada por el usuario.");
+                System.out.println("Hubo un error al restaurar. Código de salida: " + codigoSalida);
             }
+        
 
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();

@@ -60,7 +60,7 @@ public class SubMenuUsuarios extends JPanel {
         AddUser.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JDialog AddUser =  new FrameAgregarUsuario();
+                new FrameAgregarUsuario();
             }
         });
 

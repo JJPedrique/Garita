@@ -16,7 +16,7 @@ public class SubMenuGestionDeRespaldos extends JPanel {
         this.setLayout(new GridBagLayout());
         GridBagConstraints gbc= new GridBagConstraints();
         gbc.gridx=0; gbc.gridy=0;
-        gbc.fill = gbc.HORIZONTAL;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx =0;
         gbc.insets = new Insets(10,10,10,10);
 
