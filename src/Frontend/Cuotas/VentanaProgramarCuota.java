@@ -126,7 +126,7 @@ public class VentanaProgramarCuota extends JDialog {
         gbc.gridy = 5; gbc.gridx = 0; gbc.gridwidth = 3;
         gbc.insets = new Insets(20, 8, 8, 8);
         
-        JButton btnGuardar = new JButton("Agregar/Actualizar Cuota");
+        JButton btnGuardar = new JButton("Agregar Cuota");
         btnGuardar.setFont(ThemeManager.TEXT_SUBTITLE);
         btnGuardar.setForeground(ThemeManager.COLOR_TEXT);
         btnGuardar.setBackground(ThemeManager.COLOR_PRIMARY);
@@ -179,7 +179,7 @@ public class VentanaProgramarCuota extends JDialog {
                 Double.parseDouble(montoStr),   
                 tsEmision,                     
                 tsLimite,                       
-                true                            
+                false                            
             };
 
         try {
