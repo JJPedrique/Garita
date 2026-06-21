@@ -11,7 +11,6 @@ import Frontend.Bitacora.MenuBitacora;
 import Frontend.ControlDeAcceso.MenuControlDeAcceso;
 import Frontend.Cuotas.MenuCuotas;
 import Frontend.Mantenimiento.MenuMantenimiento;
-import Frontend.Reportes.ReporteAvanzado;
 import Frontend.Reportes.MenuReporte;
 import Frontend.Residencia.MenuResidencia;
 
@@ -27,7 +26,7 @@ public class MenuPrincipal extends JPanel {
         Main.add("Residencia", new MenuResidencia());
         Main.add("ControlDeAcceso", new MenuControlDeAcceso());
         Main.add("Cuotas", new MenuCuotas());
-        Main.add("Reportes", new ReporteAvanzado());
+        Main.add("Reportes", new MenuReporte());
         Main.add("Bitacora", new MenuBitacora());
         Main.add("Mantenimiento", new MenuMantenimiento());
         
@@ -60,31 +59,8 @@ public class MenuPrincipal extends JPanel {
         return newPanel;
     }
 
-    JButton BTN(String texto){
-        JButton btn = new JButton(texto);
-        btn.setMaximumSize(new Dimension(175, 40));
-        btn.setForeground(ThemeManager.COLOR_TEXT);
-        btn.setBackground(ThemeManager.COLOR_PRIMARY);
-        btn.setFont(ThemeManager.TEXT_SUBTITLE);
-        btn.setFocusPainted(false);
-        btn.setBorderPainted(false);
-        btn.setAlignmentX(Component.CENTER_ALIGNMENT);
-        btn.setHorizontalAlignment(SwingConstants.LEFT);
-
-        btn.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                btn.setBackground(ThemeManager.COLOR_SECONDARY);
-            }
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                btn.setBackground(ThemeManager.COLOR_PRIMARY);
-            }
-        });
-
-        return btn;
-    }
-
     JButton SidebarButton(String texto, final String nombreVista) {
-        JButton btn = BTN(texto);
+        JButton btn = ThemeManager.SideBarButton(texto);
 
         btn.addActionListener(new ActionListener() {
             @Override
@@ -97,7 +73,7 @@ public class MenuPrincipal extends JPanel {
     }
 
    JButton HelpButton() {
-        JButton btn = BTN("Ayuda");
+        JButton btn = ThemeManager.SideBarButton("Ayuda");
 
         btn.addActionListener(new ActionListener() {
             @Override
@@ -119,7 +95,7 @@ public class MenuPrincipal extends JPanel {
     }
 
    JButton ExitButton() {
-        JButton btn = BTN("Salir");
+        JButton btn = ThemeManager.SideBarButton("Salir");
 
         btn.addActionListener(new ActionListener() {
             @Override

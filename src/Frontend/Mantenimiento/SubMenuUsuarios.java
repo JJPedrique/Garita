@@ -40,14 +40,14 @@ public class SubMenuUsuarios extends JPanel {
     }
 
     JPanel Preview(){
-        JPanel newPanel = new JPanel(new BorderLayout());
-        newPanel.add(new JScrollPane(new JTable(DATA)),BorderLayout.CENTER);
+        JPanel newPanel = ThemeManager.Panel(new BorderLayout());
+        newPanel.add(ThemeManager.ScrollPanel(ThemeManager.Table(DATA)),BorderLayout.CENTER);
         return newPanel;
     } 
 
+
     JPanel Filtros(){
-        JPanel newPanel =  new JPanel(new GridBagLayout());
-        newPanel.setBackground(ThemeManager.COLOR_BACKGROUND_LIGHT);
+        JPanel newPanel = ThemeManager.Panel(new GridBagLayout());
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridy=0;gbc.gridx=0;gbc.weightx=1;
@@ -55,72 +55,38 @@ public class SubMenuUsuarios extends JPanel {
         gbc.insets = new Insets(5,5,5,5);
         gbc.gridwidth=2;
 
-        JButton AddUser = new JButton("Agregar Nuevo Usuario");
-        AddUser.setFont(ThemeManager.TEXT_NORMAL);
-        AddUser.setForeground(ThemeManager.COLOR_TEXT);
-        AddUser.setBackground(ThemeManager.COLOR_PRIMARY);
-        AddUser.setFont(ThemeManager.TEXT_SUBTITLE);
+        JButton AddUser = ThemeManager.Button("Agregar Nuevo Usuario");
         newPanel.add(AddUser,gbc);
-
         AddUser.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                System.out.println();
-            }
-        });
-        AddUser.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                AddUser.setBackground(ThemeManager.COLOR_SECONDARY);
-            }
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                AddUser.setBackground(ThemeManager.COLOR_PRIMARY);
+                JDialog AddUser =  new FrameAgregarUsuario();
             }
         });
 
         gbc.gridy=1;
-        JLabel Filtros = new JLabel("Busqueda y Filtros"); 
-        Filtros.setForeground(ThemeManager.COLOR_TEXT);       
-        Filtros.setFont(ThemeManager.TEXT_SUBTITLE);
+        JLabel Filtros = ThemeManager.Label("Busqueda y Filtros"); 
         newPanel.add(Filtros,gbc);
 
         gbc.gridwidth=1;gbc.gridy=2;gbc.weightx=0;
-
-        JLabel Nombre = new JLabel("Nombre");   
-        Nombre.setForeground(ThemeManager.COLOR_TEXT);     
-        Nombre.setFont(ThemeManager.TEXT_NORMAL);
+        JLabel Nombre = ThemeManager.Label("Nombre");   
         newPanel.add(Nombre,gbc);
         
         gbc.gridx=1;gbc.weightx=1;
-        inputNombre =  new JTextField();
-        inputNombre.setFont(ThemeManager.TEXT_NORMAL);
-        inputNombre.setForeground(ThemeManager.COLOR_TEXT);
-        inputNombre.setBackground(ThemeManager.COLOR_BACKGROUND);
+        inputNombre =  ThemeManager.Textfield();
         newPanel.add(inputNombre,gbc);
 
-
         gbc.gridy=3;gbc.gridx=0;gbc.weightx=0;
-        JLabel Cedula = new JLabel("Cedula");  
-        Cedula.setForeground(ThemeManager.COLOR_TEXT);      
-        Cedula.setFont(ThemeManager.TEXT_NORMAL);
+        JLabel Cedula = ThemeManager.Label("Cedula");  
         newPanel.add(Cedula,gbc);
 
         gbc.gridx=1;gbc.weightx=1;
-        inputCedula =  new JTextField();
-        inputCedula.setFont(ThemeManager.TEXT_NORMAL);
-        inputCedula.setForeground(ThemeManager.COLOR_TEXT);
-        inputCedula.setBackground(ThemeManager.COLOR_BACKGROUND);
+        inputCedula =  ThemeManager.Textfield();
         newPanel.add(inputCedula,gbc);
 
-
-
         gbc.gridwidth=2;gbc.gridy=4;gbc.gridx=0;  
-        JButton Buscar = new JButton("Buscar");
-        Buscar.setFont(ThemeManager.TEXT_NORMAL);
-        Buscar.setForeground(ThemeManager.COLOR_TEXT);
-        Buscar.setBackground(ThemeManager.COLOR_PRIMARY);
-        Buscar.setFont(ThemeManager.TEXT_SUBTITLE);
+        JButton Buscar = ThemeManager.Button("Buscar");
         newPanel.add(Buscar,gbc);
-
         Buscar.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -128,20 +94,10 @@ public class SubMenuUsuarios extends JPanel {
                 Search();
             }
         });
-        Buscar.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                Buscar.setBackground(ThemeManager.COLOR_SECONDARY);
-            }
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                Buscar.setBackground(ThemeManager.COLOR_PRIMARY);
-            }
-        });
 
         gbc.gridy=5;gbc.fill=GridBagConstraints.BOTH;gbc.weighty=1;
         JLabel empty = new JLabel();
         newPanel.add(empty,gbc);
-
-
         return newPanel;
     }
 
@@ -169,7 +125,7 @@ public class SubMenuUsuarios extends JPanel {
             else{ MAIN_QUERY += " WHERE Cedula IS LIKE \"" + strCedula + "\"";}
         }
 
-        System.out.println(MAIN_QUERY);
+        //System.out.println(MAIN_QUERY);
 
         DATA.setDataVector(new String[][]{}, new String[]{"Nombre Completo", "Cedula", "telefono","Opciones"});
         this.repaint();

@@ -45,6 +45,18 @@ public class ThemeManager {
         return newButton;
     }
 
+    public static JButton SideBarButton(String texto){
+        JButton btn = ThemeManager.Button(texto);
+        btn.setMaximumSize(new Dimension(175, 40));
+        btn.setFont(ThemeManager.TEXT_SUBTITLE);
+        btn.setFocusPainted(false);
+        btn.setBorderPainted(false);
+        btn.setAlignmentX(Component.CENTER_ALIGNMENT);
+        btn.setHorizontalAlignment(SwingConstants.LEFT);
+        return btn;
+    }
+
+
     public static JLabel Label(String text){
         JLabel newLabel = new JLabel(text);
         newLabel.setFont(TEXT_NORMAL);
