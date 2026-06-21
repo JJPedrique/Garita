@@ -4,7 +4,10 @@ import javax.swing.*;
 import Frontend.MenuPrincipal;
 
 public class App {
+<<<<<<< Updated upstream
     
+=======
+>>>>>>> Stashed changes
     static int WIDTH=1600,HEIGHT=900;
 
     public static void main(String[] args) throws Exception {

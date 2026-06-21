@@ -15,7 +15,7 @@ public class MenuResidencia extends JPanel {
 
         JTabbedPane TabMenu = new JTabbedPane();
         TabMenu.add("Vivienda",new MenuVivienda());
-        TabMenu.add("Representante",new MenuRepresentante());       
+        TabMenu.add("Representantes",new MenuRepresentante());       
         this.add(TabMenu, BorderLayout.CENTER);
         
         TabMenu.setFont(ThemeManager.TEXT_NORMAL);
