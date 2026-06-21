@@ -1,5 +1,4 @@
 import java.awt.*;
-import java.io.File;
 import java.sql.SQLException;
 
 import javax.swing.*;
@@ -8,9 +7,6 @@ import Backend.ConexionPostgres;
 import Backend.ThemeManager;
 
 public class PanelRestaurarClave extends JPanel{
-    private final int BORDER_RADIUS_PX = 16;
-    private final int ICON_WIDTH_PX = 24;
-    private final int ICON_HEIGHT_PX = 24;
     
     //region Componentes
     private final GridBagLayout GBL = new GridBagLayout();
@@ -19,7 +15,7 @@ public class PanelRestaurarClave extends JPanel{
     private final JPanel pHeader = new JPanel();
     private final JLabel lHeaderTitle= new JLabel("Restaurar Clave");
     
-    private final Icon iconRegreso = SetImgIcon("img\\go_back.png", ICON_WIDTH_PX*2, ICON_HEIGHT_PX*2);
+    private final Icon iconRegreso = ThemeManager.SetImgIcon("img\\go_back.png", ThemeManager.ICON_WIDTH_PX*2, ThemeManager.ICON_HEIGHT_PX*2);
     private final JButton bRegresar = JB_Regreso();
 
     private final JPanel pInput = new JPanel();
@@ -34,8 +30,8 @@ public class PanelRestaurarClave extends JPanel{
     private final JPasswordField pfConfirmarClave = PF_Password("********");
     private final JToggleButton tbMostrarClave2 = TGB_ShowPassword();
 
-    private Icon iconShowPW = SetImgIcon("img\\show_pw.png", ICON_WIDTH_PX, ICON_HEIGHT_PX);
-    private Icon iconHidePW = SetImgIcon("img\\hide_pw.png", ICON_WIDTH_PX, ICON_HEIGHT_PX);
+    private Icon iconShowPW = ThemeManager.SetImgIcon("img\\show_pw.png", ThemeManager.ICON_WIDTH_PX, ThemeManager.ICON_HEIGHT_PX);
+    private Icon iconHidePW = ThemeManager.SetImgIcon("img\\hide_pw.png", ThemeManager.ICON_WIDTH_PX, ThemeManager.ICON_HEIGHT_PX);
 
     private final JPanel pButton = new JPanel();
     private final JButton bRestaurar = JB_Default("Restaurar");
@@ -202,20 +198,6 @@ public class PanelRestaurarClave extends JPanel{
         });
     }
 
-    private ImageIcon SetImgIcon(String resourcePath, int width, int height) {
-        try {
-            File file = new File(resourcePath);
-            if (file.exists()) {
-                ImageIcon originalIcon = new ImageIcon(file.getAbsolutePath());
-                Image scaledImg = originalIcon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH);
-                return new ImageIcon(scaledImg);
-            }
-        } catch (Exception e) {
-            System.err.println("Error al procesar el icono " + resourcePath + ": " + e.getMessage());
-        }
-        return null;
-    }
-
     private JButton JB_Default(String texto) {
         JButton JB = new JButton(texto) {
             @Override
@@ -223,7 +205,7 @@ public class PanelRestaurarClave extends JPanel{
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g2.setColor(getBackground());
-                g2.fillRoundRect(0, 0, getWidth(), getHeight(), BORDER_RADIUS_PX, BORDER_RADIUS_PX);
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), ThemeManager.BORDER_RADIUS_PX, ThemeManager.BORDER_RADIUS_PX);
                 g2.dispose();
                 super.paintComponent(g);
             }
@@ -286,7 +268,7 @@ public class PanelRestaurarClave extends JPanel{
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g2.setColor(getBackground());
-                g2.fillRoundRect(0, 0, getWidth()-1 , getHeight()-1, BORDER_RADIUS_PX, BORDER_RADIUS_PX);
+                g2.fillRoundRect(0, 0, getWidth()-1 , getHeight()-1, ThemeManager.BORDER_RADIUS_PX, ThemeManager.BORDER_RADIUS_PX);
                 g2.dispose();
                 super.paintComponent(g);
 
@@ -335,7 +317,7 @@ public class PanelRestaurarClave extends JPanel{
             setMinimumSize(new Dimension(35, 35));
             setMaximumSize(new Dimension(35, 35));
 
-            ImageIcon imgIcon = SetImgIcon(iconPath, ICON_WIDTH_PX, ICON_HEIGHT_PX);
+            ImageIcon imgIcon = ThemeManager.SetImgIcon(iconPath, ThemeManager.ICON_WIDTH_PX, ThemeManager.ICON_HEIGHT_PX);
             if (imgIcon != null) this.customIcon = imgIcon;
         }
 
