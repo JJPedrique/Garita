@@ -1,3 +1,5 @@
+package Frontend.InicioSesion;
+
 import java.awt.*;
 import javax.swing.*;
 import Backend.ThemeManager;

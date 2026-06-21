@@ -1,3 +1,5 @@
+package Frontend.InicioSesion;
+
 import java.awt.*;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -183,8 +185,8 @@ public class MenuInicioSesion extends JPanel {
                     ventanaPadre.remove(this);
                     ventanaPadre.dispose();
                     JFrame window = new JFrame("Sistema Garita - Menú Principal");
-                    window.setSize(App.WIDTH,App.HEIGHT);
-                    window.setMinimumSize(new Dimension(App.WIDTH,App.HEIGHT));
+                    window.setSize(1600,900);
+                    window.setMinimumSize(new Dimension(1600,900));
                     window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                     window.add(new MenuPrincipal());
                     window.setVisible(true);

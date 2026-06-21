@@ -116,4 +116,56 @@ public class ThemeManager {
         }
         return null;
     }
+
+    public static void MostrarMensajeError(JPanel JP, String msg) {
+        JDialog customDialog = new JDialog((Window) SwingUtilities.getWindowAncestor(JP), "Sistema Garita - ERROR", Dialog.ModalityType.APPLICATION_MODAL);
+        configurarDialogMensaje(JP, customDialog, msg, new Color(200, 50, 50), "X");
+    }
+
+    public static void MostrarMensajeExito(JPanel JP, String msg) {
+        JDialog customDialog = new JDialog((Window) SwingUtilities.getWindowAncestor(JP), "Sistema Garita - EXITO", Dialog.ModalityType.APPLICATION_MODAL);
+        configurarDialogMensaje(JP, customDialog, msg, new Color(70, 140, 35), "i");
+    }
+    
+    public static void configurarDialogMensaje(JPanel JP, JDialog dialog, String msg, Color bgButton, String iconChar) {
+        dialog.setSize(400, 180);
+        dialog.setLocationRelativeTo(JP);
+        
+        JPanel pRoot = new JPanel(new GridBagLayout());
+        pRoot.setBackground(ThemeManager.COLOR_BACKGROUND_DARK);
+        GridBagConstraints c = new GridBagConstraints();
+        
+        JLabel lIcon = new JLabel(iconChar, SwingConstants.CENTER) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(bgButton);
+                g2.fillOval(0, 0, getWidth()-1, getHeight()-1);
+                g2.dispose();
+                super.paintComponent(g);
+            }
+        };
+        lIcon.setPreferredSize(new Dimension(40, 40));
+        lIcon.setForeground(ThemeManager.COLOR_TEXT);
+        lIcon.setFont(ThemeManager.TEXT_SUBTITLE);
+
+        JLabel lMsg = new JLabel(msg);
+        lMsg.setForeground(Color.WHITE);
+        lMsg.setFont(ThemeManager.TEXT_NORMAL);
+
+        JButton btnAceptar = ThemeManager.Button("Aceptar");
+        btnAceptar.setBackground(bgButton);
+        btnAceptar.setPreferredSize(new Dimension(120, 35));
+        btnAceptar.addActionListener(e -> dialog.dispose());
+
+        c.insets = new Insets(15, 20, 10, 10);
+        c.gridx = 0; c.gridy = 0; pRoot.add(lIcon, c);
+        c.gridx = 1; c.weightx = 1.0; c.fill = GridBagConstraints.HORIZONTAL; pRoot.add(lMsg, c);
+        c.gridx = 0; c.gridy = 1; c.gridwidth = 2; c.fill = GridBagConstraints.NONE;
+        c.insets = new Insets(10, 20, 20, 20); pRoot.add(btnAceptar, c);
+
+        dialog.add(pRoot);
+        dialog.setVisible(true);
+    }
 }
