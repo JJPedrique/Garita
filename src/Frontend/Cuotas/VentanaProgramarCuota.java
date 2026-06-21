@@ -29,7 +29,7 @@ public class VentanaProgramarCuota extends JDialog {
     
 
     public VentanaProgramarCuota(JFrame framePadre, MenuCuotas menuPadre) {
-        super(framePadre, "Sistema Garita - Agregar/Actualizar Cuota", true); 
+        super(framePadre, "Sistema Garita - Agregar Cuota", true); 
         this.menuPadre = menuPadre;
         
         setResizable(false);
@@ -46,7 +46,7 @@ public class VentanaProgramarCuota extends JDialog {
         // --- FILA 0: TÍTULO EN BARRA VERDE ---
         JPanel panelTitulo = new JPanel(new BorderLayout());
         panelTitulo.setBackground(ThemeManager.COLOR_BACKGROUND);
-        JLabel lblTitulo = new JLabel("  AGREGAR/ACTUALIZAR CUOTA", SwingConstants.LEFT);
+        JLabel lblTitulo = new JLabel("  AGREGAR CUOTA", SwingConstants.LEFT);
         lblTitulo.setFont(ThemeManager.TEXT_SUBTITLE);
         lblTitulo.setForeground(ThemeManager.COLOR_TEXT);
         lblTitulo.setPreferredSize(new Dimension(400, 40));
@@ -154,14 +154,7 @@ public class VentanaProgramarCuota extends JDialog {
                 JOptionPane.showMessageDialog(this, "Monto inválido.", "Sistema Garita - ERROR X", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            /*
-            String descripcionCompleta = "Cuota " + cbMes.getSelectedItem() + " " + cbAnio.getSelectedItem() + ".";
-            double montoNumerico = Double.parseDouble(montoStr);
-            
-            // Aquí puedes ejecutar tu inserción a la base de datos usando 'menuPadre.DB' si es pública,
-            // o crear una nueva instancia de tu clase de conexión.
-            System.out.println("Guardando: " + descripcionCompleta + " con Monto: " + montoNumerico);
-            */
+
             java.util.Calendar calEmision = java.util.Calendar.getInstance();
             calEmision.setTime(jdcDesde.getDate());
             java.util.Calendar horaEmision = java.util.Calendar.getInstance();
@@ -212,6 +205,6 @@ public class VentanaProgramarCuota extends JDialog {
 
         setContentPane(panelPrincipal);
         pack();
-        setLocationRelativeTo(framePadre); // La centra con respecto a la app principal
+        setLocationRelativeTo(framePadre); 
     }
 }
