@@ -1,5 +1,7 @@
 package Backend;
 import java.awt.*;
+import java.io.File;
+
 import javax.swing.*;
 import javax.swing.table.TableModel;
 
@@ -9,7 +11,7 @@ public class ThemeManager {
     public static final Color COLOR_BACKGROUND_LIGHT = Color.decode("#2D2D2D");
     public static final Color COLOR_PRIMARY          = Color.decode("#428b13");
     public static final Color COLOR_SECONDARY        = Color.decode("#6ab848");
-    public static final Color COLOR_ERROR            = Color.decode("#FF4D4D");
+    public static final Color COLOR_ERROR            = Color.decode("#FF3131");
     public static final Color COLOR_WARNING          = Color.decode("#FFC107");
     public static final Color COLOR_INFO             = Color.decode("#4B0082");
     public static final Color COLOR_TEXT             = Color.decode("#FFFFFF");
@@ -22,6 +24,10 @@ public class ThemeManager {
     public static final Font TEXT_SUBTITLE           = new Font("Verdana", Font.BOLD, 16);
     public static final Font TEXT_NORMAL             = new Font("Verdana", Font.PLAIN, 12);
     public static final Font TEXT_SMALL              = new Font("Verdana", Font.PLAIN, 10);
+
+    public static final int BORDER_RADIUS_PX = 16;
+    public static final int ICON_WIDTH_PX = 24;
+    public static final int ICON_HEIGHT_PX = 24;
 
     public static JButton Button(String text){
         JButton newButton = new JButton(text);
@@ -83,5 +89,19 @@ public class ThemeManager {
         newTable.setBackground(COLOR_BACKGROUND);
         newTable.setFont(TEXT_NORMAL);
         return newTable;
+    }
+
+    public static ImageIcon SetImgIcon(String resourcePath, int width, int height) {
+        try {
+            File file = new File(resourcePath);
+            if (file.exists()) {
+                ImageIcon originalIcon = new ImageIcon(file.getAbsolutePath());
+                Image scaledImg = originalIcon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH);
+                return new ImageIcon(scaledImg);
+            }
+        } catch (Exception e) {
+            System.err.println("Error al procesar el icono " + resourcePath + ": " + e.getMessage());
+        }
+        return null;
     }
 }

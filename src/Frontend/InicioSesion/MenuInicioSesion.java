@@ -1,5 +1,4 @@
 import java.awt.*;
-import java.io.File;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -8,12 +7,9 @@ import javax.swing.*;
 
 import Backend.ConexionPostgres;
 import Backend.ThemeManager;
+import Frontend.MenuPrincipal;
 
 public class MenuInicioSesion extends JPanel {
-    
-    private final int BORDER_RADIUS_PX = 16;
-    private final int ICON_WIDTH_PX = 24;
-    private final int ICON_HEIGHT_PX = 24;
     
     //region Componentes
     private final GridBagLayout GBL = new GridBagLayout();
@@ -29,14 +25,15 @@ public class MenuInicioSesion extends JPanel {
     private final JLabel lInputClave = new RoundIconLabel("img\\key.png");
     private final JPasswordField pfClave = PF_Password("********");
     private final JToggleButton tbMostrarClave = TGB_ShowPassword();
-    private Icon iconShowPW = SetImgIcon("img\\show_pw.png", ICON_WIDTH_PX, ICON_HEIGHT_PX);
-    private Icon iconHidePW = SetImgIcon("img\\hide_pw.png", ICON_WIDTH_PX, ICON_HEIGHT_PX);
+    private Icon iconShowPW = ThemeManager.SetImgIcon("img\\show_pw.png", ThemeManager.ICON_WIDTH_PX, ThemeManager.ICON_HEIGHT_PX);
+    private Icon iconHidePW = ThemeManager.SetImgIcon("img\\hide_pw.png", ThemeManager.ICON_WIDTH_PX, ThemeManager.ICON_HEIGHT_PX);
     private final JButton bOlvidaClave = JB_ForgottenPassword("¿Olvidó su clave?");
 
     private final JPanel pButton = new JPanel();
     private final JButton bAcceder = JB_Default("Acceder");
     private final JButton bSalir = JB_Default("Salir");
 
+    public static int idUsuario;
 
     //region Panel
     public MenuInicioSesion() {
@@ -162,7 +159,7 @@ public class MenuInicioSesion extends JPanel {
                 return;
             }
 
-            String Query = "SELECT concat(nombre,' ',apellido) AS nombre_completo FROM usuarios WHERE cedula = ? AND clave = ? LIMIT 1;";
+            String Query = "SELECT id,concat(nombre,' ',apellido) AS nombre_completo FROM usuarios WHERE cedula = ? AND clave = ? LIMIT 1;";
             Object Parametros[] = {usuario,clave};
             try {
                 ConexionPostgres BDD = new ConexionPostgres();
@@ -170,6 +167,7 @@ public class MenuInicioSesion extends JPanel {
 
                 ArrayList<Object> TUPLA = new ArrayList<>();
                 while(RS != null && RS.next()){
+                    TUPLA.add(RS.getInt("id"));
                     TUPLA.add(RS.getString("nombre_completo"));
                 }
 
@@ -178,12 +176,18 @@ public class MenuInicioSesion extends JPanel {
                     return;
                 }
 
-                JOptionPane.showMessageDialog(this,"¡Inicio de sesión exitoso!\nBienvenido, "+TUPLA.get(0)+".","Acceso Concedido",JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(this,"¡Inicio de sesión exitoso!\nBienvenido, "+TUPLA.get(1)+".","Acceso Concedido",JOptionPane.INFORMATION_MESSAGE);
                 
                 JFrame ventanaPadre = (JFrame) SwingUtilities.getWindowAncestor(this);
                 if (ventanaPadre != null) {
                     ventanaPadre.remove(this);
                     ventanaPadre.dispose();
+                    JFrame window = new JFrame("Sistema Garita - Menú Principal");
+                    window.setSize(App.WIDTH,App.HEIGHT);
+                    window.setMinimumSize(new Dimension(App.WIDTH,App.HEIGHT));
+                    window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                    window.add(new MenuPrincipal());
+                    window.setVisible(true);
                 }
                 else {
                     System.err.println("Error: El panel actual no está contenido en ningún componente padre.");
@@ -193,6 +197,8 @@ public class MenuInicioSesion extends JPanel {
             } catch (SQLException ex) {
                 JOptionPane.showMessageDialog(this,ex.getMessage());
                 return;
+            } catch (Exception e1) {
+                e1.printStackTrace();
             }
         });
 
@@ -212,20 +218,6 @@ public class MenuInicioSesion extends JPanel {
     }
 
     //region Helper Functions
-    private ImageIcon SetImgIcon(String resourcePath, int width, int height) {
-        try {
-            File file = new File(resourcePath);
-            if (file.exists()) {
-                ImageIcon originalIcon = new ImageIcon(file.getAbsolutePath());
-                Image scaledImg = originalIcon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH);
-                return new ImageIcon(scaledImg);
-            }
-        } catch (Exception e) {
-            System.err.println("Error al procesar el icono " + resourcePath + ": " + e.getMessage());
-        }
-        return null;
-    }
-
     private JButton JB_Default(String texto) {
         JButton JB = new JButton(texto) {
             @Override
@@ -234,7 +226,7 @@ public class MenuInicioSesion extends JPanel {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g2.setColor(getBackground());
-                g2.fillRoundRect(0, 0, getWidth(), getHeight(), BORDER_RADIUS_PX, BORDER_RADIUS_PX);
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), ThemeManager.BORDER_RADIUS_PX, ThemeManager.BORDER_RADIUS_PX);
                 g2.dispose();
                 super.paintComponent(g);
             }
@@ -312,7 +304,7 @@ public class MenuInicioSesion extends JPanel {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g2.setColor(getBackground());
-                g2.fillRoundRect(0, 0, getWidth()-1, getHeight()-1, BORDER_RADIUS_PX, BORDER_RADIUS_PX); 
+                g2.fillRoundRect(0, 0, getWidth()-1, getHeight()-1, ThemeManager.BORDER_RADIUS_PX, ThemeManager.BORDER_RADIUS_PX); 
                 g2.dispose();
                 super.paintComponent(g);
 
@@ -362,7 +354,7 @@ public class MenuInicioSesion extends JPanel {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g2.setColor(getBackground());
-                g2.fillRoundRect(0, 0, getWidth()-1 , getHeight()-1, BORDER_RADIUS_PX, BORDER_RADIUS_PX);
+                g2.fillRoundRect(0, 0, getWidth()-1 , getHeight()-1, ThemeManager.BORDER_RADIUS_PX, ThemeManager.BORDER_RADIUS_PX);
                 g2.dispose();
                 super.paintComponent(g);
 
@@ -414,7 +406,7 @@ public class MenuInicioSesion extends JPanel {
             setMinimumSize(new Dimension(35, 35));
             setMaximumSize(new Dimension(35, 35));
 
-            ImageIcon imgIcon = SetImgIcon(iconPath, ICON_WIDTH_PX, ICON_HEIGHT_PX);
+            ImageIcon imgIcon = ThemeManager.SetImgIcon(iconPath, ThemeManager.ICON_WIDTH_PX, ThemeManager.ICON_HEIGHT_PX);
             if (imgIcon != null) this.customIcon = imgIcon;
         }
 
