@@ -202,6 +202,7 @@ public class MenuBitacora extends JPanel {
                 MAIN_QUERY += " WHERE bitacoras.fecha_modificacion >= '" + strFechaDesde + "'";
             }
         }
+        
 
         if (jdcHasta.getDate() != null) {
             java.util.Date fecha = jdcHasta.getDate();

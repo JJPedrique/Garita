@@ -43,18 +43,22 @@ public class ConexionPostgres {
         
         try (PreparedStatement PS = conexion.prepareStatement(QUERY)) {
             for(int i=0; i<VALUES.length; i++){
-                if(VALUES[i] instanceof String){
-                    PS.setString(i+1, (String) VALUES[i]);
-                }
-                if(VALUES[i] instanceof Boolean){
-                    PS.setBoolean(i+1, (boolean) VALUES[i]);
-                }
-                if(VALUES[i] instanceof Double){
-                    PS.setDouble(i+1, (Double) VALUES[i]);
-                }
-                if(VALUES[i] instanceof Number){
-                    PS.setInt(i+1, (int) VALUES[i]);
-                }
+        if (VALUES[i] == null) {
+                PS.setNull(i + 1, java.sql.Types.NULL);
+            } else if (VALUES[i] instanceof String) {
+                PS.setString(i + 1, (String) VALUES[i]);
+            } else if (VALUES[i] instanceof Boolean) {
+                PS.setBoolean(i + 1, (boolean) VALUES[i]);
+            } else if (VALUES[i] instanceof Double) { 
+            
+                PS.setDouble(i + 1, (Double) VALUES[i]);
+            } else if (VALUES[i] instanceof java.sql.Timestamp) { 
+                PS.setTimestamp(i + 1, (java.sql.Timestamp) VALUES[i]);
+            } else if (VALUES[i] instanceof Number) { 
+                PS.setInt(i + 1, ((Number) VALUES[i]).intValue());
+            } else {
+                PS.setObject(i + 1, VALUES[i]); 
+            }
             }
             
             // SOLO PARA VERIFICAR QUERY
@@ -72,6 +76,7 @@ public class ConexionPostgres {
             
         } catch(SQLException SQLE) {
             JOptionPane.showMessageDialog(null, "Error al insertar: " + SQLE.getMessage());
+            throw SQLE;
         }
     }
     

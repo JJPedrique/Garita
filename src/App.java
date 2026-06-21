@@ -2,6 +2,7 @@ import java.awt.*;
 import javax.swing.*;
 
 import Frontend.MenuPrincipal;
+import Frontend.Cuotas.MenuCuotas;
 
 public class App {
     
