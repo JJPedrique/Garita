@@ -3,11 +3,25 @@ import java.io.*;
 import java.sql.*;
 import java.awt.*;
 import java.util.*;
+
+import javax.lang.model.element.Element;
 import javax.swing.*;
 import java.awt.event.*;
 
 import javax.swing.table.DefaultTableModel;
-import org.xhtmlrenderer.pdf.ITextRenderer;
+
+import org.openpdf.text.Document;
+import org.openpdf.text.DocumentException;
+import org.openpdf.text.FontFactory;
+import org.openpdf.text.Paragraph;
+import org.openpdf.text.Phrase;
+import org.openpdf.text.pdf.PdfPCell;
+import org.openpdf.text.pdf.PdfPTable;
+import org.openpdf.text.pdf.PdfWriter;
+
+import java.io.FileOutputStream;
+import java.io.FileNotFoundException;
+
 import Backend.*;
 import Backend.DataInputs.*;
 
@@ -433,79 +447,91 @@ public class ReporteAvanzado extends JPanel {
 
 //#region EXPORTAR PDF
     public static void ImprimirPDF() {
-        String outputPath = System.getProperty("user.home") + File.separator + "Downloads" + File.separator + "MiReporteFancioso.pdf";
-        String htmlContent = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-                + "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" "
-                + "\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">"
-                + "<html xmlns=\"http://www.w3.org/1999/xhtml\">"
-                + "<head>"
-                + "  <style type=\"text/css\">"
-                + "    @page { size: letter; margin: 20mm; }" // Define el tamaño de página con CSS
-                + "    body { font-family: 'Helvetica', 'Arial', sans-serif; color: #333333; }"
-                + "    h1 { color: #1a365d; border-bottom: 2px solid #2b6cb0; padding-bottom: 5px; }"
-                + "    table { width: 100%; border-collapse: collapse; margin-top: 20px; }"
-                + "    th { background-color: #2b6cb0; color: white; padding: 8px; text-align: left; }"
-                + "    td { border-bottom: 1px solid #e2e8f0; padding: 8px; }"
-                + "    .total { font-weight: bold; color: #1a365d; }"
-                + "  </style>"
-                + "</head>"
-                + "<body>"
-                + "  <h1>Reporte de Sistema</h1>"
-                + "  <p>Este documento fue renderizado utilizando <strong>Flying Saucer</strong> y <strong>OpenPDF</strong>.</p>"
-                + "  "
-                + "  <table>"
-                + "    <thead>"
-                + "      <tr>"
-                + "        <th>Módulo</th>"
-                + "        <th>Estado</th>"
-                + "      </tr>"
-                + "    </thead>"
-                + "    <tbody>"
-                + "      <tr>"
-                + "        <td>Autenticación</td>"
-                + "        <td>Operacional</td>"
-                + "      </tr>"
-                + "      <tr>"
-                + "        <td>Base de Datos</td>"
-                + "        <td>Conectado</td>"
-                + "      </tr>"
-                + "      <tr class=\"total\">"
-                + "        <td>Resultado General</td>"
-                + "        <td>Exitoso</td>"
-                + "      </tr>"
-                + "    </tbody>"
-                + "  </table>"
-                + "</body>"
-                + "</html>";
+        // 1. Crear el objeto Documento
+        Document documento = new Document();        
+        
+        try {
+            String rutaHome = System.getProperty("user.home");
 
-        // Flying Saucer requiere un OutputStream para escribir el archivo
-        try (OutputStream outputStream = new FileOutputStream(outputPath)) {
-            
-            ITextRenderer renderer = new ITextRenderer();
-            
-            // 2. Asignar el contenido HTML
-            // El segundo parámetro es la URL base para buscar recursos relativos (como imágenes o CSS externos).
-            // Usamos null si todo el CSS está incrustado en la etiqueta <style>.
-            renderer.setDocumentFromString(htmlContent, null);
-            
-            // 3. Procesar el diseño del documento (Layout)
-            renderer.layout();
-            
-            // 4. Crear y escribir el PDF final en el flujo de salida
-            // Usamos reflexión para invocar createPDF(OutputStream) y así evitar
-            // una referencia directa a DocumentException en tiempo de compilación.
-            try {
-                java.lang.reflect.Method m = renderer.getClass().getMethod("createPDF", java.io.OutputStream.class);
-                m.invoke(renderer, outputStream);
-            } catch (NoSuchMethodException | IllegalAccessException | java.lang.reflect.InvocationTargetException ex) {
-                throw new RuntimeException("Error invoking createPDF via reflection", ex);
+            // 2. Construir la ruta apuntando a la carpeta de Descargas (Downloads)
+            // Usamos File.separator para que funcione tanto en Windows (\) como en Linux/Mac (/)
+            String rutaDescargas = rutaHome + java.io.File.separator + "Downloads" + java.io.File.separator + "Reporte_Productos.pdf";
+
+            // 3. Vincular el documento con la nueva ruta
+            PdfWriter.getInstance(documento, new FileOutputStream(rutaDescargas));
+
+            // 2. Vincular el documento con un archivo físico mediante PdfWriter
+            PdfWriter.getInstance(documento, new FileOutputStream("Reporte_Productos.pdf"));
+
+            // 3. Abrir el documento para comenzar a escribir
+            documento.open();
+
+            // 4. Agregar un título principal
+            Paragraph titulo = new Paragraph("Reporte de Inventario");
+            //titulo.setAlignment(Element.ALIGN_CENTER);
+            titulo.setSpacingAfter(20); // Margen inferior antes de la tabla
+            documento.add(titulo);
+
+            // 5. Crear una tabla de 3 columnas
+            // Puedes definir el ancho proporcional de cada columna en un arreglo
+            float[] anchosColumnas = {1f, 3f, 2f}; // ID (estrecha), Nombre (ancha), Precio (mediana)
+            PdfPTable tabla = new PdfPTable(anchosColumnas);
+            tabla.setWidthPercentage(100); // Que ocupe el 100% del ancho de la página
+
+            // 6. Definir fuentes para el contenido
+            //Font fuenteHeader = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 12, Color.WHITE);
+            //Font fuenteCuerpo = FontFactory.getFont(FontFactory.HELVETICA, 10, Color.BLACK);
+
+            // 7. Crear los Encabezados (Headers) de la tabla
+            String[] encabezados = {"ID", "Producto", "Precio Unitario"};
+            for (String textoHeader : encabezados) {
+                PdfPCell celdaHeader = new PdfPCell(new Phrase(textoHeader));
+                celdaHeader.setBackgroundColor(new Color(41, 128, 185)); // Color de fondo azul
+                //celdaHeader.setHorizontalAlignment(Element.ALIGN_CENTER);
+                celdaHeader.setPadding(8); // Espaciado interno de la celda
+                tabla.addCell(celdaHeader);
             }
-            
-            System.out.println("¡PDF creado con éxito en: " + outputPath);
-            
-        } catch (Exception e) {
-            System.err.println("Error al generar el PDF: " + e.getMessage());
+
+            // 8. Agregar datos ficticios a la tabla (Filas)
+            String[][] datos = {
+                {"001", "Teclado Mecánico RGB", "$85.00"},
+                {"002", "Mouse Óptico Inalámbrico", "$45.00"},
+                {"003", "Monitor 24' IPS 144Hz", "$199.99"},
+                {"004", "Auriculares Gamer con Micrófono", "$60.50"}
+            };
+
+            for (String[] fila : datos) {
+                // Celda ID (Alineada al centro)
+                PdfPCell celdaId = new PdfPCell(new Phrase(fila[0]));
+                //celdaId.setHorizontalAlignment(Element.ALIGN_CENTER);
+                celdaId.setPadding(6);
+                tabla.addCell(celdaId);
+
+                // Celda Nombre (Alineada a la izquierda)
+                PdfPCell celdaNombre = new PdfPCell(new Phrase(fila[1]));
+                //celdaNombre.setHorizontalAlignment(Element.ALIGN_LEFT);
+                celdaNombre.setPadding(6);
+                tabla.addCell(celdaNombre);
+
+                // Celda Precio (Alineada a la derecha)
+                PdfPCell celdaPrecio = new PdfPCell(new Phrase(fila[2]));
+                //celdaPrecio.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                celdaPrecio.setPadding(6);
+                tabla.addCell(celdaPrecio);
+            }
+
+            // 9. Añadir la tabla estructurada al documento
+            documento.add(tabla);
+
+            System.out.println("¡PDF creado con éxito con OpenPDF!");
+
+        } catch (DocumentException | FileNotFoundException e) {
             e.printStackTrace();
+        } finally {
+            // 10. Cerrar SIEMPRE el documento para liberar el archivo
+            if (documento.isOpen()) {
+                documento.close();
+            }
         }
     }
 //#endregion
