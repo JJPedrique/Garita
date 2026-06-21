@@ -109,42 +109,28 @@ public class ConexionPostgres {
 
     public static void backupDatabase() {
         try {
-            // 1. Conseguimos la ruta de la carpeta de Descargas de forma nativa
-            String rutaUsuario = System.getProperty("user.home");
-            File carpetaDescargas = new File(rutaUsuario, "Downloads");
-
-            // 2. Definimos el comando pg_dump
-            // CORRECCIÓN: Se cambió "-F", "p" por "-F", "c" (Formato Custom/Binario)
+            String rutaDescargas = System.getProperty("user.home") + File.separator + "Downloads";
+            File archivo = new File(rutaDescargas, "GaritaRespaldo.backup");
+    
             ProcessBuilder pb = new ProcessBuilder(
                 "pg_dump", 
                 "-h", "localhost", 
                 "-U", "postgres", 
-                "-F", "c",                 // <--- CAMBIADO A FORMATO BINARIO 'c'
-                "-f", "GaritaRespaldo.backup", 
+                "-F", "c",                 
+                "-f", archivo.getAbsolutePath(), 
                 "Garita"
             );
 
-            // Le dice a Java dónde guardar el archivo
-            pb.directory(carpetaDescargas);
-
-            // 3. Inyectamos la variable de entorno PGPASSWORD directamente al proceso
             Map<String, String> entorno = pb.environment();
             entorno.put("PGPASSWORD", PASSWORD);
-
-            // Esto hace que los errores de Postgres se muestren en la consola de Java
             pb.inheritIO(); 
-
-            // 4. Arrancamos el proceso
-            System.out.println("Iniciando respaldo en: " + carpetaDescargas.getAbsolutePath());
             Process proceso = pb.start();
-            
-            // Esperamos a que termine de ejecutarse
             int codigoSalida = proceso.waitFor();
 
             if (codigoSalida == 0) {
                 System.out.println("¡Respaldo creado con éxito!");
             } else {
-                System.out.println("Hubo un error. Código de salida de Postgres: " + codigoSalida);
+                System.out.println("Hubo un error. Código de salida de Postgres: " + archivo.getAbsolutePath());
             }
 
         } catch (IOException | InterruptedException e) {
