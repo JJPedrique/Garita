@@ -4,8 +4,8 @@ import javax.swing.*;
 import javax.swing.border.*;
 import java.awt.*;
 import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.Date;
+import java.util.*;
+
 import com.toedter.calendar.JDateChooser;
 
 import Backend.ConexionPostgres;
@@ -18,7 +18,6 @@ class JRegistroAcceso {
     JLabel FechaUso;
     JLabel Estado;
     JLabel Nombre;
-    JButton Opcion;
 
     public JRegistroAcceso(String Carnet, String Tipo, String FechaUso, String Estado, String Nombre) {
         this.Carnet = ThemeManager.Label(Carnet);
@@ -26,7 +25,6 @@ class JRegistroAcceso {
         this.FechaUso = ThemeManager.Label(FechaUso);
         this.Estado = ThemeManager.Label(Estado);
         this.Nombre = ThemeManager.Label(Nombre);
-        this.Opcion = new JButton(ThemeManager.SetImgIcon("img\\config.png", ThemeManager.ICON_WIDTH_PX, ThemeManager.ICON_HEIGHT_PX));
 
         Border margin = BorderFactory.createEmptyBorder(0, 10, 0, 0);
         this.Carnet.setHorizontalAlignment(SwingConstants.LEFT);
@@ -37,21 +35,13 @@ class JRegistroAcceso {
         
         this.Estado.setHorizontalAlignment(SwingConstants.CENTER);
         this.Estado.setOpaque(true);
-        if(Estado.equalsIgnoreCase("Permitido")){
-            this.Estado.setBackground(ThemeManager.COLOR_SECONDARY);
-        } else {
-            this.Estado.setBackground(ThemeManager.COLOR_ERROR);
-        }
+
+        this.Estado.setBackground((Estado.equalsIgnoreCase("Permitido")) ? ThemeManager.COLOR_SECONDARY : ThemeManager.COLOR_ERROR);
         this.Estado.setForeground(ThemeManager.COLOR_TEXT_DARK);
+        this.Estado.setFont(ThemeManager.TEXT_SUBTITLE);
         
         this.Nombre.setHorizontalAlignment(SwingConstants.LEFT);
         this.Nombre.setBorder(margin);
-
-        this.Opcion.setFocusPainted(false);
-        this.Opcion.setContentAreaFilled(false);
-        this.Opcion.setBorderPainted(false);
-        this.Opcion.setForeground(Color.WHITE);
-        this.Opcion.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     }
 
     public JPanel toPanel() {
@@ -70,14 +60,7 @@ class JRegistroAcceso {
         Estado.setPreferredSize(new Dimension(90, 25));
         pEstado.add(Estado);
         ROW.add(pEstado);
-        
         ROW.add(Nombre);
-        
-        JPanel pBTN = new JPanel(new GridBagLayout());
-        pBTN.setOpaque(false);
-        pBTN.add(Opcion);
-        ROW.add(pBTN);
-        
         return ROW;
     }
 }
@@ -111,7 +94,7 @@ public class MenuRegistroDeAcceso extends JPanel {
 
     JRadioButton rbEstadoTodos = new JRadioButton("Todos", true);
     JRadioButton rbEstadoPermitido = new JRadioButton("Permitido");
-    JRadioButton rbEstadoNegado = new JRadioButton("Negado");
+    JRadioButton rbEstadoDenegado = new JRadioButton("Denegado");
     ButtonGroup bgEstado = new ButtonGroup();
 
     JRadioButton rbIdentTodos = new JRadioButton("Todos", true);
@@ -124,7 +107,7 @@ public class MenuRegistroDeAcceso extends JPanel {
     JButton bSolicitarAccesoVisitante = ThemeManager.Button("Solicitar Acceso a Vigilante");
 
     ArrayList<JRegistroAcceso> JRegistros = new ArrayList<>();
-    String[] headers = {"Carnet","Tipo de Acceso","Fecha de Uso", "Estado", "Nombre", "Opciones"};
+    String[] headers = {"Carnet","Tipo de Acceso","Fecha de Uso", "Estado", "Nombre"};
 
     //region Theme
     public void SetTheme() {
@@ -143,11 +126,12 @@ public class MenuRegistroDeAcceso extends JPanel {
         lFiltroIdentificacion.setFont(ThemeManager.TEXT_SUBTITLE);
         lFiltroIdentificacion.setHorizontalAlignment(JLabel.CENTER);
 
-        setupDateChooser(dcDesde);
-        setupDateChooser(dcHasta);
+        lDesde.setFont(ThemeManager.TEXT_SUBTITLE);
+        lHasta.setFont(ThemeManager.TEXT_SUBTITLE);
 
-        setupRadioButtons();
-
+        SetupDateChooser(dcDesde);
+        SetupDateChooser(dcHasta);
+        
         pTablaHeader.setBackground(ThemeManager.COLOR_PRIMARY); 
         pTablaHeader.setPreferredSize(new Dimension(0, 40));
         pTablaBody.setBackground(ThemeManager.COLOR_BACKGROUND_DARK);
@@ -165,6 +149,13 @@ public class MenuRegistroDeAcceso extends JPanel {
         this.setBorder(new EmptyBorder(20, 20, 20, 20));
         
         SetTheme();
+        SetupRadioBtns();
+        
+        Calendar CAL = Calendar.getInstance();
+        dcHasta.setDate(CAL.getTime()); // Hoy
+
+        CAL.add(Calendar.MONTH, -2); 
+        dcDesde.setDate(CAL.getTime()); // Hace 2 meses
 
         GBC.weightx = 1;
         GBC.fill = GridBagConstraints.HORIZONTAL;
@@ -184,7 +175,7 @@ public class MenuRegistroDeAcceso extends JPanel {
         pRadioEstado.setOpaque(false);
         pRadioEstado.add(rbEstadoTodos); 
         pRadioEstado.add(rbEstadoPermitido); 
-        pRadioEstado.add(rbEstadoNegado);
+        pRadioEstado.add(rbEstadoDenegado);
         GBC.insets = new Insets(0, 0, 10, 0);
         GBC.gridy = 4; pFunctions.add(pRadioEstado, GBC);
 
@@ -229,16 +220,19 @@ public class MenuRegistroDeAcceso extends JPanel {
         pTabla.add(pTablaHeader, BorderLayout.NORTH);
         
         pTablaBody.setLayout(GBL); 
+
         ActualizarTabla();
 
-        JScrollPane scrollPane = new JScrollPane(pTablaBody);
-        scrollPane.setBorder(BorderFactory.createEmptyBorder());
-        scrollPane.getViewport().setBackground(ThemeManager.COLOR_BACKGROUND_DARK);
-        scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        pTabla.add(scrollPane, BorderLayout.CENTER);
+        JScrollPane JSP = new JScrollPane(pTablaBody);
+        JSP.setBorder(BorderFactory.createEmptyBorder());
+        JSP.getViewport().setBackground(ThemeManager.COLOR_BACKGROUND_DARK);
+        JSP.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        pTabla.add(JSP, BorderLayout.CENTER);
 
         this.add(pFunctions, BorderLayout.WEST);
         this.add(pTabla, BorderLayout.CENTER);
+
+        SetEvents();
     }
     //endregion
 
@@ -247,77 +241,145 @@ public class MenuRegistroDeAcceso extends JPanel {
         JRegistros.clear();
         pTablaBody.removeAll();
 
-        String Query = "SELECT \n" + 
-                        "COALESCE(C.codigo, 'INVITADO') AS codigo_carnet,\n" + 
-                        "A.tipo AS tipo,\n" + 
-                        "A.fecha_hora AS fecha,\n" + 
-                        "A.estado AS estado,\n" + 
-                        "COALESCE(A.nombre_visita, CONCAT(R.nombre, ' ', R.apellido)) AS nombre_completo\n" + 
-                        "FROM accesos AS A \n" + 
-                        "LEFT JOIN carnets AS C ON C.id = A.id_carnet\n" + 
-                        "LEFT JOIN representantes AS R ON C.id_vivienda = R.id_vivienda\n" +
-                        "ORDER BY A.fecha_hora DESC;";
+        StringBuilder Query = new StringBuilder(
+            "SELECT COALESCE(C.codigo, 'INVITADO') AS codigo_carnet,\n" +
+            "  A.tipo AS tipo,\n" +
+            "  A.fecha_hora AS fecha,\n" +
+            "  A.estado AS estado,\n" +
+            "  COALESCE(A.nombre_visita, CONCAT(R.nombre, ' ', R.apellido)) AS nombre_completo\n" +
+            "FROM accesos AS A \n" +
+            "LEFT JOIN carnets AS C ON C.id = A.id_carnet\n" +
+            "LEFT JOIN representantes AS R ON C.id_vivienda = R.id_vivienda\n" +
+            "WHERE 1=1 "
+        );
+
+        ArrayList<Object> Parametros = new ArrayList<>();
+
+        String sCodigo = tfCodigoCarnet.getText().trim().toUpperCase();
+        if (!sCodigo.isEmpty()) {
+            Query.append("AND C.codigo LIKE ? ");
+            Parametros.add("%" + sCodigo + "%");
+        }
+
+        String sNombre = tfNombreVisita.getText().trim();
+        if (!sNombre.isEmpty()) {
+            Query.append("AND (A.nombre_visita ILIKE ? OR R.nombre ILIKE ? OR R.apellido ILIKE ?) ");
+            String match = "%" + sNombre + "%";
+            Parametros.add(match); Parametros.add(match); Parametros.add(match);
+        }
+
+        if (rbEstadoPermitido.isSelected()) {
+            Query.append("AND A.estado = 'Permitido' ");
+        } else if (rbEstadoDenegado.isSelected()) {
+            Query.append("AND A.estado = 'Denegado' ");
+        }
+
+        if (rbIdentPropietario.isSelected()) {
+            Query.append("AND A.id_carnet IS NOT NULL ");
+        } else if (rbIdentVisitante.isSelected()) {
+            Query.append("AND A.id_carnet IS NULL ");
+        }
+
+        if (dcDesde.getDate() != null) {
+            Query.append("AND A.fecha_hora >= ? ");
+            Parametros.add(new java.sql.Timestamp(dcDesde.getDate().getTime()));
+        }
+        if (dcHasta.getDate() != null) {
+            Query.append("AND A.fecha_hora <= ? ");
+            Parametros.add(new java.sql.Timestamp(dcHasta.getDate().getTime()));
+        }
+
+        Query.append("ORDER BY A.fecha_hora DESC;");
 
         try {
             ConexionPostgres BDD = new ConexionPostgres();
-            ResultSet RS = BDD.consultar(Query, null);
+            Object[] paramsArray = Parametros.isEmpty() ? null : Parametros.toArray();
+            ResultSet RS = BDD.consultar(Query.toString(), paramsArray);
             
             while (RS != null && RS.next()) {
                 String sCarnet = RS.getString("codigo_carnet");
                 String sTipo = RS.getString("tipo");
                 String sFecha = RS.getString("fecha");
                 String sEstado = RS.getString("estado");
-                String sNombre = RS.getString("nombre_completo");
-                JRegistros.add(new JRegistroAcceso(sCarnet, sTipo, sFecha, sEstado, sNombre));
+                String sNombreCompleto = RS.getString("nombre_completo");
+                JRegistros.add(new JRegistroAcceso(sCarnet, sTipo, sFecha, sEstado, sNombreCompleto));
             }
         } catch (java.sql.SQLException e) {
             e.printStackTrace();
         }
 
-        GridBagConstraints tableGBC = new GridBagConstraints();
-        tableGBC.anchor = GridBagConstraints.NORTH; 
-        tableGBC.fill = GridBagConstraints.HORIZONTAL;
-        tableGBC.weightx = 1;
+        GridBagConstraints TablaGBC = new GridBagConstraints();
+        TablaGBC.anchor = GridBagConstraints.NORTH; 
+        TablaGBC.fill = GridBagConstraints.HORIZONTAL;
+        TablaGBC.weightx = 1;
 
         for (int i = 0; i < JRegistros.size(); i++) {
-            tableGBC.gridy = i;
-            tableGBC.insets = new Insets(i == 0 ? 10 : 5, 10, 5, 10);
-            pTablaBody.add(JRegistros.get(i).toPanel(), tableGBC);
+            TablaGBC.gridy = i;
+            TablaGBC.insets = new Insets(i == 0 ? 10 : 5, 10, 5, 10);
+            pTablaBody.add(JRegistros.get(i).toPanel(), TablaGBC);
         }
 
-        tableGBC.gridy = 9999; 
-        tableGBC.weighty = 1.0;
-        pTablaBody.add(Box.createGlue(), tableGBC);
+        TablaGBC.gridy = 9999; 
+        TablaGBC.weighty = 1.0;
+        pTablaBody.add(Box.createGlue(), TablaGBC);
 
         pTablaBody.revalidate();
         pTablaBody.repaint();
     }
     //endregion
 
-    //region Helper Funcions
-    private void setupDateChooser(JDateChooser chooser) {
-        chooser.setDateFormatString("dd/MM/yy HH:mm:ss");
-        chooser.setDate(new Date()); 
-        
-        JTextField editor = (JTextField) chooser.getDateEditor().getUiComponent();
-        editor.setEditable(false);
-        editor.setBackground(ThemeManager.COLOR_BACKGROUND_DARK);
-        editor.setForeground(ThemeManager.COLOR_TEXT);
-        editor.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 5));
+    //region Events
+    private void SetEvents() {
+        bBuscar.addActionListener(e -> ActualizarTabla());
 
-        chooser.setOpaque(false);
+        bSolicitarAccesoVisitante.addActionListener(e -> {
+            JDialog JDAccesoVisitante = new JDialog((Window) SwingUtilities.getWindowAncestor(this), "Sistema Garita - Registrar Acceso Visitante", Dialog.ModalityType.APPLICATION_MODAL);
+            JDAccesoVisitante.setSize(new Dimension(650, 500));
+            JDAccesoVisitante.setLocationRelativeTo(this);
+            JDAccesoVisitante.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+            
+            JDAccesoVisitante.add(new FrameSolicitarAccesoVisitante(JDAccesoVisitante));
+            
+            JDAccesoVisitante.setVisible(true);
+            ActualizarTabla(); 
+        });
+    }
+    //endregion
+
+    //region Helper Funcions
+    private void SetupDateChooser(JDateChooser JDC) {
+        JDC.setDateFormatString("dd/MM/yyyy HH:mm:ss");
+        JDC.setOpaque(false);
+
+        JTextField JFT = (JTextField) JDC.getDateEditor().getUiComponent();
+        JFT.setEditable(false); 
+        JFT.setBackground(ThemeManager.COLOR_INPUT);
+        JFT.setForeground(ThemeManager.COLOR_TEXT_DARK);
+        JFT.setFont(ThemeManager.TEXT_NORMAL);
+        JFT.setBorder(BorderFactory.createEmptyBorder(4, 6, 4, 6));
+
+        JButton btnCalendario = JDC.getCalendarButton();
+        btnCalendario.setBackground(ThemeManager.COLOR_PRIMARY);
+        btnCalendario.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 5));
+        btnCalendario.setCursor(new Cursor(Cursor.HAND_CURSOR)); // Cursor de mano para denotar interacción
+        
+        btnCalendario.setPreferredSize(new Dimension(30, 25));
+
+        JDC.getJCalendar().getYearChooser().setFont(ThemeManager.TEXT_NORMAL);
+        JDC.getJCalendar().getMonthChooser().getComboBox().setFont(ThemeManager.TEXT_NORMAL);
+        JDC.getJCalendar().getDayChooser().getDayPanel().setFont(ThemeManager.TEXT_NORMAL);
     }
 
-    private void setupRadioButtons() {
+    private void SetupRadioBtns() {
         bgEstado.add(rbEstadoTodos); 
         bgEstado.add(rbEstadoPermitido); 
-        bgEstado.add(rbEstadoNegado);
+        bgEstado.add(rbEstadoDenegado);
 
         bgIdentificacion.add(rbIdentTodos); 
         bgIdentificacion.add(rbIdentPropietario); 
         bgIdentificacion.add(rbIdentVisitante);
 
-        JRadioButton[] rbs = {rbEstadoTodos, rbEstadoPermitido, rbEstadoNegado, rbIdentTodos, rbIdentPropietario, rbIdentVisitante};
+        JRadioButton[] rbs = {rbEstadoTodos, rbEstadoPermitido, rbEstadoDenegado, rbIdentTodos, rbIdentPropietario, rbIdentVisitante};
         for (JRadioButton rb : rbs) {
             rb.setOpaque(false);
             rb.setForeground(Color.WHITE);

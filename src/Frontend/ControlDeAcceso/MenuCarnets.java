@@ -8,8 +8,6 @@ import Backend.ConexionPostgres;
 import Backend.ThemeManager;
 
 import java.awt.*;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.sql.*;
 import java.util.ArrayList;
 
@@ -148,7 +146,7 @@ public class MenuCarnets extends JPanel {
         lCodigo.setFont(ThemeManager.TEXT_NORMAL);
 
         tfCodigo.setBackground(ThemeManager.COLOR_INPUT);
-        tfCodigo.setForeground(ThemeManager.COLOR_TEXT);
+        tfCodigo.setForeground(ThemeManager.COLOR_TEXT_DARK);
         tfCodigo.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         
         pTableHeader.setBackground(ThemeManager.COLOR_PRIMARY); 
@@ -230,7 +228,6 @@ public class MenuCarnets extends JPanel {
         JCarnets.clear();
         pTableBody.removeAll();
 
-        // Query parametrizada para búsquedas parciales seguras
         String Query = "SELECT codigo, numero_vivienda, calle, CONCAT(nombre, ' ', apellido) AS nombre_completo " +
                        "FROM carnets AS C " +
                        "JOIN viviendas AS V ON C.id_vivienda = V.id " + 
@@ -238,14 +235,12 @@ public class MenuCarnets extends JPanel {
                        "WHERE C.activo = true ";
 
         boolean tieneFiltro = (filtroCodigo != null && !filtroCodigo.trim().isEmpty());
-        if (tieneFiltro) {
-            Query += "AND C.codigo LIKE ? ";
-        }
+        if (tieneFiltro) Query += "AND C.codigo LIKE ? ";
         Query += "ORDER BY codigo ASC;";
 
         try {
             ConexionPostgres BDD = new ConexionPostgres();
-            Object[] parametros = tieneFiltro ? new Object[]{"%" + filtroCodigo.trim() + "%"} : null;
+            Object[] parametros = tieneFiltro ? new Object[]{"%"+filtroCodigo.trim()+"%"} : null;
             ResultSet RS = BDD.consultar(Query, parametros);
             
             while(RS != null && RS.next()){
@@ -284,36 +279,19 @@ public class MenuCarnets extends JPanel {
     //endregion
 
     //region Eventos
-    public void SetEvents(){
-        bAgregarCarnet.addActionListener(e -> {
-            bAgregarCarnet.setEnabled(false);
-            bBuscar.setEnabled(false);
-            tfCodigo.setEnabled(false);
+    public void SetEvents() {
+    bAgregarCarnet.addActionListener(e -> {
+        JDialog JDAgregarCarnet = new JDialog((Window) SwingUtilities.getWindowAncestor(this), "Sistema Garita - Registrar Carnet", Dialog.ModalityType.APPLICATION_MODAL);
+        JDAgregarCarnet.setSize(new Dimension(600, 400));
+        JDAgregarCarnet.setLocationRelativeTo(this);
+        JDAgregarCarnet.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        JDAgregarCarnet.add(new FrameAgregarCarnet(JDAgregarCarnet));
+        JDAgregarCarnet.setVisible(true);
+    });
 
-            JDialog FrameAgregarCarnet = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Sistema Garita - Registrar Carnet", true);
-            FrameAgregarCarnet.setSize(new Dimension(600, 400));
-            FrameAgregarCarnet.setLocationRelativeTo(this);
-            FrameAgregarCarnet.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-
-            FrameAgregarCarnet.addWindowListener(new WindowAdapter() {
-                @Override
-                public void windowClosed(WindowEvent e) {
-                    bAgregarCarnet.setEnabled(true);
-                    bBuscar.setEnabled(true);
-                    tfCodigo.setEnabled(true);
-                    
-                    ActualizarTabla(tfCodigo.getText());
-                }
-            });
-
-            FrameAgregarCarnet.add(new FrameAgregarCarnet());
-            FrameAgregarCarnet.setVisible(true);
-        });
-
-        // Evento para el botón de Búsqueda
-        bBuscar.addActionListener(e -> {
-            ActualizarTabla(tfCodigo.getText());
-        });
-    }
+    bBuscar.addActionListener(e -> {
+        ActualizarTabla(tfCodigo.getText().trim());
+    });
+}
     //endregion
 }

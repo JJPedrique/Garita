@@ -62,12 +62,12 @@ public class ConexionPostgres {
             }
             
             // SOLO PARA VERIFICAR QUERY
-//            String queryEjecutable = QUERY;
-//            for (Object p : VALUES) {
-//                String valor = (p instanceof String) ? "'" + p + "'" : String.valueOf(p);
-//                queryEjecutable = queryEjecutable.replaceFirst("\\?", valor);
-//            }
-//            JOptionPane.showMessageDialog(null,queryEjecutable);
+            // String queryEjecutable = QUERY;
+            // for (Object p : VALUES) {
+            //     String valor = (p instanceof String) ? "'" + p + "'" : String.valueOf(p);
+            //     queryEjecutable = queryEjecutable.replaceFirst("\\?", valor);
+            // }
+            // System.out.println(queryEjecutable);
     
             int filasAfectadas = PS.executeUpdate();
             if (filasAfectadas > 0) {
