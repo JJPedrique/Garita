@@ -7,7 +7,9 @@ public class FrameBorrarUsuario extends JDialog {
     public FrameBorrarUsuario(){
         this.setLayout(new BorderLayout());
         this.setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
-        this.setSize(600, 300);
+        this.setTitle("Borrar Usuario");
+        this.setSize(400, 300);
+        this.setResizable(false);
 
         this.add(Top(),BorderLayout.NORTH);
         this.add(Center(),BorderLayout.CENTER);

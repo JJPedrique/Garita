@@ -176,7 +176,7 @@ public class MenuReporte extends JPanel {
         Modulos.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                try {ChangeModule(Modulos.getSelectedItem().toString());
+                try {ChangeModule(Modulos.getSelectedItem().toString());SearchSQL();
                 } catch (SQLException e1) {e1.printStackTrace();}
             }
         });
@@ -234,12 +234,20 @@ public class MenuReporte extends JPanel {
 
         gbc.gridx=1; 
         OrderColumn = ThemeManager.StringComboBox();
+        OrderColumn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {SearchSQL();}
+        });
         newPanel.add(OrderColumn,gbc);
 
         gbc.gridx=2;     
         String OrderByValues[] = {"Ascendente","Descendente"};
         OrderBy = ThemeManager.StringComboBox();
-        for(String k : OrderByValues){OrderBy.addItem(k);}          
+        for(String k : OrderByValues){OrderBy.addItem(k);}
+        OrderBy.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {SearchSQL();}
+        });          
         newPanel.add(OrderBy,gbc);
 
         gbc.gridy=1; gbc.gridx=0;
@@ -316,6 +324,10 @@ public class MenuReporte extends JPanel {
             newCheck.setBackground(ThemeManager.COLOR_BACKGROUND_LIGHT);
             newCheck.setForeground(ThemeManager.COLOR_TEXT);
             newCheck.setFont(ThemeManager.TEXT_NORMAL);
+            newCheck.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {SearchSQL();}
+            });
         }
 
         gbc.weighty=1;gbc.fill= GridBagConstraints.BOTH;
@@ -352,6 +364,7 @@ public class MenuReporte extends JPanel {
                 ConditionPanel.remove(newCondition);
                 ConditionPanel.revalidate();
                 ConditionPanel.repaint();
+                SearchSQL();
             }
         });
 
@@ -372,10 +385,6 @@ public class MenuReporte extends JPanel {
     }
 
     void SearchSQL(){
-        //System.out.print("\033[H\033[2J");
-        //System.out.flush();
-        //System.out.println("Searching...");
-
         String SELECT = "SELECT ";
         ArrayList<String> isVList = new ArrayList<>();
         for (JCheckBox C : isVisible) {

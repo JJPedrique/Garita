@@ -17,7 +17,7 @@ public class FrameModificarUsuario extends JDialog{
     public FrameModificarUsuario(){
          this.setLayout(new BorderLayout());
         this.setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
-        this.setTitle("Agregar Usuario");
+        this.setTitle("Actualizar Usuario");
         this.setSize(400, 300);
         this.setResizable(false);
 
@@ -32,7 +32,7 @@ public class FrameModificarUsuario extends JDialog{
         JPanel newPanel = new JPanel(new FlowLayout());
         newPanel.setBackground(ThemeManager.COLOR_PRIMARY);
         
-        JLabel Titulo = ThemeManager.Label("Agregar Nuevo Usuario");
+        JLabel Titulo = ThemeManager.Label("Actualizar Usuario");
         Titulo.setForeground(ThemeManager.COLOR_TEXT);
         Titulo.setFont(ThemeManager.TEXT_TITLE);
         newPanel.add(Titulo);
