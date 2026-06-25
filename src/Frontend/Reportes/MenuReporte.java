@@ -1,8 +1,13 @@
 package Frontend.Reportes;
 import java.io.*;
 import java.sql.*;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.awt.*;
 import java.util.*;
+import java.util.concurrent.locks.Condition;
+
 import javax.swing.*;
 import java.awt.event.*;
 import org.openpdf.text.*;
@@ -16,7 +21,74 @@ import Frontend.Reportes.DataInputs.*;
 public class MenuReporte extends JPanel {
     ConexionPostgres DB = new ConexionPostgres();
 
-    //#region SQL QUERY
+//#region TABLE
+    class MyTable extends JPanel {
+        class MyRow extends JPanel{
+            public MyRow(ArrayList<String> Data){
+                this.setLayout(new GridBagLayout());
+                this.setBackground(ThemeManager.COLOR_BACKGROUND_LIGHT);
+                GridBagConstraints gbc = new GridBagConstraints(); 
+                gbc.fill = GridBagConstraints.HORIZONTAL;
+                gbc.weightx=1;gbc.gridx=0;gbc.gridy=0;
+                gbc.insets = new Insets(5,5,5,5);
+                for(String h : Data){
+                    this.add(ThemeManager.Label(h),gbc);gbc.gridx+=1;}
+            }
+        }
+
+        ArrayList<String> headers = new ArrayList<>();
+        ArrayList<ArrayList<String>> rows = new ArrayList<>();
+
+        JPanel HeaderPanel = ThemeManager.Panel(new GridBagLayout());
+        JPanel RowsPanel = ThemeManager.Panel(new GridBagLayout());
+        ArrayList<MyRow> MyRows = new ArrayList<>();       
+
+        public MyTable(){
+            this.setLayout(new BorderLayout());
+            this.add(HeaderPanel,BorderLayout.NORTH);
+            this.add(new JScrollPane(RowsPanel),BorderLayout.CENTER);   
+            RowsPanel.setBackground(ThemeManager.COLOR_BACKGROUND);
+            HeaderPanel.setBackground(ThemeManager.COLOR_PRIMARY);
+        }
+
+        void UpdateTable(ArrayList<String> newColumns, ArrayList<ArrayList<String>> newRows){
+            headers = newColumns; rows = newRows;
+            for (Component C : HeaderPanel.getComponents()) {HeaderPanel.remove(C);}
+            for (Component C : RowsPanel.getComponents()) {RowsPanel.remove(C);} MyRows.clear();
+
+            GridBagConstraints gbc = new GridBagConstraints();
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            gbc.weightx=1;gbc.gridx=0;gbc.gridy=0;
+            gbc.insets = new Insets(5,5,5,5);
+
+            for(String h : newColumns){
+                JLabel newLabel = ThemeManager.Label(h);
+                newLabel.setFont(ThemeManager.TEXT_SUBTITLE);
+                HeaderPanel.add(newLabel,gbc);gbc.gridx+=1;
+            }
+
+            gbc.fill = GridBagConstraints.HORIZONTAL;
+            gbc.weightx=1;gbc.gridx=0;gbc.gridy=0;
+            gbc.insets = new Insets(10,10,5,10);
+            
+            for (ArrayList<String> R: newRows) {
+                MyRow newRow = new MyRow(R);
+                RowsPanel.add(newRow,gbc);
+                MyRows.add(newRow);
+                gbc.gridy+=1;
+            }
+
+            gbc.fill = GridBagConstraints.BOTH;
+            gbc.weighty=1;
+            RowsPanel.add(new JLabel(""),gbc);
+
+            this.repaint();
+            this.revalidate();
+        }
+    }
+//#endregion
+
+//#region SQL QUERY
     public static final Map<String, String> CONSULTAS;
 
     static {
@@ -108,13 +180,13 @@ public class MenuReporte extends JPanel {
     JComboBox<String> Modulos;
 
     //Visible SELECT
-    JPanel isVisiblePanel = ThemeManager.Panel(new GridBagLayout()); 
-    ArrayList<JCheckBox> isVisible = new ArrayList<>();  
+    JPanel ColumnFilterPanel = ThemeManager.Panel(new GridBagLayout()); 
+    ArrayList<JCheckBox> ColumnFilter = new ArrayList<>();  
 
     //Condition WHERE
-    JComboBox<String> ColumnConditioSelector = new JComboBox<>();
-    JPanel ConditionPanel = ThemeManager.Panel(new GridBagLayout());
-    ArrayList<Input> Condition = new ArrayList<>();    
+    JComboBox<String> RowFilterSelector = new JComboBox<>();
+    JPanel RowFilterPanel = ThemeManager.Panel(new GridBagLayout());
+    ArrayList<Input> RowFilter = new ArrayList<>();    
     
     //Sort ORDER BY
     JComboBox<String> OrderColumn,OrderBy;
@@ -123,10 +195,7 @@ public class MenuReporte extends JPanel {
     JSpinner LimitFrom,LimitTo;
     
     //Table
-    DefaultTableModel DATA = new DefaultTableModel(new String[][]{}, new String[]{}){
-        @Override
-        public boolean isCellEditable(int row,int column){return false;}
-    };
+    MyTable Table = new MyTable();
 
     public MenuReporte() throws SQLException{
         this.setLayout(new BorderLayout());
@@ -137,7 +206,8 @@ public class MenuReporte extends JPanel {
         Menu.addTab( "Filtros",Filtros());
         Menu.addTab("Imprimir",Imprimir());
 
-        this.add(new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,Menu,Preview()),BorderLayout.CENTER);
+        this.add(Menu,BorderLayout.WEST);
+        this.add(Table,BorderLayout.CENTER);
 
         //UPDATES
         KeyStroke enterKey = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
@@ -150,12 +220,6 @@ public class MenuReporte extends JPanel {
         ChangeModule("Vivienda");
         SearchSQL();
     }
-
-    JPanel Preview(){
-        JPanel newPanel = ThemeManager.Panel(new BorderLayout());
-        newPanel.add(ThemeManager.ScrollPanel(ThemeManager.Table(DATA)),BorderLayout.CENTER);
-        return newPanel;
-    } 
 
     JPanel Modulo(){
         JPanel newPanel = ThemeManager.Panel(new GridBagLayout());
@@ -176,14 +240,15 @@ public class MenuReporte extends JPanel {
         Modulos.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                try {ChangeModule(Modulos.getSelectedItem().toString());SearchSQL();
+                try {ChangeModule(Modulos.getSelectedItem().toString());
+                    SearchSQL();
                 } catch (SQLException e1) {e1.printStackTrace();}
             }
         });
 
         gbc.gridx=0; gbc.gridy=1;
         gbc.gridwidth=2; gbc.weightx=1;gbc.weighty=1;
-        newPanel.add(new JScrollPane(isVisiblePanel),gbc);
+        newPanel.add(new JScrollPane(ColumnFilterPanel),gbc);
 
         return newPanel;
     }
@@ -200,8 +265,8 @@ public class MenuReporte extends JPanel {
         newPanel.add(modulos,gbc);
 
         gbc.gridx=1;gbc.weightx=1;
-        ColumnConditioSelector = ThemeManager.StringComboBox();
-        newPanel.add(ColumnConditioSelector,gbc);
+        RowFilterSelector = ThemeManager.StringComboBox();
+        newPanel.add(RowFilterSelector,gbc);
 
         gbc.gridx=2;gbc.weightx=0;
         JButton BtnAgregar = ThemeManager.Button("+");
@@ -209,14 +274,15 @@ public class MenuReporte extends JPanel {
         BtnAgregar.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                AddCondition(ColumnConditioSelector.getSelectedItem().toString());
+                AddCondition(RowFilterSelector.getSelectedItem().toString());
+                SearchSQL();
             }
         });
         
         gbc.gridx=0; gbc.gridy=1;
         gbc.gridwidth=3; gbc.weightx=1;gbc.weighty=1;
         gbc.fill = GridBagConstraints.BOTH;
-        newPanel.add(new JScrollPane(ConditionPanel),gbc);
+        newPanel.add(new JScrollPane(RowFilterPanel),gbc);
 
         return newPanel;
     }
@@ -282,11 +348,13 @@ public class MenuReporte extends JPanel {
 
 //#region BACKEND
     void ChangeModule(String Module) throws SQLException{
-        for (Component C : isVisiblePanel.getComponents()) {isVisiblePanel.remove(C);}
-        for (Component C : ConditionPanel.getComponents()) {ConditionPanel.remove(C);}
+        for (Component C : ColumnFilterPanel.getComponents()) {ColumnFilterPanel.remove(C);}
+        for (Component C : RowFilterPanel.getComponents()) {RowFilterPanel.remove(C);}
         TableHeader.clear();
-        isVisible.clear();
-        Condition.clear();
+        ColumnFilter.clear();
+        RowFilter.clear();
+        RowFilterSelector.removeAllItems();
+        OrderColumn.removeAllItems();
 
         String SQL_query = CONSULTAS.get(Module);
         String TempView = "CREATE OR REPLACE TEMP VIEW vista_analisis_columnas AS " + SQL_query;
@@ -303,12 +371,10 @@ public class MenuReporte extends JPanel {
         DB.comandoDML(TempView, new Object[]{});
 
         while (RS_DATA.next()) {            
-            TableHeader.put(RS_DATA.getString("columna_nombre"), 
-                            RS_DATA.getString("tipo_base"));
+            TableHeader.put(RS_DATA.getString("columna_nombre"), RS_DATA.getString("tipo_base"));
         }
 
         //View
-
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx=1;
@@ -316,8 +382,8 @@ public class MenuReporte extends JPanel {
 
         for(String k : TableHeader.keySet()){
             JCheckBox newCheck = new JCheckBox(k);
-            isVisiblePanel.add(newCheck,gbc);
-            isVisible.add(newCheck);
+            ColumnFilterPanel.add(newCheck,gbc);
+            ColumnFilter.add(newCheck);
             gbc.gridy++;
 
             newCheck.setSelected(true);
@@ -328,25 +394,19 @@ public class MenuReporte extends JPanel {
                 @Override
                 public void actionPerformed(ActionEvent e) {SearchSQL();}
             });
+
+            RowFilterSelector.addItem(k);
+            OrderColumn.addItem(k);
         }
 
         gbc.weighty=1;gbc.fill= GridBagConstraints.BOTH;
-        isVisiblePanel.add(new JLabel(),gbc);
-
-        //Filtros 
-        ColumnConditioSelector.removeAllItems();
-        for(String k : TableHeader.keySet()){ColumnConditioSelector.addItem(k);}   
-        
-        //Imprimir
-        OrderColumn.removeAllItems();
-        for(String k : TableHeader.keySet()){OrderColumn.addItem(k);}   
- 
+        ColumnFilterPanel.add(new JLabel(),gbc);
         this.revalidate();
         this.repaint();
     }
 
     void AddCondition(String Column){
-        if(ConditionPanel.getComponentCount() != 0){ConditionPanel.remove(ConditionPanel.getComponentCount()-1);}
+        if(RowFilterPanel.getComponentCount() != 0){RowFilterPanel.remove(RowFilterPanel.getComponentCount()-1);}
 
         Input tempCondition = null;
         switch (TableHeader.get(Column)) {
@@ -360,10 +420,10 @@ public class MenuReporte extends JPanel {
         final Input newCondition = tempCondition;
         newCondition.BtnRemover.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                Condition.remove(newCondition);
-                ConditionPanel.remove(newCondition);
-                ConditionPanel.revalidate();
-                ConditionPanel.repaint();
+                RowFilter.remove(newCondition);
+                RowFilterPanel.remove(newCondition);
+                RowFilterPanel.revalidate();
+                RowFilterPanel.repaint();
                 SearchSQL();
             }
         });
@@ -371,74 +431,80 @@ public class MenuReporte extends JPanel {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1;
-        gbc.gridx = 0; gbc.gridy = Condition.size();
+        gbc.gridx = 0; gbc.gridy = RowFilter.size();
         gbc.insets = new Insets(5, 5, 5, 5);
         
-        ConditionPanel.add(newCondition,gbc);
-        Condition.add(newCondition);
+        RowFilterPanel.add(newCondition,gbc);
+        RowFilter.add(newCondition);
         
         gbc.gridy++;
         gbc.weighty=1;gbc.fill= GridBagConstraints.BOTH;
-        ConditionPanel.add(new JLabel(),gbc);
+        RowFilterPanel.add(new JLabel(),gbc);
         this.revalidate();
         this.repaint();
     }
 
     void SearchSQL(){
-        String SELECT = "SELECT ";
-        ArrayList<String> isVList = new ArrayList<>();
-        for (JCheckBox C : isVisible) {
+        //Frontend
+        String Modulo = CONSULTAS.get(Modulos.getSelectedItem().toString());
+
+        ArrayList<String> SelectedColumn = new ArrayList<>();
+        for(JCheckBox C : ColumnFilter) {
             if(!C.isSelected()){continue;}
-            isVList.add("\""+C.getText()+"\"");
+            SelectedColumn.add("\""+C.getText()+"\"");
         }
-        if (isVList.size()==0) {JOptionPane.showMessageDialog(this, "DEBE MOSTRAR AL MENOS UNA COLUMNA");return;}
-        SELECT = SELECT + String.join(", ", isVList);
 
-        String WHERE = "WHERE ";
-        ArrayList<String> cond = new ArrayList<>();
-        for (Input C : Condition) {
-            System.out.println(C.getClass().getName());
-            if(C.GetInput()==""){continue;}
-            if(C.GetInput()=="???"){return;}
-            cond.add(C.GetInput());
-        }WHERE = WHERE + String.join(" AND ", cond);
-        if(cond.size()==0){WHERE="";}
+        ArrayList<Object> Param = new ArrayList<>();
+        ArrayList<String> SelectedRowFilter = new ArrayList<>();
+        for(Input R : RowFilter) {
+            if(R.GetValue()==""){continue;}
+            if(R.GetValue()=="???"){return;}
+            
+            if(R.getClass().getName().contains("StringInput")){Param.add(R.GetValue());}
+            if(R.getClass().getName().contains("DecimalInput")){Param.add(Double.parseDouble(R.GetValue()));}
+            if(R.getClass().getName().contains("IntegerInput")){Param.add(Integer.parseInt(R.GetValue()));}
+            if(R.getClass().getName().contains("BooleanInput")){Param.add(Boolean.parseBoolean(R.GetValue()));}
+            if(R.getClass().getName().contains("DateInput")){
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                if(R.GetValue().contains("\n")){
+                    System.out.println(R.GetValue());
+                    Param.add(LocalDateTime.parse(R.GetValue().split("\n")[0], formatter));
+                    Param.add(LocalDateTime.parse(R.GetValue().split("\n")[1], formatter));
+                }
+                else{Param.add(LocalDateTime.parse(R.GetValue(), formatter));}
+            }            
+            SelectedRowFilter.add(R.GetCondition());
+        }
 
-        String ORDER_BY = "ORDER BY "+ OrderColumn.getSelectedItem();
-        if(OrderBy.getSelectedItem()=="Ascendente"){ORDER_BY += " ASC";}
-        else{ORDER_BY += " DESC";}
-
+        //Backend
+        if (SelectedColumn.size()==0) {JOptionPane.showMessageDialog(this, "DEBE MOSTRAR AL MENOS UNA COLUMNA");return;}
+        
+        String SELECT = "SELECT " + String.join(", ", SelectedColumn);
+        String FROM = "FROM ( " + Modulo + " ) as IDK";  
+        String WHERE = !Param.isEmpty() ? "WHERE " + String.join(" AND ", SelectedRowFilter) : "";
+        String ORDER_BY = "ORDER BY \""+ OrderColumn.getSelectedItem().toString() + "\" " + (OrderBy.getSelectedItem().toString()=="Ascendente" ? "ASC" : "DESC");
         String LIMIT = "LIMIT "+ LimitTo.getValue().toString();
         String OFFSET = "OFFSET "+ LimitFrom.getValue().toString();
 
-        String MAIN_QUERY = SELECT+" FROM ("+ CONSULTAS.get(Modulos.getSelectedItem().toString()) +") as xd "+WHERE+" "+ORDER_BY+" "+LIMIT+" "+OFFSET;
-        //System.out.println(MAIN_QUERY);
+        String MAIN_QUERY = String.join(" ",new String[]{SELECT,FROM,WHERE,ORDER_BY,LIMIT,OFFSET});
+        
+        //BDD
+        try {
+            ResultSet RS_DATA = DB.consultar(MAIN_QUERY, Param.toArray());
+            ArrayList<ArrayList<String>> Rows = new ArrayList<>();
 
-        try {DATA.setDataVector(GetData(MAIN_QUERY,isVList), isVList.toArray());
-        } catch (SQLException e1) {e1.printStackTrace();}
+            while (RS_DATA.next()) {            
+                ArrayList<String> newData = new ArrayList<>();
+                for(String h: SelectedColumn){newData.add(RS_DATA.getString(h.replace("\"", "")));}
+                Rows.add(newData);
+            }
+
+            for(int i = 0; i <SelectedColumn.size();i++){SelectedColumn.set(i,SelectedColumn.get(i).replace("\"",""));}
+            Table.UpdateTable(SelectedColumn,Rows);
+        } catch (Exception e) {System.out.println("Something went Wrong");}
+        //System.out.println("SQL: "+MAIN_QUERY);
         this.repaint();
         this.revalidate();
-    }
-
-    String[][] GetData(String SQL,ArrayList<String> header) throws SQLException{
-        ResultSet RS_DATA = DB.consultar(SQL, null);
-        
-        //Getting Data
-        ArrayList<ArrayList<String>> Datas = new ArrayList<>();
-        while (RS_DATA.next()) {            
-            ArrayList<String> newData = new ArrayList<>();
-            for(String h: header){newData.add(RS_DATA.getString(h.substring(1,h.length()-1)));}
-            Datas.add(newData);
-        }
-
-        //Converting...
-        String[][] result = new String[Datas.size()][];
-        for (int i = 0; i < Datas.size(); i++) {
-            ArrayList<String> row = Datas.get(i);
-            result[i] = row.toArray(new String[0]);
-        }
-
-        return result;
     }
 //#endregion
 
@@ -458,26 +524,26 @@ public class MenuReporte extends JPanel {
             titulo.setSpacingAfter(20);
             documento.add(titulo);
 
-            float[] anchosColumnas = new float[DATA.getColumnCount()];
-            for (int i = 0; i < DATA.getColumnCount(); i++) {anchosColumnas[i] = 1f;}
+            float[] anchosColumnas = new float[Table.headers.size()];
+            for (int i = 0; i < Table.headers.size(); i++) {anchosColumnas[i] = 1f;}
             PdfPTable tabla = new PdfPTable(anchosColumnas);
             tabla.setWidthPercentage(100); // Que ocupe el 100% del ancho de la página
 
-            String[] encabezados = new String[DATA.getColumnCount()];
-            for (int i = 0; i < DATA.getColumnCount(); i++) {encabezados[i] = DATA.getColumnName(i);}
+            String[] encabezados = new String[Table.headers.size()];
+            for (int i = 0; i < Table.headers.size(); i++) {encabezados[i] = Table.headers.get(i);}
             
         
-            String[][] datos = new String[DATA.getRowCount()][DATA.getColumnCount()];  
-            for (int i = 0; i < DATA.getRowCount(); i++) {
-                for (int j = 0; j < DATA.getColumnCount(); j++) {
-                    Object valor = DATA.getValueAt(i, j);
+            String[][] datos = new String[Table.rows.size()][Table.headers.size()];  
+            for (int i = 0; i < Table.rows.size(); i++) {
+                for (int j = 0; j < Table.headers.size(); j++) {
+                    Object valor = Table.rows.get(i).get(j);
                     datos[i][j] = (valor != null) ? valor.toString() : "";
                 }
             }           
 
             for (String textoHeader : encabezados) {
                 PdfPCell celdaHeader = new PdfPCell(new Phrase(textoHeader));
-                celdaHeader.setBackgroundColor(ThemeManager.COLOR_PRIMARY); // Color de fondo azul
+                celdaHeader.setBackgroundColor(ThemeManager.COLOR_SECONDARY); // Color de fondo azul
                 celdaHeader.setHorizontalAlignment(0);
                 celdaHeader.setPadding(8); // Espaciado interno de la celda
                 tabla.addCell(celdaHeader);
