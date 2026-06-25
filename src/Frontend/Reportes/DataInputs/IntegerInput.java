@@ -56,7 +56,20 @@ public class IntegerInput extends Input {
     }
 
     @Override
-    public String GetInput(){
+    public String GetCondition(){
+        switch (OptionsMenu.getSelectedItem().toString()) {
+            case "Es igual a": return "\"" +title.getText() +"\" = ?";
+            case "Es diferente a": return "\"" +title.getText() +"\" != ?";
+            case "Es mayor que": return "\"" +title.getText() +"\" > ?";
+            case "Es mayor igual que": return "\"" +title.getText() +"\" >= ?";
+            case "Es menor que": return "\"" +title.getText() +"\" < ?";        
+            case "Es menor igual que": return "\"" +title.getText() +"\" <= ?";
+            default: return "???";
+        }     
+    }
+
+    @Override
+    public String GetValue(){
         if(input == null){return "";}
         String strInput = input.getText().trim();
         if(strInput.isEmpty()){return "";}
@@ -64,16 +77,7 @@ public class IntegerInput extends Input {
         if(!strInput.matches("[0-9]+")){
             JOptionPane.showMessageDialog(this, title.getText() +  " DEBE SER NUMERICO");
             return "???";
-        }
-
-        switch (OptionsMenu.getSelectedItem().toString()) {
-            case "Es igual a": return "\"" +title.getText() +"\"" + " = "  + strInput;
-            case "Es diferente a": return "\"" +title.getText() +"\"" + " != "  + strInput;
-            case "Es mayor que": return "\"" +title.getText() +"\"" + " > "  + strInput;
-            case "Es mayor igual que": return "\"" +title.getText() +"\"" + " >= "  + strInput;
-            case "Es menor que": return "\"" +title.getText() +"\"" + " < "  + strInput;        
-            case "Es menor igual que": return "\"" +title.getText() +"\"" + " <= "  + strInput;
-            default: return "???";
-        }
+        }    
+        return strInput;
     }
 }

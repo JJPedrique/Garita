@@ -33,9 +33,15 @@ public class StringInput extends Input{
         gbc.gridx=2;gbc.gridy=0;gbc.gridwidth=1;gbc.gridheight=2; gbc.weightx=0;
         this.add(BtnRemover,gbc);     
     }
+    
+    @Override
+    public String GetCondition(){
+        if(OptionsMenu.getSelectedItem().toString() == "Contiene"){ return "\"" +title.getText() +"\" LIKE ?";}
+        else{return title.getText() + " NOT ILIKE ?";}       
+    }
 
     @Override
-    public String GetInput(){
+    public String GetValue(){
         String strInput = input.getText().trim();
         if(strInput.isEmpty()){return "";}
 
@@ -44,7 +50,6 @@ public class StringInput extends Input{
             return "???";
         }
 
-        if(OptionsMenu.getSelectedItem().toString() == "Contiene"){ return "\"" +title.getText() +"\"" + " ILIKE '%" + strInput + "%'";}
-        else{return title.getText() + " NOT ILIKE '%" + strInput + "%'";}
+        return "%"+strInput+"%";
     }
 }

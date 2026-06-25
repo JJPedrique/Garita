@@ -59,20 +59,22 @@ public class DateInput extends Input{
     }
 
     @Override
-    public String GetInput(){
-        if(FromDate.getDate() == null && ToDate.getDate() == null){return "";}
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        SimpleDateFormat sdf2 = new SimpleDateFormat("HH:mm:ss");
+    public String GetCondition(){
+        if(FromDate.getDate() != null && ToDate.getDate() != null){return "\"" + title.getText() + "\" >= ? AND \"" + title.getText() + "\" <= ?";     }
+        else if(FromDate.getDate() != null){return "\""+ title.getText() + "\" >= ?";}
+        else{return "\"" + title.getText() + "\" <= ?";} 
+    }
 
+    @Override
+    public String GetValue(){
+        if(FromDate.getDate() == null && ToDate.getDate() == null){return "";}
+        SimpleDateFormat DATE = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat TIME = new SimpleDateFormat("HH:mm:ss");
+        
         if(FromDate.getDate() != null && ToDate.getDate() != null){
-            return title.getText() + " >= '" + sdf.format(FromDate.getDate()) + " " +  sdf2.format(FromTime.getValue()) + "'" + " AND " 
-            + title.getText() + " <= '" + sdf.format(ToDate.getDate()) + " " + sdf2.format(ToTime.getValue()) + "'";     
-        }
-        else if(FromDate.getDate() != null){
-            return title.getText() + " >= '" + sdf.format(FromDate.getDate()) + " " +  sdf2.format(FromTime.getValue()) + "'";
-        }
-        else{
-           return title.getText() + " <= '" + sdf.format(ToDate.getDate()) + " " +  sdf2.format(ToTime.getValue()) + "'";
-        }  
+            return DATE.format(FromDate.getDate()) + " " +  TIME.format(FromTime.getValue()) + "\n" 
+            + DATE.format(ToDate.getDate()) + " " + TIME.format(ToTime.getValue());     
+        }else if(FromDate.getDate() != null){return DATE.format(FromDate.getDate()) + " " +  TIME.format(FromTime.getValue());}
+        else{return title.getText() + " <= '" + DATE.format(ToDate.getDate()) + " " +  TIME.format(ToTime.getValue());}
     }
 }

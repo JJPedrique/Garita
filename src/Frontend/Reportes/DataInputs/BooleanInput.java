@@ -31,11 +31,12 @@ public class BooleanInput extends Input{
     }
 
     @Override
-    public String GetInput(){
+    public String GetCondition(){return "\"" +title.getText() +"\" = ?";}
+
+    @Override
+    public String GetValue(){        
         String strInput = OptionsMenu.getSelectedItem().toString();
         if(strInput.isEmpty()){return "";}
-
-        if(OptionsMenu.getSelectedItem().toString()=="Verdadero"){return "\"" +title.getText() +"\"" + " = false";}
-        else{return "\"" +title.getText() +"\"" + " = true";}
+        return strInput;
     }
 }
