@@ -1,9 +1,5 @@
 package Frontend.Mantenimiento;
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
-
-import org.openpdf.text.Header;
-
 import Backend.ConexionPostgres;
 import Backend.ThemeManager;
 
@@ -32,7 +28,7 @@ public class SubMenuUsuarios extends JPanel {
                 this.add(PanelControl,gbc);
 
                 gbc.gridx=0;
-                JButton Editar = ThemeManager.Button("/");
+                JButton Editar = new JButton(ThemeManager.SetImgIcon("img\\edit.png", ThemeManager.ICON_WIDTH_PX, ThemeManager.ICON_HEIGHT_PX));
                 PanelControl.add(Editar,gbc);
                 Editar.addActionListener(new ActionListener() {
                     @Override
@@ -41,8 +37,15 @@ public class SubMenuUsuarios extends JPanel {
                     }
                 });
                 
+                Editar.setFocusPainted(false);
+                Editar.setContentAreaFilled(false);
+                Editar.setBorderPainted(false);
+                Editar.setForeground(ThemeManager.COLOR_TEXT);
+                Editar.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+                
                 gbc.gridx=1;
-                JButton Eliminar = ThemeManager.Button("X");
+                JButton Eliminar = new JButton(ThemeManager.SetImgIcon("img\\delete.png", ThemeManager.ICON_WIDTH_PX, ThemeManager.ICON_HEIGHT_PX));
                 PanelControl.add(Eliminar,gbc);
                 Eliminar.addActionListener(new ActionListener() {
                     @Override
@@ -50,6 +53,12 @@ public class SubMenuUsuarios extends JPanel {
                         new FrameBorrarUsuario();
                     }
                 });
+
+                Eliminar.setFocusPainted(false);
+                Eliminar.setContentAreaFilled(false);
+                Eliminar.setBorderPainted(false);
+                Eliminar.setForeground(ThemeManager.COLOR_TEXT);
+                Eliminar.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
             }
         }
 
@@ -114,10 +123,7 @@ public class SubMenuUsuarios extends JPanel {
     JTextField inputCedula =  new JTextField();
 
     //Table
-    DefaultTableModel DATA = new DefaultTableModel(new String[][]{}, new String[]{}){
-        @Override
-        public boolean isCellEditable(int row,int column){return false;}
-    };
+    MyTable UserTable;
 
     public SubMenuUsuarios(){
         this.setLayout(new BorderLayout());
@@ -128,38 +134,19 @@ public class SubMenuUsuarios extends JPanel {
         Headers.add("Cedula");
         Headers.add("Telefono");
         Headers.add("Opciones");
-
-        MyTable myTable = new MyTable(Headers);
-
-        ArrayList<ArrayList<String>> DATA = new ArrayList<>();
-        for(int i = 0; i < 10; i++){
-            ArrayList<String> newData = new ArrayList<>();
-            newData.add("Jose");
-            newData.add("123");
-            newData.add("0414");
-            DATA.add(newData);
-        }
-
-
-        myTable.UpdateTable(DATA);
-
-
-        this.add(new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,Filtros(),myTable),BorderLayout.CENTER);
+        UserTable = new MyTable(Headers);
+        this.add(new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,Filtros(),UserTable),BorderLayout.CENTER);
+        try {Search();} catch (SQLException e1) {e1.printStackTrace();}
 
         KeyStroke enterKey = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
         this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(enterKey, "executeSearch");
         this.getActionMap().put("executeSearch", new AbstractAction() {
             @Override
-            public void actionPerformed(ActionEvent e) {}
+            public void actionPerformed(ActionEvent e) {
+                try {Search();} catch (SQLException e1) {e1.printStackTrace();}
+            }
         });
     }
-
-    JPanel Preview(){
-        JPanel newPanel = ThemeManager.Panel(new BorderLayout());
-        newPanel.add(ThemeManager.ScrollPanel(ThemeManager.Table(DATA)),BorderLayout.CENTER);
-        return newPanel;
-    } 
-
 
     JPanel Filtros(){
         JPanel newPanel = ThemeManager.Panel(new GridBagLayout());
@@ -246,28 +233,16 @@ public class SubMenuUsuarios extends JPanel {
             else{ MAIN_QUERY += " WHERE Cedula IS LIKE %?%";}
         }
 
-        ArrayList<ArrayList<Object>> Datas = new ArrayList<>();
+        ArrayList<ArrayList<String>> Datas = new ArrayList<>();
         ResultSet RS_DATA = DB.consultar(MAIN_QUERY,PARAM.toArray());
         while (RS_DATA.next()) {            
-            ArrayList<Object> newData = new ArrayList<>();
-            for(String h: new String[]{"Nombre Completo", "Cedula", "telefono","Opciones"}){
-                if(h=="Opciones"){
-                    newData.add(new JButton("aaa"));   
-                    continue;
-                }
-                newData.add(RS_DATA.getString(h));
-            }
+            ArrayList<String> newData = new ArrayList<>();
+            for(String h: new String[]{"Nombre Completo", "Cedula", "telefono"}){newData.add(RS_DATA.getString(h));}
             Datas.add(newData);
         }     
 
-        Object[][] result = new Object[Datas.size()][];
-        for (int i = 0; i < Datas.size(); i++) {
-            ArrayList<Object> row = Datas.get(i);
-            result[i] = row.toArray(new Object[0]);
-        }
+        UserTable.UpdateTable(Datas);
 
-
-        DATA.setDataVector(result, new String[]{"Nombre Completo", "Cedula", "telefono","Opciones"});
         this.repaint();
         this.revalidate();
     }

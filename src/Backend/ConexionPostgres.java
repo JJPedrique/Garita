@@ -11,7 +11,9 @@ public class ConexionPostgres {
     Connection conexion = null;
 
     // Configuración de la base de datos
-    // El puerto por defecto de PostgreSQL es 5432      
+    // El puerto por defecto de PostgreSQL es 5432    
+    static final String pgDumpPath = "C:\\Program Files\\PostgreSQL\\15\\bin\\pg_dump.exe";
+    static final String pgRestorePath = "C:\\Program Files\\PostgreSQL\\15\\bin\\pg_restore.exe";  
     public static final String USER = "postgres";
     private static final String PASSWORD = "1234";
 
@@ -62,12 +64,12 @@ public class ConexionPostgres {
             }
             
             // SOLO PARA VERIFICAR QUERY
-//            String queryEjecutable = QUERY;
-//            for (Object p : VALUES) {
-//                String valor = (p instanceof String) ? "'" + p + "'" : String.valueOf(p);
-//                queryEjecutable = queryEjecutable.replaceFirst("\\?", valor);
-//            }
-//            JOptionPane.showMessageDialog(null,queryEjecutable);
+            // String queryEjecutable = QUERY;
+            // for (Object p : VALUES) {
+            //     String valor = (p instanceof String) ? "'" + p + "'" : String.valueOf(p);
+            //     queryEjecutable = queryEjecutable.replaceFirst("\\?", valor);
+            // }
+            // System.out.println(queryEjecutable);
     
             int filasAfectadas = PS.executeUpdate();
             if (filasAfectadas > 0) {
@@ -109,11 +111,12 @@ public class ConexionPostgres {
 
     public static void backupDatabase() {
         try {
+            
             String rutaDescargas = System.getProperty("user.home") + File.separator + "Downloads";
             File archivo = new File(rutaDescargas, "GaritaRespaldo.backup");
     
             ProcessBuilder pb = new ProcessBuilder(
-                "pg_dump", 
+                pgDumpPath, 
                 "-h", "localhost", 
                 "-U", "postgres", 
                 "-F", "c",                 
@@ -156,7 +159,7 @@ public class ConexionPostgres {
             File archivoSeleccionado = selector.getSelectedFile();
     
             ProcessBuilder pb = new ProcessBuilder(
-                "pg_restore", 
+                pgRestorePath, 
                 "-h", "localhost", 
                 "-U", "postgres", 
                 "--clean",             

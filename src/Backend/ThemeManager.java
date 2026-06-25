@@ -6,12 +6,14 @@ import javax.swing.*;
 import javax.swing.table.TableModel;
 
 public class ThemeManager {
+
     public static final Color COLOR_BACKGROUND_DARK  = Color.decode("#121212");
     public static final Color COLOR_BACKGROUND       = Color.decode("#1E1E1E");
     public static final Color COLOR_BACKGROUND_LIGHT = Color.decode("#2D2D2D");
     public static final Color COLOR_PRIMARY          = Color.decode("#428b13");
     public static final Color COLOR_SECONDARY        = Color.decode("#6ab848");
     public static final Color COLOR_ERROR            = Color.decode("#FF3131");
+    public static final Color COLOR_ERROR_HOVER      = Color.decode("#bd0f0f");
     public static final Color COLOR_WARNING          = Color.decode("#FFC107");
     public static final Color COLOR_INFO             = Color.decode("#4B0082");
     public static final Color COLOR_TEXT             = Color.decode("#FFFFFF");
@@ -30,14 +32,35 @@ public class ThemeManager {
     public static final int ICON_HEIGHT_PX = 24;
 
     public static JButton Button(String text){
-        JButton newButton = new JButton(text);
-        newButton.setFont(TEXT_NORMAL);
+        JButton newButton = new JButton(text) {
+            @Override
+            //JButton - Border Radius
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(getBackground());
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), ThemeManager.BORDER_RADIUS_PX, ThemeManager.BORDER_RADIUS_PX);
+                g2.dispose();
+                super.paintComponent(g);
+            }
+        };
+        
+        newButton.setMaximumSize(new Dimension(175, 50));
         newButton.setForeground(COLOR_TEXT);
         newButton.setBackground(COLOR_PRIMARY);
+        newButton.setFont(TEXT_SUBTITLE);
+        newButton.setFocusPainted(false);
+        newButton.setBorderPainted(false);
+        newButton.setContentAreaFilled(false);
+        newButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        newButton.setHorizontalAlignment(SwingConstants.CENTER);
+
         newButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 newButton.setBackground(COLOR_SECONDARY);
             }
+            @Override
             public void mouseExited(java.awt.event.MouseEvent evt) {
                 newButton.setBackground(COLOR_PRIMARY);
             }
@@ -55,7 +78,6 @@ public class ThemeManager {
         btn.setHorizontalAlignment(SwingConstants.LEFT);
         return btn;
     }
-
 
     public static JLabel Label(String text){
         JLabel newLabel = new JLabel(text);
@@ -85,12 +107,45 @@ public class ThemeManager {
         return newScrollPane;
     }
 
-
     public static JTextField Textfield(){
-        JTextField newTextField = new JTextField();
+        JTextField newTextField = new JTextField("") {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(getBackground());
+                g2.fillRoundRect(0, 0, getWidth()-1, getHeight()-1, ThemeManager.BORDER_RADIUS_PX, ThemeManager.BORDER_RADIUS_PX); 
+                g2.dispose();
+                super.paintComponent(g);
+
+                if (getText().isEmpty()) {
+                    Graphics2D gPlaceholder = (Graphics2D) g.create();
+                    gPlaceholder.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                    gPlaceholder.setColor(ThemeManager.COLOR_PLACEHOLDER);
+                    gPlaceholder.setFont(getFont());
+                
+                    // FontMetrics fm = gPlaceholder.getFontMetrics();
+                    // int x = getInsets().left;
+                    // int y = (getHeight() - fm.getHeight()) / 2 + fm.getAscent();
+                    // gPlaceholder.drawString(PlaceHolder, x, y);
+                    
+                    gPlaceholder.dispose();
+                }
+            }
+        };
+
+        newTextField.setPreferredSize(new Dimension(250, 30));
+        newTextField.setBorder(BorderFactory.createEmptyBorder(6, 12, 6, 12));
+        newTextField.setOpaque(false);
         newTextField.setFont(TEXT_NORMAL);
-        newTextField.setForeground(COLOR_TEXT);
-        newTextField.setBackground(COLOR_BACKGROUND);
+        newTextField.setBackground(COLOR_INPUT);
+        newTextField.setForeground(COLOR_TEXT_DARK);
+
+        newTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override public void focusGained(java.awt.event.FocusEvent evt) { newTextField.repaint(); }
+            @Override public void focusLost(java.awt.event.FocusEvent evt) { newTextField.repaint(); }
+        });
+
         return newTextField;
     }
 
@@ -119,16 +174,16 @@ public class ThemeManager {
 
     public static void MostrarMensajeError(JPanel JP, String msg) {
         JDialog customDialog = new JDialog((Window) SwingUtilities.getWindowAncestor(JP), "Sistema Garita - ERROR", Dialog.ModalityType.APPLICATION_MODAL);
-        configurarDialogMensaje(JP, customDialog, msg, new Color(200, 50, 50), "X");
+        configurarDialogMensaje(JP, customDialog, msg, COLOR_ERROR, "X");
     }
 
     public static void MostrarMensajeExito(JPanel JP, String msg) {
         JDialog customDialog = new JDialog((Window) SwingUtilities.getWindowAncestor(JP), "Sistema Garita - EXITO", Dialog.ModalityType.APPLICATION_MODAL);
-        configurarDialogMensaje(JP, customDialog, msg, new Color(70, 140, 35), "i");
+        configurarDialogMensaje(JP, customDialog, msg, COLOR_PRIMARY, "i");
     }
     
     public static void configurarDialogMensaje(JPanel JP, JDialog dialog, String msg, Color bgButton, String iconChar) {
-        dialog.setSize(400, 180);
+        dialog.setSize(550, 180);
         dialog.setLocationRelativeTo(JP);
         
         JPanel pRoot = new JPanel(new GridBagLayout());
@@ -156,16 +211,53 @@ public class ThemeManager {
 
         JButton btnAceptar = ThemeManager.Button("Aceptar");
         btnAceptar.setBackground(bgButton);
-        btnAceptar.setPreferredSize(new Dimension(120, 35));
+        btnAceptar.setPreferredSize(new Dimension(250, 35));
         btnAceptar.addActionListener(e -> dialog.dispose());
 
-        c.insets = new Insets(15, 20, 10, 10);
-        c.gridx = 0; c.gridy = 0; pRoot.add(lIcon, c);
+        c.insets = new Insets(10, 10, 5, 10);
+        c.weightx = 0.0;
+        c.gridx = 0; c.gridy = 0; pRoot.add(lIcon, c); 
         c.gridx = 1; c.weightx = 1.0; c.fill = GridBagConstraints.HORIZONTAL; pRoot.add(lMsg, c);
         c.gridx = 0; c.gridy = 1; c.gridwidth = 2; c.fill = GridBagConstraints.NONE;
-        c.insets = new Insets(10, 20, 20, 20); pRoot.add(btnAceptar, c);
+        c.insets = new Insets(5, 5, 5, 5); pRoot.add(btnAceptar, c);
 
         dialog.add(pRoot);
         dialog.setVisible(true);
+    }
+
+    public static class RoundIconLabel extends JLabel {
+        private Icon customIcon = null;
+
+        public RoundIconLabel(String iconPath) {
+            super("", SwingConstants.CENTER);
+            setOpaque(false);
+            setPreferredSize(new Dimension(35, 35));
+            setMinimumSize(new Dimension(35, 35));
+            setMaximumSize(new Dimension(35, 35));
+
+            ImageIcon imgIcon = SetImgIcon(iconPath, ICON_WIDTH_PX, ICON_HEIGHT_PX);
+            if (imgIcon != null) this.customIcon = imgIcon;
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            
+            // Fondo circular
+            g2.setColor(ThemeManager.COLOR_LABEL);
+            g2.fillOval(0, 0, getWidth()-1, getHeight()-1);
+            
+            // Poner el ícono centrado
+            if (customIcon != null) {
+                int iconWidth = customIcon.getIconWidth();
+                int iconHeight = customIcon.getIconHeight();
+                int x = (getWidth()-iconWidth) / 2;
+                int y = (getHeight()-iconHeight) / 2;
+                customIcon.paintIcon(this, g2, x, y);
+            }
+            
+            g2.dispose();
+        }
     }
 }

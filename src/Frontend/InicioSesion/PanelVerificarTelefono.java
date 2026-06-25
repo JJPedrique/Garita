@@ -24,13 +24,13 @@ public class PanelVerificarTelefono extends JPanel {
     
     private final JPanel pInput = new JPanel();
     private final JLabel lSubTitulo = new JLabel("<html><center>Ingrese su usuario y número telefónico <br> para recibir un código.</center></html>");
-    private final JLabel lInputUsuario = new RoundIconLabel("img\\user.png");
-    private final JTextField tfInputUsuario = TF_Username("V-12345678");
-    private final JLabel lInputTelefono = new RoundIconLabel("img\\phone.png");
-    private final JTextField tfInputTelefono = TF_Telefono("0414-1234567");
+    private final JLabel lInputUsuario = new ThemeManager.RoundIconLabel("img\\user.png");
+    private final JTextField tfInputUsuario = ThemeManager.Textfield();
+    private final JLabel lInputTelefono = new ThemeManager.RoundIconLabel("img\\phone.png");
+    private final JTextField tfInputTelefono = ThemeManager.Textfield();
 
     private final JPanel pButton = new JPanel();
-    private final JButton bRecibirCodigo = JB_Default("Recibir Código");
+    private final JButton bRecibirCodigo = ThemeManager.Button("Recibir Código");
 
     public static int idUsuario;
 
@@ -116,28 +116,28 @@ public class PanelVerificarTelefono extends JPanel {
             String telefono = tfInputTelefono.getText().trim();
 
             if (usuario.isEmpty() && telefono.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Por favor, introduzca su usuario y teléfono.","Campos Vacíos", JOptionPane.WARNING_MESSAGE);
+                ThemeManager.MostrarMensajeError(this,"Por favor, introduzca su usuario y teléfono.");
                 return;
             }
 
             if (usuario.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Por favor, introduzca su usuario.","Campos Vacíos", JOptionPane.WARNING_MESSAGE);
+                ThemeManager.MostrarMensajeError(this,"Por favor, introduzca su usuario.");
                 return;
             }
 
             if (telefono.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Por favor, introduzca su teléfono.","Campos Vacíos", JOptionPane.WARNING_MESSAGE);
+                ThemeManager.MostrarMensajeError(this,"Por favor, introduzca su teléfono.");
                 return;
             }
 
             if (!usuario.matches("(?i)^V-[1-9]\\d{0,7}$")){
-                JOptionPane.showMessageDialog(this,"Formato de usuario invalido. \nSiga el siguiente ejemplo: V-12345678","Usuario Inválido", JOptionPane.WARNING_MESSAGE);
+                ThemeManager.MostrarMensajeError(this,"Formato de usuario invalido. \nSiga el siguiente ejemplo: V-12345678");
                 tfInputUsuario.requestFocusInWindow();
                 return;
             }
 
             if (!telefono.matches("^(0414|0424|0412|0416|0426|02\\d{2})-\\d{7}$")){
-                JOptionPane.showMessageDialog(this,"Formato de teléfono invalido. \nSiga el siguiente ejemplo: V-12345678","Usuario Inválido", JOptionPane.WARNING_MESSAGE);
+                ThemeManager.MostrarMensajeError(this,"Formato de teléfono invalido. \nSiga el siguiente ejemplo: 0424-1234567");
                 tfInputUsuario.requestFocusInWindow();
                 return;
             }
@@ -154,12 +154,12 @@ public class PanelVerificarTelefono extends JPanel {
                 }
 
                 if(TUPLA.isEmpty()){
-                    JOptionPane.showMessageDialog(this,"Usuario o Teléfono incorrecto.","ERROR",JOptionPane.ERROR_MESSAGE);
+                    ThemeManager.MostrarMensajeError(this,"Usuario o Teléfono incorrecto.");
                     return;
                 }
 
                 idUsuario = Integer.parseInt(TUPLA.get(0).toString());
-                JOptionPane.showMessageDialog(this,"Datos verificados correctamente.","Verificado",JOptionPane.INFORMATION_MESSAGE);
+                ThemeManager.MostrarMensajeExito(this,"Datos verificados correctamente.");
 
                 JFrame ventanaPadre = (JFrame) SwingUtilities.getWindowAncestor(this);
                 if (ventanaPadre != null) {
@@ -193,45 +193,6 @@ public class PanelVerificarTelefono extends JPanel {
     }
 
     //region Helper Functions
-    private JButton JB_Default(String texto) {
-        JButton JB = new JButton(texto) {
-            @Override
-            //JButton - Border Radius
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2 = (Graphics2D) g.create();
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(getBackground());
-                g2.fillRoundRect(0, 0, getWidth(), getHeight(), ThemeManager.BORDER_RADIUS_PX, ThemeManager.BORDER_RADIUS_PX);
-                g2.dispose();
-                super.paintComponent(g);
-            }
-        };
-        
-        JB.setMaximumSize(new Dimension(175, 50));
-        JB.setForeground(ThemeManager.COLOR_TEXT);
-        JB.setBackground(ThemeManager.COLOR_PRIMARY);
-        JB.setFont(ThemeManager.TEXT_SUBTITLE);
-        JB.setFocusPainted(false);
-        JB.setBorderPainted(false);
-        JB.setContentAreaFilled(false);
-        JB.setAlignmentX(Component.CENTER_ALIGNMENT);
-        JB.setHorizontalAlignment(SwingConstants.CENTER);
-
-        //JButton - Hover
-        JB.addMouseListener(new java.awt.event.MouseAdapter() {
-            @Override
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                JB.setBackground(ThemeManager.COLOR_SECONDARY);
-            }
-            @Override
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                JB.setBackground(ThemeManager.COLOR_PRIMARY);
-            }
-        });
-
-        return JB;
-    }
-
     private JButton JB_Regreso() {
         JButton JB = new JButton();
     
@@ -247,143 +208,5 @@ public class PanelVerificarTelefono extends JPanel {
         JB.setHorizontalAlignment(SwingConstants.CENTER);
 
         return JB;
-    }
-
-    private JTextField TF_Username(String placeholder) {
-        JTextField TF = new JTextField("") {
-            @Override
-            protected void paintComponent(Graphics g) {
-                // Input - Border Radius
-                Graphics2D g2 = (Graphics2D) g.create();
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(getBackground());
-                g2.fillRoundRect(0, 0, getWidth()-1, getHeight()-1, ThemeManager.BORDER_RADIUS_PX, ThemeManager.BORDER_RADIUS_PX); 
-                g2.dispose();
-                super.paintComponent(g);
-
-                // Placeholder - Campo Vacio o Sin Focus
-                if (getText().isEmpty()) {
-                    Graphics2D gPlaceholder = (Graphics2D) g.create();
-                    gPlaceholder.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                    gPlaceholder.setColor(ThemeManager.COLOR_PLACEHOLDER);
-                    gPlaceholder.setFont(getFont());
-                    
-                    // Calcular centrado vertical basándonos en las fuentes e insets
-                    FontMetrics fm = gPlaceholder.getFontMetrics();
-                    Insets insets = getInsets();
-                    int x = insets.left;
-                    int y = (getHeight() - fm.getHeight()) / 2 + fm.getAscent();
-                    
-                    gPlaceholder.drawString(placeholder, x, y);
-                    gPlaceholder.dispose();
-                }
-            }
-        };
-
-        TF.setPreferredSize(new Dimension(250, 35));
-        TF.setBorder(BorderFactory.createEmptyBorder(6, 12, 6, 12));
-        TF.setOpaque(false);
-        TF.setFont(ThemeManager.TEXT_NORMAL);
-        TF.setBackground(ThemeManager.COLOR_INPUT);
-        TF.setForeground(ThemeManager.COLOR_TEXT_DARK);
-        TF.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
-
-        // Repintar al ganar o perder foco para refrescar el placeholder
-        TF.addFocusListener(new java.awt.event.FocusAdapter() {
-            @Override
-            public void focusGained(java.awt.event.FocusEvent evt) {TF.repaint(); }
-            @Override
-            public void focusLost(java.awt.event.FocusEvent evt) { TF.repaint(); }
-        });
-
-        return TF;
-    }
-
-    private JTextField TF_Telefono(String placeholder) {
-        JTextField TF = new JTextField("") {
-            @Override
-            protected void paintComponent(Graphics g) {
-                // Input - Border Radius
-                Graphics2D g2 = (Graphics2D) g.create();
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(getBackground());
-                g2.fillRoundRect(0, 0, getWidth()-1, getHeight()-1, ThemeManager.BORDER_RADIUS_PX, ThemeManager.BORDER_RADIUS_PX); 
-                g2.dispose();
-                super.paintComponent(g);
-
-                // Placeholder - Campo Vacio o Sin Focus
-                if (getText().isEmpty()) {
-                    Graphics2D gPlaceholder = (Graphics2D) g.create();
-                    gPlaceholder.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                    gPlaceholder.setColor(ThemeManager.COLOR_PLACEHOLDER);
-                    gPlaceholder.setFont(getFont());
-                    
-                    // Calcular centrado vertical basándonos en las fuentes e insets
-                    FontMetrics fm = gPlaceholder.getFontMetrics();
-                    Insets insets = getInsets();
-                    int x = insets.left;
-                    int y = (getHeight() - fm.getHeight()) / 2 + fm.getAscent();
-                    
-                    gPlaceholder.drawString(placeholder, x, y);
-                    gPlaceholder.dispose();
-                }
-            }
-        };
-
-        TF.setPreferredSize(new Dimension(250, 35));
-        TF.setBorder(BorderFactory.createEmptyBorder(6, 12, 6, 12));
-        TF.setOpaque(false);
-        TF.setFont(ThemeManager.TEXT_NORMAL);
-        TF.setBackground(ThemeManager.COLOR_INPUT);
-        TF.setForeground(ThemeManager.COLOR_TEXT_DARK);
-        TF.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
-
-        // Repintar al ganar o perder foco para refrescar el placeholder
-        TF.addFocusListener(new java.awt.event.FocusAdapter() {
-            @Override
-            public void focusGained(java.awt.event.FocusEvent evt) {TF.repaint(); }
-            @Override
-            public void focusLost(java.awt.event.FocusEvent evt) { TF.repaint(); }
-        });
-
-        return TF;
-    }
-
-    // Soportar imágenes PNG redondeadas
-    private class RoundIconLabel extends JLabel {
-        private Icon customIcon = null;
-
-        public RoundIconLabel(String iconPath) {
-            super("", SwingConstants.CENTER);
-            setOpaque(false);
-            setPreferredSize(new Dimension(35, 35));
-            setMinimumSize(new Dimension(35, 35));
-            setMaximumSize(new Dimension(35, 35));
-
-            ImageIcon imgIcon = ThemeManager.SetImgIcon(iconPath, ThemeManager.ICON_WIDTH_PX, ThemeManager.ICON_HEIGHT_PX);
-            if (imgIcon != null) this.customIcon = imgIcon;
-            
-        }
-
-        @Override
-        protected void paintComponent(Graphics g) {
-            Graphics2D g2 = (Graphics2D) g.create();
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            
-            // Fondo circular
-            g2.setColor(ThemeManager.COLOR_LABEL);
-            g2.fillOval(0, 0, getWidth()-1, getHeight()-1);
-            
-            // Poner el ícono centrado
-            if (customIcon != null) {
-                int iconWidth = customIcon.getIconWidth();
-                int iconHeight = customIcon.getIconHeight();
-                int x = (getWidth()-iconWidth) / 2;
-                int y = (getHeight()-iconHeight) / 2;
-                customIcon.paintIcon(this, g2, x, y);
-            }
-            
-            g2.dispose();
-        }
     }
 }

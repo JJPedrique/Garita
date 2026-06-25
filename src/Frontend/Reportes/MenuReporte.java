@@ -10,8 +10,8 @@ import java.util.concurrent.locks.Condition;
 
 import javax.swing.*;
 import java.awt.event.*;
-import org.openpdf.text.*;
-import org.openpdf.text.pdf.*;
+//import org.openpdf.text.*;
+//import org.openpdf.text.pdf.*;
 import javax.swing.table.DefaultTableModel;
 
 import Backend.*;
@@ -334,7 +334,7 @@ public class MenuReporte extends JPanel {
         BtnImprimir.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                ImprimirPDF();
+                //ImprimirPDF();
             }
         });
  
