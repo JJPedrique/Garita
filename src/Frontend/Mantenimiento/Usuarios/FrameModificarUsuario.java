@@ -1,22 +1,23 @@
-package Frontend.Mantenimiento;
+package Frontend.Mantenimiento.Usuarios;
 import java.awt.*;
-import java.awt.event.*;
 import javax.swing.*;
+import java.awt.event.*;
 
 import Backend.ThemeManager;
 
-public class FrameAgregarUsuario extends JDialog {
 
+public class FrameModificarUsuario extends JDialog{
+    
     JTextField InputNombre = ThemeManager.Textfield();
     JTextField InputApellido = ThemeManager.Textfield();
     JTextField InputCedula = ThemeManager.Textfield();
     JTextField InputTelefono = ThemeManager.Textfield();
     JTextField InputClave = ThemeManager.Textfield();
 
-    public FrameAgregarUsuario(){
-        this.setLayout(new BorderLayout());
+    public FrameModificarUsuario(){
+         this.setLayout(new BorderLayout());
         this.setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
-        this.setTitle("Agregar Usuario");
+        this.setTitle("Actualizar Usuario");
         this.setSize(400, 300);
         this.setResizable(false);
 
@@ -31,7 +32,7 @@ public class FrameAgregarUsuario extends JDialog {
         JPanel newPanel = new JPanel(new FlowLayout());
         newPanel.setBackground(ThemeManager.COLOR_PRIMARY);
         
-        JLabel Titulo = ThemeManager.Label("Agregar Nuevo Usuario");
+        JLabel Titulo = ThemeManager.Label("Actualizar Usuario");
         Titulo.setForeground(ThemeManager.COLOR_TEXT);
         Titulo.setFont(ThemeManager.TEXT_TITLE);
         newPanel.add(Titulo);
@@ -96,12 +97,12 @@ public class FrameAgregarUsuario extends JDialog {
         newPanel.add(BtnAgregar);
         BtnAgregar.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {Agregar();}
+            public void actionPerformed(ActionEvent e) {Modificar();}
         });
         return newPanel;
     }
 
-    void Agregar(){
+    void Modificar(){
         this.dispose();
-    }
+    } 
 }

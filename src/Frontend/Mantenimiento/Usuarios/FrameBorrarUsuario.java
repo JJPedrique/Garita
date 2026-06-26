@@ -1,4 +1,4 @@
-package Frontend.Mantenimiento;
+package Frontend.Mantenimiento.Usuarios;
 import java.awt.*;
 import javax.swing.*;
 
