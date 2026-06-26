@@ -54,7 +54,7 @@ public class DecimalInput extends Input {
         if(strInput.isEmpty()){return "";}
 
         if(!strInput.matches("\\d*\\.?\\d+")){
-            JOptionPane.showMessageDialog(this, title.getText() + " DEBE SER DECIMAL");
+            ThemeManager.MostrarMensajeError(this, title.getText() + " DEBE SER DECIMAL");
             return "???";
         }
         return strInput;

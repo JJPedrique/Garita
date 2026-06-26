@@ -46,7 +46,7 @@ public class StringInput extends Input{
         if(strInput.isEmpty()){return "";}
 
         if(!strInput.matches("^[a-zA-Z0-9]+$")){
-            JOptionPane.showMessageDialog(this, title.getText() + " DEBE SER ALFA-NUMERICO");
+            ThemeManager.MostrarMensajeError(this, title.getText() + " DEBE SER ALFA-NUMERICO");
             return "???";
         }
 

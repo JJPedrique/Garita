@@ -67,14 +67,19 @@ public class DateInput extends Input{
 
     @Override
     public String GetValue(){
-        if(FromDate.getDate() == null && ToDate.getDate() == null){return "";}
-        SimpleDateFormat DATE = new SimpleDateFormat("yyyy-MM-dd");
-        SimpleDateFormat TIME = new SimpleDateFormat("HH:mm:ss");
-        
-        if(FromDate.getDate() != null && ToDate.getDate() != null){
-            return DATE.format(FromDate.getDate()) + " " +  TIME.format(FromTime.getValue()) + "\n" 
-            + DATE.format(ToDate.getDate()) + " " + TIME.format(ToTime.getValue());     
-        }else if(FromDate.getDate() != null){return DATE.format(FromDate.getDate()) + " " +  TIME.format(FromTime.getValue());}
-        else{return title.getText() + " <= '" + DATE.format(ToDate.getDate()) + " " +  TIME.format(ToTime.getValue());}
+        try {
+            if(FromDate.getDate() == null && ToDate.getDate() == null){return "";}
+            SimpleDateFormat DATE = new SimpleDateFormat("yyyy-MM-dd");
+            SimpleDateFormat TIME = new SimpleDateFormat("HH:mm:ss");
+            
+            if(FromDate.getDate() != null && ToDate.getDate() != null){
+                return DATE.format(FromDate.getDate()) + " " +  TIME.format(FromTime.getValue()) + "\n" 
+                + DATE.format(ToDate.getDate()) + " " + TIME.format(ToTime.getValue());     
+            }else if(FromDate.getDate() != null){return DATE.format(FromDate.getDate()) + " " +  TIME.format(FromTime.getValue());}
+            else{return title.getText() + " <= '" + DATE.format(ToDate.getDate()) + " " +  TIME.format(ToTime.getValue());}
+        } catch (Exception e) {
+            ThemeManager.MostrarMensajeError(this,"ERROR - Se Ingreso un mal formato de Fecha/Hora");
+            return "???";
+        }
     }
 }

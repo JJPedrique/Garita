@@ -1,18 +1,14 @@
 package Frontend.Reportes;
 import java.io.*;
 import java.sql.*;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
 import java.awt.*;
 import java.util.*;
-import java.util.concurrent.locks.Condition;
-
 import javax.swing.*;
 import java.awt.event.*;
 import org.openpdf.text.*;
 import org.openpdf.text.pdf.*;
-import javax.swing.table.DefaultTableModel;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 import Backend.*;
 import Frontend.Reportes.DataInputs.*;
@@ -240,7 +236,8 @@ public class MenuReporte extends JPanel {
         Modulos.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                try {ChangeModule(Modulos.getSelectedItem().toString());
+                try {
+                    ChangeModule(Modulos.getSelectedItem().toString());
                     SearchSQL();
                 } catch (SQLException e1) {e1.printStackTrace();}
             }
@@ -302,7 +299,9 @@ public class MenuReporte extends JPanel {
         OrderColumn = ThemeManager.StringComboBox();
         OrderColumn.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {SearchSQL();}
+            public void actionPerformed(ActionEvent e) {
+                if(OrderColumn.getItemCount()==0){return;}
+                SearchSQL();}
         });
         newPanel.add(OrderColumn,gbc);
 
@@ -457,27 +456,33 @@ public class MenuReporte extends JPanel {
         ArrayList<Object> Param = new ArrayList<>();
         ArrayList<String> SelectedRowFilter = new ArrayList<>();
         for(Input R : RowFilter) {
-            if(R.GetValue()==""){continue;}
-            if(R.GetValue()=="???"){return;}
+            String value = R.GetValue();
+            if(value==""){continue;}
+            if(value=="???"){return;}
             
-            if(R.getClass().getName().contains("StringInput")){Param.add(R.GetValue());}
-            if(R.getClass().getName().contains("DecimalInput")){Param.add(Double.parseDouble(R.GetValue()));}
-            if(R.getClass().getName().contains("IntegerInput")){Param.add(Integer.parseInt(R.GetValue()));}
-            if(R.getClass().getName().contains("BooleanInput")){Param.add(Boolean.parseBoolean(R.GetValue()));}
+            if(R.getClass().getName().contains("StringInput")){Param.add(value);}
+            if(R.getClass().getName().contains("DecimalInput")){Param.add(Double.parseDouble(value));}
+            if(R.getClass().getName().contains("IntegerInput")){Param.add(Integer.parseInt(value));}
+            if(R.getClass().getName().contains("BooleanInput")){Param.add(Boolean.parseBoolean(value));}
             if(R.getClass().getName().contains("DateInput")){
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
                 if(R.GetValue().contains("\n")){
                     System.out.println(R.GetValue());
-                    Param.add(LocalDateTime.parse(R.GetValue().split("\n")[0], formatter));
-                    Param.add(LocalDateTime.parse(R.GetValue().split("\n")[1], formatter));
+                    Param.add(LocalDateTime.parse(value.split("\n")[0], formatter));
+                    Param.add(LocalDateTime.parse(value.split("\n")[1], formatter));
                 }
-                else{Param.add(LocalDateTime.parse(R.GetValue(), formatter));}
+                else{Param.add(LocalDateTime.parse(value, formatter));}
             }            
             SelectedRowFilter.add(R.GetCondition());
         }
 
         //Backend
-        if (SelectedColumn.size()==0) {JOptionPane.showMessageDialog(this, "DEBE MOSTRAR AL MENOS UNA COLUMNA");return;}
+        if (SelectedColumn.size()==0) {
+            ThemeManager.MostrarMensajeError(this, "DEBE MOSTRAR AL MENOS UNA COLUMNA");
+            for (JCheckBox CB : ColumnFilter) {CB.setSelected(true);}
+            SearchSQL();
+            return;
+        }
         
         String SELECT = "SELECT " + String.join(", ", SelectedColumn);
         String FROM = "FROM ( " + Modulo + " ) as IDK";  
@@ -502,7 +507,7 @@ public class MenuReporte extends JPanel {
             for(int i = 0; i <SelectedColumn.size();i++){SelectedColumn.set(i,SelectedColumn.get(i).replace("\"",""));}
             Table.UpdateTable(SelectedColumn,Rows);
         } catch (Exception e) {System.out.println("Something went Wrong");}
-        System.out.println("SQL: "+MAIN_QUERY);
+        // System.out.println("SQL: "+MAIN_QUERY);
         this.repaint();
         this.revalidate();
     }

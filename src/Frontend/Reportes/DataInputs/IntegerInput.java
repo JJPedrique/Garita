@@ -75,7 +75,7 @@ public class IntegerInput extends Input {
         if(strInput.isEmpty()){return "";}
          
         if(!strInput.matches("[0-9]+")){
-            JOptionPane.showMessageDialog(this, title.getText() +  " DEBE SER NUMERICO");
+            ThemeManager.MostrarMensajeError(this, title.getText() +  " DEBE SER NUMERICO");
             return "???";
         }    
         return strInput;
