@@ -7,22 +7,27 @@ import Backend.ThemeManager;
 
 
 public class FrameModificarUsuario extends JDialog{
-    
+
     JTextField InputNombre = ThemeManager.Textfield();
     JTextField InputApellido = ThemeManager.Textfield();
     JTextField InputCedula = ThemeManager.Textfield();
     JTextField InputTelefono = ThemeManager.Textfield();
+    JComboBox<String> InputRol = ThemeManager.StringComboBox();
     JTextField InputClave = ThemeManager.Textfield();
 
+    String ROLES[] = {"Vigilancia","Administrador","Junta"};
+
     public FrameModificarUsuario(){
-         this.setLayout(new BorderLayout());
+        this.setLayout(new BorderLayout());
         this.setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
-        this.setTitle("Actualizar Usuario");
-        this.setSize(400, 300);
+        this.setTitle("Agregar Usuario");
+        this.setSize(400, 350);
         this.setResizable(false);
 
         this.add(Top(),BorderLayout.NORTH);
-        this.add(Center(),BorderLayout.CENTER);
+        JPanel center = Center();
+        center.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        this.add(center,BorderLayout.CENTER);
         this.add(Bottom(),BorderLayout.SOUTH);
 
         this.setVisible(true);
@@ -32,7 +37,7 @@ public class FrameModificarUsuario extends JDialog{
         JPanel newPanel = new JPanel(new FlowLayout());
         newPanel.setBackground(ThemeManager.COLOR_PRIMARY);
         
-        JLabel Titulo = ThemeManager.Label("Actualizar Usuario");
+        JLabel Titulo = ThemeManager.Label("Agregar Nuevo Usuario");
         Titulo.setForeground(ThemeManager.COLOR_TEXT);
         Titulo.setFont(ThemeManager.TEXT_TITLE);
         newPanel.add(Titulo);
@@ -78,6 +83,14 @@ public class FrameModificarUsuario extends JDialog{
         newPanel.add(InputTelefono,gbc);
 
         gbc.gridy=4;gbc.gridx=0;gbc.weightx = 0;
+        JLabel Rol  = ThemeManager.Label("Rol");
+        newPanel.add(Rol,gbc);
+
+        gbc.gridx=1;gbc.weightx = 1;
+        for (String R : ROLES) {InputRol.addItem(R);}
+        newPanel.add(InputRol,gbc);
+
+        gbc.gridy=5;gbc.gridx=0;gbc.weightx = 0;
         JLabel Clave  = ThemeManager.Label("Clave");
         newPanel.add(Clave,gbc);
 
@@ -97,12 +110,12 @@ public class FrameModificarUsuario extends JDialog{
         newPanel.add(BtnAgregar);
         BtnAgregar.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {Modificar();}
+            public void actionPerformed(ActionEvent e) {Agregar();}
         });
         return newPanel;
     }
 
-    void Modificar(){
+    void Agregar(){
         this.dispose();
-    } 
+    }
 }

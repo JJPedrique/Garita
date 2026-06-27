@@ -12,6 +12,8 @@ public class ConexionPostgres {
 
     // Configuración de la base de datos
     // El puerto por defecto de PostgreSQL es 5432    
+    //#region POSTGRE 15  
+    //#endregion
     static final String pgDumpPath = "C:\\Program Files\\PostgreSQL\\15\\bin\\pg_dump.exe";
     static final String pgRestorePath = "C:\\Program Files\\PostgreSQL\\15\\bin\\pg_restore.exe";  
     public static final String USER = "postgres";

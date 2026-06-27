@@ -11,17 +11,22 @@ public class FrameAgregarUsuario extends JDialog {
     JTextField InputApellido = ThemeManager.Textfield();
     JTextField InputCedula = ThemeManager.Textfield();
     JTextField InputTelefono = ThemeManager.Textfield();
+    JComboBox<String> InputRol = ThemeManager.StringComboBox();
     JTextField InputClave = ThemeManager.Textfield();
+
+    String ROLES[] = {"Vigilancia","Administrador","Junta"};
 
     public FrameAgregarUsuario(){
         this.setLayout(new BorderLayout());
         this.setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
         this.setTitle("Agregar Usuario");
-        this.setSize(400, 300);
+        this.setSize(400, 350);
         this.setResizable(false);
 
         this.add(Top(),BorderLayout.NORTH);
-        this.add(Center(),BorderLayout.CENTER);
+        JPanel center = Center();
+        center.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        this.add(center,BorderLayout.CENTER);
         this.add(Bottom(),BorderLayout.SOUTH);
 
         this.setVisible(true);
@@ -77,6 +82,14 @@ public class FrameAgregarUsuario extends JDialog {
         newPanel.add(InputTelefono,gbc);
 
         gbc.gridy=4;gbc.gridx=0;gbc.weightx = 0;
+        JLabel Rol  = ThemeManager.Label("Rol");
+        newPanel.add(Rol,gbc);
+
+        gbc.gridx=1;gbc.weightx = 1;
+        for (String R : ROLES) {InputRol.addItem(R);}
+        newPanel.add(InputRol,gbc);
+
+        gbc.gridy=5;gbc.gridx=0;gbc.weightx = 0;
         JLabel Clave  = ThemeManager.Label("Clave");
         newPanel.add(Clave,gbc);
 
