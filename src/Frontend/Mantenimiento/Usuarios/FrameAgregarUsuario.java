@@ -115,6 +115,18 @@ public class FrameAgregarUsuario extends JDialog {
     }
 
     void Agregar(){
+
+    String strNombre = InputNombre.getText().trim();
+    String strApellido = InputApellido.getText().trim();
+    String strCedula = InputCedula.getText().trim();
+    String strTelefono = InputTelefono.getText().trim();
+    String strRol = InputRol.getSelectedItem().toString();
+    String strClave = InputClave.getText().trim();
+
+    if(strNombre.isEmpty())
+
+
+
         this.dispose();
     }
 }

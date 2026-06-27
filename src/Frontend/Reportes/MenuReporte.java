@@ -5,8 +5,8 @@ import java.awt.*;
 import java.util.*;
 import javax.swing.*;
 import java.awt.event.*;
-import org.openpdf.text.*;
-import org.openpdf.text.pdf.*;
+//import org.openpdf.text.*;
+//import org.openpdf.text.pdf.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -335,7 +335,7 @@ public class MenuReporte extends JPanel {
         BtnImprimir.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                ImprimirPDF();
+                //ImprimirPDF();
             }
         });
  
