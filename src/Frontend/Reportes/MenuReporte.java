@@ -114,7 +114,7 @@ public class MenuReporte extends JPanel {
                 "FROM carnets " +
                 "JOIN viviendas ON viviendas.id = carnets.id_vivienda");
 
-        mapaTemporal.put("RegistrosAcceso", "SELECT accesos.fecha_hora AS \"Fecha de Acceso\"," + 
+        mapaTemporal.put("Registros de Acceso", "SELECT accesos.fecha_hora AS \"Fecha de Acceso\"," + 
                 " accesos.tipo AS Tipo, " + 
                 " accesos.estado AS Estado, " + 
                 " viviendas.calle AS Calle, " + 
@@ -135,7 +135,7 @@ public class MenuReporte extends JPanel {
                 "LEFT JOIN pagos_realizados ON cuotas.id = pagos_realizados.id_cuota " + 
                 "GROUP BY descripcion,fecha_emision, monto, fecha_limite");
 
-        mapaTemporal.put("PagosRealizado", "SELECT viviendas.calle AS Calle, " + 
+        mapaTemporal.put("Pagos Realizado", "SELECT viviendas.calle AS Calle, " + 
                 "viviendas.numero_vivienda AS Vivienda, " + 
                 "cuotas.monto AS Monto, " + 
                 "cuotas.descripcion AS Descripcion, " + 
@@ -163,6 +163,8 @@ public class MenuReporte extends JPanel {
                         "solvencia(viviendas.id) AS Estado, " + //
                         "deuda(viviendas.id) AS Debe " + //
                         "FROM viviendas ");
+
+        mapaTemporal.put("Usuarios", "SELECT concat(nombre,' ',apellido) AS \"Nombre Completo\",rol, Cedula, telefono FROM usuarios");
 
         CONSULTAS = Collections.unmodifiableMap(mapaTemporal);
     }

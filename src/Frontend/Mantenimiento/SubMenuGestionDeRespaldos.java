@@ -10,7 +10,7 @@ import java.awt.event.*;
 
 public class SubMenuGestionDeRespaldos extends JPanel {
     ConexionPostgres DB = new ConexionPostgres();
-    JLabel Last = new JLabel("Ultima Modificación: XXXX-XX-XX XX:XXxx");
+    //JLabel Last = new JLabel("Ultima Modificación: XXXX-XX-XX XX:XXxx");
 
     public SubMenuGestionDeRespaldos(){
         this.setLayout(new GridBagLayout());
@@ -50,10 +50,10 @@ public class SubMenuGestionDeRespaldos extends JPanel {
         JSeparator Line2 =  new JSeparator();
         this.add(Line2,gbc);
 
-        gbc.gridy = 4;gbc.weightx =1; gbc.gridwidth =2;
-        Last.setFont(ThemeManager.TEXT_NORMAL);
-        Last.setForeground(ThemeManager.COLOR_TEXT);
-        this.add(Last,gbc);
+        //gbc.gridy = 4;gbc.weightx =1; gbc.gridwidth =2;
+        //Last.setFont(ThemeManager.TEXT_NORMAL);
+        //Last.setForeground(ThemeManager.COLOR_TEXT);
+        //this.add(Last,gbc);
 
         gbc.gridy=5; gbc.weighty=1;gbc.fill=GridBagConstraints.BOTH;
         this.add(new JLabel(),gbc);

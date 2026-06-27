@@ -32,7 +32,7 @@ public class IntegerInput extends Input {
         this.add(OptionsMenu,gbc);
 
         gbc.gridx=0;gbc.gridy=1; gbc.gridwidth=2;
-        input =  new JTextField();
+        input =  ThemeManager.Textfield();
         input.setFont(ThemeManager.TEXT_NORMAL);
         input.setForeground(ThemeManager.COLOR_TEXT);
         input.setBackground(ThemeManager.COLOR_BACKGROUND);
