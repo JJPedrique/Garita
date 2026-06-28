@@ -33,7 +33,7 @@ public class SubMenuUsuarios extends JPanel {
                 Editar.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        new FrameModificarUsuario();
+                        new FrameModificarUsuario(1);
                     }
                 });
                 

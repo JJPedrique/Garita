@@ -177,11 +177,21 @@ public class ThemeManager {
         configurarDialogMensaje(JP, customDialog, msg, COLOR_ERROR, "X");
     }
 
+    public static void MostrarMensajeError(JDialog JP, String msg) {
+        JP = new JDialog((Window) SwingUtilities.getWindowAncestor(JP), "Sistema Garita - ERROR", Dialog.ModalityType.APPLICATION_MODAL);
+        configurarDialogMensaje(new JPanel(), JP, msg, COLOR_ERROR, "X");
+    }
+
     public static void MostrarMensajeExito(JPanel JP, String msg) {
         JDialog customDialog = new JDialog((Window) SwingUtilities.getWindowAncestor(JP), "Sistema Garita - EXITO", Dialog.ModalityType.APPLICATION_MODAL);
         configurarDialogMensaje(JP, customDialog, msg, COLOR_PRIMARY, "i");
     }
-    
+
+    public static void MostrarMensajeExito(JDialog JP, String msg) {
+        JP = new JDialog((Window) SwingUtilities.getWindowAncestor(JP), "Sistema Garita - EXITO", Dialog.ModalityType.APPLICATION_MODAL);
+        configurarDialogMensaje(new JPanel(), JP, msg, COLOR_PRIMARY, "i");
+    }
+
     public static void configurarDialogMensaje(JPanel JP, JDialog dialog, String msg, Color bgButton, String iconChar) {
         dialog.setSize(550, 180);
         dialog.setLocationRelativeTo(JP);

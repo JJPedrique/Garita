@@ -2,11 +2,20 @@ package Frontend.Mantenimiento.Usuarios;
 import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 
+import Backend.ConexionPostgres;
 import Backend.ThemeManager;
 
 
 public class FrameModificarUsuario extends JDialog{
+
+    ConexionPostgres DB = new ConexionPostgres();
+    int id;
+    String PRE_SQL = "SELECT clave,rol,nombre,apellido,cedula,telefono FROM usuarios WHERE id = ?;";
+    String POST_SQL = "UPDATE usuarios SET clave = ?,rol = ?,nombre = ?,apellido = ?,cedula = ?,telefono = ? WHERE id = ?;";
 
     JTextField InputNombre = ThemeManager.Textfield();
     JTextField InputApellido = ThemeManager.Textfield();
@@ -15,9 +24,11 @@ public class FrameModificarUsuario extends JDialog{
     JComboBox<String> InputRol = ThemeManager.StringComboBox();
     JTextField InputClave = ThemeManager.Textfield();
 
-    String ROLES[] = {"Vigilancia","Administrador","Junta"};
+    String ROLES[] = {"Vigilancia","Junta","Administrador"};
 
-    public FrameModificarUsuario(){
+    public FrameModificarUsuario(int newId){
+        id = newId;
+        try {Init();} catch (SQLException e) {e.printStackTrace();}
         this.setLayout(new BorderLayout());
         this.setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
         this.setTitle("Agregar Usuario");
@@ -110,12 +121,52 @@ public class FrameModificarUsuario extends JDialog{
         newPanel.add(BtnAgregar);
         BtnAgregar.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {Agregar();}
+            public void actionPerformed(ActionEvent e) {
+                try {Actualizar();} catch (SQLException e1) {e1.printStackTrace();}
+            }
         });
         return newPanel;
     }
 
-    void Agregar(){
+    void Init() throws SQLException{
+        ResultSet RS_DATA = DB.consultar(PRE_SQL,new Object[]{id});
+        while (RS_DATA.next()) {
+            InputNombre.setText(RS_DATA.getString("nombre"));
+            InputApellido.setText(RS_DATA.getString("apellido"));
+            InputCedula.setText(RS_DATA.getString("cedula"));
+            InputTelefono.setText(RS_DATA.getString("telefono"));
+            InputRol.setSelectedItem(RS_DATA.getString("rol"));
+            InputClave.setText(RS_DATA.getString("clave"));
+        }
+    }
+
+    void Actualizar() throws SQLException{
+        String strNombre = InputNombre.getText().trim();
+        String strApellido = InputApellido.getText().trim();
+        String strCedula = InputCedula.getText().trim();
+        String strTelefono = InputTelefono.getText().trim();
+        String strRol = InputRol.getSelectedItem().toString();
+        String strClave = InputClave.getText().trim();
+
+        if(strNombre.isEmpty()){ThemeManager.MostrarMensajeError(this,"ERROR - Falta el campo Nombre");return;}
+        if(strApellido.isEmpty()){ThemeManager.MostrarMensajeError(this,"ERROR - Falta el campo Apellido");return;}
+        if(strCedula.isEmpty()){ThemeManager.MostrarMensajeError(this,"ERROR - Falta el campo ");return;}
+        if(strTelefono.isEmpty()){ThemeManager.MostrarMensajeError(this,"ERROR - Falta el campo Teléfono");return;}  
+        if(strClave.isEmpty()){ThemeManager.MostrarMensajeError(this,"ERROR - Falta el campo");return;}
+    
+        if(!strNombre.matches("^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\\s]+$")){
+            ThemeManager.MostrarMensajeError(this,"ERROR - Nombre no válido");return;}
+        if(!strApellido.matches("^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\\s]+$")){
+            ThemeManager.MostrarMensajeError(this,"ERROR - Apellido no válido");return;}
+        if(!strCedula.matches("^([VEve][-Syntax]?)?\\d{7,8}$")){
+            ThemeManager.MostrarMensajeError(this,"ERROR - Cédula no válida");return;}
+        if(!strTelefono.matches("^0\\d{3}[-\\s]?\\d{7}$")){
+            ThemeManager.MostrarMensajeError(this,"ERROR - Teléfono no válido");return;}
+        if(!strClave.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d\\W_]{8,}$")){
+            ThemeManager.MostrarMensajeError(this,"ERROR - La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número");return;}
+
+        DB.comandoDML(POST_SQL,new Object[]{strClave, strRol, strNombre, strApellido, strCedula, strTelefono,id});
+        ThemeManager.MostrarMensajeExito(this,"EXITO - Usuario agregado exitosamente.");
         this.dispose();
     }
 }
