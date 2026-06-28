@@ -167,12 +167,13 @@ public class PanelRestaurarClave extends JPanel{
             try {
                 ConexionPostgres BDD = new ConexionPostgres();
                 BDD.comandoDML(Query,Parametros);
+                
+                ThemeManager.MostrarMensajeExito(this, "¡Clave restaurada con éxito!");
+                BDD.comandoDML("UPDATE usuarios SET intentos_fallidos = 0 WHERE id = ?;", new Object[]{PanelVerificarTelefono.idUsuario});
             } catch (SQLException ex) {
                 JOptionPane.showMessageDialog(this,ex.getMessage(),"ERROR",JOptionPane.ERROR_MESSAGE);
                 return;
             }
-
-            ThemeManager.MostrarMensajeExito(this, "¡Clave restaurada con éxito!");
         
             JFrame ventanaPadre = (JFrame) SwingUtilities.getWindowAncestor(this);
             if (ventanaPadre != null) {

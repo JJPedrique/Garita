@@ -36,7 +36,7 @@ public class MenuPrincipal extends JPanel {
     JPanel SideBar(){
         JPanel newPanel = new JPanel();
         newPanel.setBackground(ThemeManager.COLOR_PRIMARY); // Gris oscuro
-        newPanel.setPreferredSize(new Dimension(175, getHeight()));
+        newPanel.setPreferredSize(new Dimension(205, getHeight()));
         newPanel.setLayout(new BoxLayout(newPanel, BoxLayout.Y_AXIS));      
         
         JLabel lblTitulo = new JLabel("GARITA");

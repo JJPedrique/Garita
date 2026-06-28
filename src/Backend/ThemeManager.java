@@ -70,7 +70,7 @@ public class ThemeManager {
 
     public static JButton SideBarButton(String texto){
         JButton btn = ThemeManager.Button(texto);
-        btn.setMaximumSize(new Dimension(175, 40));
+        btn.setMaximumSize(new Dimension(205, 40));
         btn.setFont(ThemeManager.TEXT_SUBTITLE);
         btn.setFocusPainted(false);
         btn.setBorderPainted(false);

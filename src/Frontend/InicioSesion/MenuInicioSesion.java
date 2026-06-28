@@ -161,47 +161,8 @@ public class MenuInicioSesion extends JPanel {
                 return;
             }
 
-            String Query = "SELECT id,concat(nombre,' ',apellido) AS nombre_completo FROM usuarios WHERE cedula = ? AND clave = ? LIMIT 1;";
-            Object Parametros[] = {usuario,clave};
-            try {
-                ConexionPostgres BDD = new ConexionPostgres();
-                ResultSet RS = BDD.consultar(Query,Parametros);
+            ValidarInicioSesion(usuario, clave);
 
-                ArrayList<Object> TUPLA = new ArrayList<>();
-                while(RS != null && RS.next()){
-                    TUPLA.add(RS.getInt("id"));
-                    TUPLA.add(RS.getString("nombre_completo"));
-                }
-
-                if(TUPLA.isEmpty()){
-                    ThemeManager.MostrarMensajeError(this, "Clave o Usuario incorrecto.");
-                    return;
-                }
-
-                ThemeManager.MostrarMensajeExito(this, "¡Inicio de sesión exitoso!\nBienvenido, "+TUPLA.get(1)+".");
-                
-                JFrame ventanaPadre = (JFrame) SwingUtilities.getWindowAncestor(this);
-                if (ventanaPadre != null) {
-                    ventanaPadre.remove(this);
-                    ventanaPadre.dispose();
-                    JFrame window = new JFrame("Sistema Garita - Menú Principal");
-                    window.setSize(1600,900);
-                    window.setMinimumSize(new Dimension(1600,900));
-                    window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                    window.add(new MenuPrincipal());
-                    window.setVisible(true);
-                }
-                else {
-                    System.err.println("Error: El panel actual no está contenido en ningún componente padre.");
-                    return;
-                }
-
-            } catch (SQLException ex) {
-                JOptionPane.showMessageDialog(this,ex.getMessage());
-                return;
-            } catch (Exception e1) {
-                e1.printStackTrace();
-            }
         });
 
         //region Clave olvidada
@@ -220,6 +181,79 @@ public class MenuInicioSesion extends JPanel {
     }
 
     //region Helper Functions
+    private void ValidarInicioSesion(String usuario, String clave){
+        try {
+            ConexionPostgres BDD = new ConexionPostgres();
+            
+            ResultSet RS = BDD.consultar(
+                "SELECT id, concat(nombre,' ',apellido) AS nombre_completo, intentos_fallidos, clave FROM usuarios WHERE cedula = ? LIMIT 1;",
+                new Object[]{usuario}
+            );
+
+            ArrayList<Object> T = new ArrayList<>();
+            while(RS != null && RS.next()){
+                T.add(RS.getInt("id"));
+                T.add(RS.getString("nombre_completo"));
+                T.add(RS.getInt("intentos_fallidos"));
+                T.add(RS.getString("clave"));
+            }
+
+            if(T.isEmpty()){
+                ThemeManager.MostrarMensajeError(this, "Usuario o Clave incorrecto.");
+                return;
+            }
+
+            int intentosActuales = Integer.parseInt(T.get(2).toString());
+            String claveCorrectaBD = T.get(3).toString();
+
+            if(intentosActuales >= 3){
+                ThemeManager.MostrarMensajeError(this, "Cuenta restringida por número máximo de intentos.\nConsulte con el administrador o restaure su contraseña.");
+                return;
+            }
+
+            if (!claveCorrectaBD.equals(clave)) {
+                BDD.comandoDML("UPDATE usuarios SET intentos_fallidos = intentos_fallidos + 1 WHERE cedula = ?", new Object[]{usuario});
+                
+                if ((intentosActuales + 1) > 3) {
+                    ThemeManager.MostrarMensajeError(this, "Has alcanzado el límite de 3 intentos. Tu cuenta ha sido bloqueada.");
+                } else {
+                    ThemeManager.MostrarMensajeError(this, "Usuario o Clave incorrecto.");
+                }
+                return;
+            }
+
+            ThemeManager.MostrarMensajeExito(this, "¡Inicio de sesión exitoso!\nBienvenido, " + T.get(1) + ".");
+            
+            JFrame ventanaPadre = (JFrame) SwingUtilities.getWindowAncestor(this);
+            if (ventanaPadre != null) {
+                ventanaPadre.remove(this);
+                ventanaPadre.dispose();
+                JFrame window = new JFrame("Sistema Garita - Menú Principal");
+
+                window.setSize(1600,900);
+                window.setMinimumSize(new Dimension(1600,900));
+                window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                try {
+                    window.add(new MenuPrincipal());
+                } catch (Exception e1) {
+                    e1.printStackTrace();
+                }
+                window.setVisible(true);
+            }
+            else {
+                System.err.println("Error: El panel actual no está contenido en ningún componente padre.");
+                return;
+            }
+
+            BDD.comandoDML("UPDATE usuarios SET intentos_fallidos = 0 WHERE cedula = ?;", new Object[]{usuario});
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage());
+            return;
+        } catch (Exception e1) {
+            e1.printStackTrace();
+        }
+    }
+
     private JButton JB_ForgottenPassword(String texto) {
         JButton button = new JButton(texto);
         button.setMaximumSize(new Dimension(95, 12));

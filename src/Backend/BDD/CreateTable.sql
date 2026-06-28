@@ -8,7 +8,8 @@ CREATE TABLE "usuarios" (
   "apellido" varchar(20) NOT NULL,
   "cedula" varchar(13) UNIQUE NOT NULL,
   "telefono" varchar(13) NOT NULL,
-  "activo" bool NOT NULL DEFAULT true
+  "activo" bool NOT NULL DEFAULT true,
+  "intentos_fallidos" integer DEFAULT 0
 );
 
 CREATE TABLE "bitacoras" (
