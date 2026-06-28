@@ -15,7 +15,7 @@ public class App {
 
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        window.add(new MenuPrincipal());
+        window.add(new MenuInicioSesion());
         
         window.setVisible(true);
     }
