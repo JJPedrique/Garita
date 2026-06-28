@@ -57,7 +57,7 @@ public class DateInput extends Input{
         gbc.gridx=3;gbc.gridy=1;gbc.gridwidth=1;gbc.gridheight=2; gbc.weightx=0;
         this.add(BtnRemover,gbc);
     }
-
+   
     @Override
     public String GetCondition(){
         if(FromDate.getDate() != null && ToDate.getDate() != null){return "\"" + title.getText() + "\" >= ? AND \"" + title.getText() + "\" <= ?";     }

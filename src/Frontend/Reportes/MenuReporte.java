@@ -4,6 +4,14 @@ import java.sql.*;
 import java.awt.*;
 import java.util.*;
 import javax.swing.*;
+
+import org.openpdf.text.DocumentException;
+import org.openpdf.text.Paragraph;
+import org.openpdf.text.Phrase;
+import org.openpdf.text.pdf.PdfPCell;
+import org.openpdf.text.pdf.PdfPTable;
+import org.openpdf.text.pdf.PdfWriter;
+
 import java.awt.event.*;
 //import org.openpdf.text.*;
 //import org.openpdf.text.pdf.*;
@@ -26,7 +34,7 @@ public class MenuReporte extends JPanel {
                 GridBagConstraints gbc = new GridBagConstraints(); 
                 gbc.fill = GridBagConstraints.HORIZONTAL;
                 gbc.weightx=1;gbc.gridx=0;gbc.gridy=0;
-                gbc.insets = new Insets(5,5,5,5);
+                gbc.insets = new Insets(10,10,10,10);
                 for(String h : Data){
                     this.add(ThemeManager.Label(h),gbc);gbc.gridx+=1;}
             }

@@ -1,12 +1,12 @@
 package Frontend.Mantenimiento.Usuarios;
 import javax.swing.*;
-import Backend.ConexionPostgres;
-import Backend.ThemeManager;
-
 import java.awt.*;
 import java.awt.event.*;
 import java.sql.*;
 import java.util.*;
+
+import Backend.ConexionPostgres;
+import Backend.ThemeManager;
 
 public class SubMenuUsuarios extends JPanel {
 
@@ -21,7 +21,10 @@ public class SubMenuUsuarios extends JPanel {
                 gbc.fill = GridBagConstraints.HORIZONTAL;
                 gbc.weightx=1;gbc.gridx=0;gbc.gridy=0;
                 gbc.insets = new Insets(5,5,5,5);
-                for(String h : Data){this.add(ThemeManager.Label(h),gbc);gbc.gridx+=1;}
+                for(int i = 0; i<DATA.size(); i++){
+                    if(i==0){continue;}
+                    this.add(ThemeManager.Label(DATA.get(i)),gbc);gbc.gridx+=1;
+                }
 
                 gbc.weightx=0;
                 JPanel PanelControl = ThemeManager.Panel(new GridBagLayout());
@@ -33,7 +36,8 @@ public class SubMenuUsuarios extends JPanel {
                 Editar.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        new FrameModificarUsuario(1);
+                        new FrameModificarUsuario(Integer.parseInt(DATA.get(0)));
+                         try {Search();} catch (SQLException e1) {e1.printStackTrace();}
                     }
                 });
                 
@@ -50,7 +54,8 @@ public class SubMenuUsuarios extends JPanel {
                 Eliminar.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        new FrameBorrarUsuario();
+                        new FrameBorrarUsuario(Integer.parseInt(DATA.get(0)));
+                         try {Search();} catch (SQLException e1) {e1.printStackTrace();}
                     }
                 });
 
@@ -81,8 +86,9 @@ public class SubMenuUsuarios extends JPanel {
             gbc.weightx=1;gbc.gridx=0;gbc.gridy=0;
             gbc.insets = new Insets(10,10,10,10);
             
-            for(String h : Headers){
-                JLabel newLabel = ThemeManager.Label(h);
+            for(int i = 0;i<Headers.length;i++){
+                if(i==0){continue;}
+                JLabel newLabel = ThemeManager.Label(Headers[i]);
                 newLabel.setFont(ThemeManager.TEXT_SUBTITLE);
                 newPanel.add(newLabel,gbc);gbc.gridx+=1;
             }
@@ -121,8 +127,9 @@ public class SubMenuUsuarios extends JPanel {
 
     ConexionPostgres DB = new ConexionPostgres();
 
-    String Headers[] = {"Nombre", "Apellido", "Rol", "Cedula", "Telefono"};
-    String SQL = "SELECT nombre,apellido,rol, Cedula, telefono FROM usuarios";
+    String Headers[] = {"id","Nombre", "Apellido", "Rol", "Cedula", "Telefono"};
+    String SQL = "SELECT id,nombre,apellido,rol, Cedula, telefono FROM usuarios";
+
     JTextField inputNombre =  ThemeManager.Textfield();
     JTextField inputCedula =  ThemeManager.Textfield();
     JTextField inputApellido = ThemeManager.Textfield();
@@ -166,6 +173,7 @@ public class SubMenuUsuarios extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 new FrameAgregarUsuario();
+                try {Search();} catch (SQLException e1) {e1.printStackTrace();}
             }
         });
 
@@ -219,6 +227,7 @@ public class SubMenuUsuarios extends JPanel {
 
     void Search() throws SQLException{
         ArrayList<Object> PARAM = new ArrayList<>();
+        PARAM.add(true);
         ArrayList<String> COND = new ArrayList<>();
 
         String strNombre = inputNombre.getText().trim();
@@ -255,7 +264,7 @@ public class SubMenuUsuarios extends JPanel {
             COND.add("cedula ILIKE  ?");
         }
 
-        String WHERE = !PARAM.isEmpty() ? "WHERE " + String.join(" AND ", COND) : "";
+        String WHERE = PARAM.size() > 1 ? "WHERE activo = ? AND " + String.join(" AND ", COND) :  "WHERE activo = ? ";
         String ORDER_BY = "ORDER BY rol ASC";
         String MAIN_QUERY = String.join(" ",new String[]{SQL,WHERE,ORDER_BY});
 

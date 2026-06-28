@@ -1,18 +1,18 @@
 package Frontend.Mantenimiento.Usuarios;
 import java.awt.*;
 import java.awt.event.*;
-import java.sql.SQLException;
-
+import java.sql.*;
 import javax.swing.*;
-
 import Backend.ConexionPostgres;
 import Backend.ThemeManager;
 
 public class FrameAgregarUsuario extends JDialog {
 
     ConexionPostgres DB = new ConexionPostgres();
-    String SQL = "INSERT INTO usuarios (clave,rol,nombre,apellido,cedula,telefono) VALUES (?,?,?,?,?,?);";
-
+    String PRE_SQL = "SELECT id FROM usuarios WHERE cedula = ? AND activo = ?;";
+    String A_SQL = "INSERT INTO usuarios (clave,rol,nombre,apellido,cedula,telefono) VALUES (?,?,?,?,?,?);";
+    String POST_SQL = "UPDATE usuarios SET clave = ?,rol = ?,nombre = ?,apellido = ?,cedula = ?,telefono = ?, activo = ? WHERE id = ?;";
+   
     JTextField InputNombre = ThemeManager.Textfield();
     JTextField InputApellido = ThemeManager.Textfield();
     JTextField InputCedula = ThemeManager.Textfield();
@@ -140,14 +140,15 @@ public class FrameAgregarUsuario extends JDialog {
             ThemeManager.MostrarMensajeError(this,"ERROR - Nombre no válido");return;}
         if(!strApellido.matches("^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\\s]+$")){
             ThemeManager.MostrarMensajeError(this,"ERROR - Apellido no válido");return;}
-        if(!strCedula.matches("^([VEve][-Syntax]?)?\\d{7,8}$")){
+        if(!strCedula.matches("^[VEve][-]\\d{7,8}$")){
             ThemeManager.MostrarMensajeError(this,"ERROR - Cédula no válida");return;}
         if(!strTelefono.matches("^0\\d{3}[-\\s]?\\d{7}$")){
             ThemeManager.MostrarMensajeError(this,"ERROR - Teléfono no válido");return;}
         if(!strClave.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d\\W_]{8,}$")){
             ThemeManager.MostrarMensajeError(this,"ERROR - La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número");return;}
 
-        DB.comandoDML(SQL,new Object[]{strClave, strRol, strNombre, strApellido, strCedula, strTelefono});
+
+        DB.comandoDML(POST_SQL,new Object[]{strClave, strRol, strNombre, strApellido, strCedula, strTelefono});
         ThemeManager.MostrarMensajeExito(this,"EXITO - Usuario agregado exitosamente.");
         this.dispose();
     }

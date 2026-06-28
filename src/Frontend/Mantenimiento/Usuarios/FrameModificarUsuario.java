@@ -2,13 +2,9 @@ package Frontend.Mantenimiento.Usuarios;
 import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-
+import java.sql.*;
 import Backend.ConexionPostgres;
 import Backend.ThemeManager;
-
 
 public class FrameModificarUsuario extends JDialog{
 
@@ -28,7 +24,6 @@ public class FrameModificarUsuario extends JDialog{
 
     public FrameModificarUsuario(int newId){
         id = newId;
-        try {Init();} catch (SQLException e) {e.printStackTrace();}
         this.setLayout(new BorderLayout());
         this.setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
         this.setTitle("Agregar Usuario");
@@ -41,6 +36,7 @@ public class FrameModificarUsuario extends JDialog{
         this.add(center,BorderLayout.CENTER);
         this.add(Bottom(),BorderLayout.SOUTH);
 
+        try {Init();} catch (SQLException e) {e.printStackTrace();}
         this.setVisible(true);
     }
 
@@ -115,7 +111,7 @@ public class FrameModificarUsuario extends JDialog{
         JPanel newPanel = new JPanel(new FlowLayout());
         newPanel.setBackground(ThemeManager.COLOR_BACKGROUND);
         
-        JButton BtnAgregar = ThemeManager.Button("Agregar Nuevo Usuario");
+        JButton BtnAgregar = ThemeManager.Button("Modificar Datos del Usuario");
         BtnAgregar.setForeground(ThemeManager.COLOR_TEXT);
         BtnAgregar.setFont(ThemeManager.TEXT_TITLE);
         newPanel.add(BtnAgregar);
@@ -158,7 +154,7 @@ public class FrameModificarUsuario extends JDialog{
             ThemeManager.MostrarMensajeError(this,"ERROR - Nombre no válido");return;}
         if(!strApellido.matches("^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\\s]+$")){
             ThemeManager.MostrarMensajeError(this,"ERROR - Apellido no válido");return;}
-        if(!strCedula.matches("^([VEve][-Syntax]?)?\\d{7,8}$")){
+        if(!strCedula.matches("^[VEve]?[-]?\\d{7,8}$")){
             ThemeManager.MostrarMensajeError(this,"ERROR - Cédula no válida");return;}
         if(!strTelefono.matches("^0\\d{3}[-\\s]?\\d{7}$")){
             ThemeManager.MostrarMensajeError(this,"ERROR - Teléfono no válido");return;}
@@ -166,7 +162,7 @@ public class FrameModificarUsuario extends JDialog{
             ThemeManager.MostrarMensajeError(this,"ERROR - La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número");return;}
 
         DB.comandoDML(POST_SQL,new Object[]{strClave, strRol, strNombre, strApellido, strCedula, strTelefono,id});
-        ThemeManager.MostrarMensajeExito(this,"EXITO - Usuario agregado exitosamente.");
+        ThemeManager.MostrarMensajeExito(this,"EXITO - Usuario modificado exitosamente.");
         this.dispose();
     }
 }
