@@ -89,8 +89,12 @@ public class MenuRegistroDeAcceso extends JPanel {
 
     JLabel lDesde = ThemeManager.Label("Desde");
     JLabel lHasta = ThemeManager.Label("Hasta");
+
     JDateChooser dcDesde = new JDateChooser();
     JDateChooser dcHasta = new JDateChooser();
+
+    JSpinner spHoraDesde = new JSpinner(new SpinnerDateModel());
+    JSpinner spHoraHasta = new JSpinner(new SpinnerDateModel());
 
     JRadioButton rbEstadoTodos = new JRadioButton("Todos", true);
     JRadioButton rbEstadoPermitido = new JRadioButton("Permitido");
@@ -132,6 +136,9 @@ public class MenuRegistroDeAcceso extends JPanel {
         SetupDateChooser(dcDesde);
         SetupDateChooser(dcHasta);
         
+        SetupTimeSpinner(spHoraDesde);
+        SetupTimeSpinner(spHoraHasta);
+        
         pTablaHeader.setBackground(ThemeManager.COLOR_PRIMARY); 
         pTablaHeader.setPreferredSize(new Dimension(0, 40));
         pTablaBody.setBackground(ThemeManager.COLOR_BACKGROUND_DARK);
@@ -152,10 +159,15 @@ public class MenuRegistroDeAcceso extends JPanel {
         SetupRadioBtns();
         
         Calendar CAL = Calendar.getInstance();
-        dcHasta.setDate(CAL.getTime()); // Hoy
+        
+        // Inicializar Hasta (Hoy)
+        dcHasta.setDate(CAL.getTime());
+        spHoraHasta.setValue(CAL.getTime());
 
+        // Inicializar Desde (Hace 2 mese por ejemplo)
         CAL.add(Calendar.MONTH, -2); 
-        dcDesde.setDate(CAL.getTime()); // Hace 2 meses
+        dcDesde.setDate(CAL.getTime());
+        spHoraDesde.setValue(CAL.getTime());
 
         GBC.weightx = 1;
         GBC.fill = GridBagConstraints.HORIZONTAL;
@@ -165,8 +177,8 @@ public class MenuRegistroDeAcceso extends JPanel {
         GBC.gridy = 0; pFunctions.add(lBusquedaFiltro, GBC);
 
         GBC.insets = new Insets(5, 0, 5, 0);
-        GBC.gridy = 1; pFunctions.add(createFormRow(lCodigoCarnet, tfCodigoCarnet), GBC); 
-        GBC.gridy = 2; pFunctions.add(createFormRow(lNombreVisita, tfNombreVisita), GBC);
+        GBC.gridy = 1; pFunctions.add(FormRow(lCodigoCarnet, tfCodigoCarnet), GBC); 
+        GBC.gridy = 2; pFunctions.add(FormRow(lNombreVisita, tfNombreVisita), GBC);
 
         GBC.insets = new Insets(10, 0, 2, 0);
         GBC.gridy = 3; pFunctions.add(lFiltroEstado, GBC);
@@ -191,8 +203,8 @@ public class MenuRegistroDeAcceso extends JPanel {
         GBC.gridy = 6; pFunctions.add(pRadioIdent, GBC);
 
         GBC.insets = new Insets(5, 0, 5, 0);
-        GBC.gridy = 7; pFunctions.add(createFormRow(lDesde, dcDesde), GBC);
-        GBC.gridy = 8; pFunctions.add(createFormRow(lHasta, dcHasta), GBC);
+        GBC.gridy = 7; pFunctions.add(DateTimeRow(lDesde, dcDesde, spHoraDesde), GBC);
+        GBC.gridy = 8; pFunctions.add(DateTimeRow(lHasta, dcHasta, spHoraHasta), GBC);
 
         GBC.insets = new Insets(15, 0, 15, 0);
         GBC.gridy = 9; pFunctions.add(bBuscar, GBC);
@@ -229,6 +241,7 @@ public class MenuRegistroDeAcceso extends JPanel {
         JSP.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         pTabla.add(JSP, BorderLayout.CENTER);
 
+        // --- SOLUCIÓN DEL ERROR: Agregar explícitamente los subpaneles al BorderLayout principal ---
         this.add(pFunctions, BorderLayout.WEST);
         this.add(pTabla, BorderLayout.CENTER);
 
@@ -238,6 +251,29 @@ public class MenuRegistroDeAcceso extends JPanel {
 
     //region Tabla
     public void ActualizarTabla() {
+        if (dcDesde.getDate() != null && dcHasta.getDate() != null) {
+            Calendar cDesde = Calendar.getInstance();
+            cDesde.setTime(dcDesde.getDate());
+            Calendar hDesde = Calendar.getInstance();
+            hDesde.setTime((Date) spHoraDesde.getValue());
+            cDesde.set(Calendar.HOUR_OF_DAY, hDesde.get(Calendar.HOUR_OF_DAY));
+            cDesde.set(Calendar.MINUTE, hDesde.get(Calendar.MINUTE));
+            cDesde.set(Calendar.SECOND, hDesde.get(Calendar.SECOND));
+
+            Calendar cHasta = Calendar.getInstance();
+            cHasta.setTime(dcHasta.getDate());
+            Calendar hHasta = Calendar.getInstance();
+            hHasta.setTime((Date) spHoraHasta.getValue());
+            cHasta.set(Calendar.HOUR_OF_DAY, hHasta.get(Calendar.HOUR_OF_DAY));
+            cHasta.set(Calendar.MINUTE, hHasta.get(Calendar.MINUTE));
+            cHasta.set(Calendar.SECOND, hHasta.get(Calendar.SECOND));
+
+            if (cDesde.getTimeInMillis() > cHasta.getTimeInMillis()) {
+                ThemeManager.MostrarMensajeError(this,"La fecha \"Desde\" no puede ser posterior a la fecha \"Hasta\".");
+                return; 
+            }
+        }
+
         JRegistros.clear();
         pTablaBody.removeAll();
 
@@ -281,12 +317,33 @@ public class MenuRegistroDeAcceso extends JPanel {
         }
 
         if (dcDesde.getDate() != null) {
+            Calendar Fecha = Calendar.getInstance();
+            Fecha.setTime(dcDesde.getDate());
+            
+            Calendar Hora = Calendar.getInstance();
+            Hora.setTime((Date) spHoraDesde.getValue());
+            
+            Fecha.set(Calendar.HOUR_OF_DAY, Hora.get(Calendar.HOUR_OF_DAY));
+            Fecha.set(Calendar.MINUTE, Hora.get(Calendar.MINUTE));
+            Fecha.set(Calendar.SECOND, Hora.get(Calendar.SECOND));
+
             Query.append("AND A.fecha_hora >= ? ");
-            Parametros.add(new java.sql.Timestamp(dcDesde.getDate().getTime()));
+            Parametros.add(new java.sql.Timestamp(Fecha.getTimeInMillis()));
         }
+        
         if (dcHasta.getDate() != null) {
+            Calendar Fecha = Calendar.getInstance();
+            Fecha.setTime(dcHasta.getDate());
+            
+            Calendar Hora = Calendar.getInstance();
+            Hora.setTime((Date) spHoraHasta.getValue());
+            
+            Fecha.set(Calendar.HOUR_OF_DAY, Hora.get(Calendar.HOUR_OF_DAY));
+            Fecha.set(Calendar.MINUTE, Hora.get(Calendar.MINUTE));
+            Fecha.set(Calendar.SECOND, Hora.get(Calendar.SECOND));
+
             Query.append("AND A.fecha_hora <= ? ");
-            Parametros.add(new java.sql.Timestamp(dcHasta.getDate().getTime()));
+            Parametros.add(new java.sql.Timestamp(Fecha.getTimeInMillis()));
         }
 
         Query.append("ORDER BY A.fecha_hora DESC;");
@@ -346,28 +403,40 @@ public class MenuRegistroDeAcceso extends JPanel {
     }
     //endregion
 
-    //region Helper Funcions
+    //region Helper Functions
     private void SetupDateChooser(JDateChooser JDC) {
-        JDC.setDateFormatString("dd/MM/yyyy HH:mm:ss");
+        JDC.setDateFormatString("dd/MM/yyyy");
         JDC.setOpaque(false);
 
-        JTextField JFT = (JTextField) JDC.getDateEditor().getUiComponent();
-        JFT.setEditable(false); 
-        JFT.setBackground(ThemeManager.COLOR_INPUT);
-        JFT.setForeground(ThemeManager.COLOR_TEXT_DARK);
-        JFT.setFont(ThemeManager.TEXT_NORMAL);
-        JFT.setBorder(BorderFactory.createEmptyBorder(4, 6, 4, 6));
+        JTextField tfDate = (JTextField) JDC.getDateEditor().getUiComponent();
+        tfDate.setEditable(false);
+        tfDate.setBackground(ThemeManager.COLOR_INPUT);
+        tfDate.setForeground(ThemeManager.COLOR_TEXT_DARK);
+        tfDate.setFont(ThemeManager.TEXT_NORMAL);
+        tfDate.setBorder(BorderFactory.createEmptyBorder(4, 6, 4, 6));
+        tfDate.setPreferredSize(new Dimension(80, 25));
 
-        JButton btnCalendario = JDC.getCalendarButton();
-        btnCalendario.setBackground(ThemeManager.COLOR_PRIMARY);
-        btnCalendario.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 5));
-        btnCalendario.setCursor(new Cursor(Cursor.HAND_CURSOR)); // Cursor de mano para denotar interacción
+        JButton bCalendario = JDC.getCalendarButton();
+        bCalendario.setBackground(ThemeManager.COLOR_PRIMARY);
+        bCalendario.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 5));
+        bCalendario.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        bCalendario.setPreferredSize(new Dimension(30, 25));
+    }
+
+    private void SetupTimeSpinner(JSpinner JTime) {
+        JSpinner.DateEditor timeEditor = new JSpinner.DateEditor(JTime, "HH:mm:ss");
+        JTime.setEditor(timeEditor);
+        JTime.setBorder(BorderFactory.createEmptyBorder());
+        JTime.setBackground(ThemeManager.COLOR_INPUT);
+
+        JTextField TF = timeEditor.getTextField();
+        TF.setEditable(false); 
         
-        btnCalendario.setPreferredSize(new Dimension(30, 25));
-
-        JDC.getJCalendar().getYearChooser().setFont(ThemeManager.TEXT_NORMAL);
-        JDC.getJCalendar().getMonthChooser().getComboBox().setFont(ThemeManager.TEXT_NORMAL);
-        JDC.getJCalendar().getDayChooser().getDayPanel().setFont(ThemeManager.TEXT_NORMAL);
+        TF.setBackground(ThemeManager.COLOR_INPUT);
+        TF.setForeground(ThemeManager.COLOR_TEXT_DARK);
+        TF.setFont(ThemeManager.TEXT_NORMAL);
+        TF.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
+        TF.setHorizontalAlignment(JTextField.CENTER);
     }
 
     private void SetupRadioBtns() {
@@ -387,13 +456,40 @@ public class MenuRegistroDeAcceso extends JPanel {
         }
     }
 
-    private JPanel createFormRow(JLabel label, JComponent input) {
-        JPanel panel = new JPanel(new BorderLayout(10, 0));
-        panel.setOpaque(false);
+    private JPanel FormRow(JLabel label, JComponent input) {
+        JPanel JP = new JPanel(new BorderLayout(10, 0));
+        JP.setOpaque(false);
         label.setPreferredSize(new Dimension(130, 25)); 
-        panel.add(label, BorderLayout.WEST);
-        panel.add(input, BorderLayout.CENTER);
-        return panel;
+        JP.add(label, BorderLayout.WEST);
+        JP.add(input, BorderLayout.CENTER);
+        return JP;
+    }
+
+    private JPanel DateTimeRow(JLabel label, JDateChooser JDate, JSpinner JTime) {
+        JPanel JP = new JPanel(new BorderLayout(10, 0));
+        JP.setOpaque(false);
+        label.setPreferredSize(new Dimension(75, 25)); 
+        JP.add(label, BorderLayout.WEST);
+
+        JDate.setPreferredSize(new Dimension(120, 25)); 
+        JTime.setPreferredSize(new Dimension(80, 25)); 
+
+        JPanel pInputs = new JPanel(new GridBagLayout());
+        pInputs.setOpaque(false);
+        GridBagConstraints DT_GBC = new GridBagConstraints();
+        DT_GBC.fill = GridBagConstraints.HORIZONTAL;
+
+        DT_GBC.weightx = 0.7;
+        DT_GBC.gridx = 0;
+        pInputs.add(JDate, DT_GBC);
+
+        DT_GBC.insets = new Insets(0, 5, 0, 0);
+        DT_GBC.weightx = 0.2;
+        DT_GBC.gridx = 1;
+        pInputs.add(JTime, DT_GBC);
+
+        JP.add(pInputs, BorderLayout.CENTER);
+        return JP;
     }
     //endregion
 }
