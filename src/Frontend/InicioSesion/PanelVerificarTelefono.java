@@ -20,7 +20,7 @@ public class PanelVerificarTelefono extends JPanel {
     private final JLabel lHeaderTitle= new JLabel("RECUPERAR CLAVE");
 
     private final Icon iconRegreso = ThemeManager.SetImgIcon("img\\go_back.png", ThemeManager.ICON_WIDTH_PX*2, ThemeManager.ICON_HEIGHT_PX*2);
-    private final JButton bRegresar = JB_Regreso();
+    private final JButton bRegresar = ThemeManager.Button("");
     
     private final JPanel pInput = new JPanel();
     private final JLabel lSubTitulo = new JLabel("<html><center>Ingrese su usuario y número telefónico <br> para recibir un código.</center></html>");
@@ -107,6 +107,17 @@ public class PanelVerificarTelefono extends JPanel {
 
         lSubTitulo.setFont(ThemeManager.TEXT_SUBTITLE);
         lSubTitulo.setForeground(ThemeManager.COLOR_TEXT);
+
+        bRegresar.setIcon(iconRegreso);
+        bRegresar.setOpaque(false);
+        bRegresar.setContentAreaFilled(false); 
+        bRegresar.setBorderPainted(false);     
+        bRegresar.setFocusPainted(false);     
+        
+        bRegresar.setMaximumSize(new Dimension(50, 50));
+        bRegresar.setPreferredSize(new Dimension(50, 50)); 
+        bRegresar.setAlignmentX(Component.CENTER_ALIGNMENT);
+        bRegresar.setHorizontalAlignment(SwingConstants.CENTER);
     }
 
     private void SetupEvents() {
@@ -190,23 +201,5 @@ public class PanelVerificarTelefono extends JPanel {
                 System.err.println("Error: El panel actual no está contenido en ningún componente padre.");
             }
         });
-    }
-
-    //region Helper Functions
-    private JButton JB_Regreso() {
-        JButton JB = new JButton();
-    
-        JB.setIcon(iconRegreso);
-        JB.setOpaque(false);
-        JB.setContentAreaFilled(false); 
-        JB.setBorderPainted(false);     
-        JB.setFocusPainted(false);     
-        
-        JB.setMaximumSize(new Dimension(50, 50));
-        JB.setPreferredSize(new Dimension(50, 50)); 
-        JB.setAlignmentX(Component.CENTER_ALIGNMENT);
-        JB.setHorizontalAlignment(SwingConstants.CENTER);
-
-        return JB;
     }
 }
