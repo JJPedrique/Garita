@@ -23,13 +23,13 @@ public class MenuInicioSesion extends JPanel {
     private final JPanel pInput = new JPanel();
     private final JLabel lSubTitulo = new JLabel("INICIAR SESIÓN");
     private final JLabel lInputUsuario = new ThemeManager.RoundIconLabel("img\\user.png");
-    private final JTextField tfInputUsuario = TF_Username("V-12345678");
+    private final JTextField tfInputUsuario = ThemeManager.Textfield();
     private final JLabel lInputClave = new ThemeManager.RoundIconLabel("img\\key.png");
-    private final JPasswordField pfClave = PF_Password("********");
-    private final JToggleButton tbMostrarClave = TGB_ShowPassword();
+    private final JPasswordField pfClave = ThemeManager.PasswordField();
+    private final JToggleButton tbMostrarClave = ThemeManager.ToggleButton();
     private Icon iconShowPW = ThemeManager.SetImgIcon("img\\show_pw.png", ThemeManager.ICON_WIDTH_PX, ThemeManager.ICON_HEIGHT_PX);
     private Icon iconHidePW = ThemeManager.SetImgIcon("img\\hide_pw.png", ThemeManager.ICON_WIDTH_PX, ThemeManager.ICON_HEIGHT_PX);
-    private final JButton bOlvidaClave = JB_ForgottenPassword("¿Olvidó su clave?");
+    private final JButton bOlvidaClave = ThemeManager.Button("¿Olvidó su clave?");
 
     private final JPanel pButton = new JPanel();
     private final JButton bAcceder = ThemeManager.Button("Acceder");
@@ -122,6 +122,26 @@ public class MenuInicioSesion extends JPanel {
 
         lSubTitulo.setFont(ThemeManager.TEXT_SUBTITLE);
         lSubTitulo.setForeground(ThemeManager.COLOR_TEXT);
+
+        bOlvidaClave.setMaximumSize(new Dimension(95, 12));
+        bOlvidaClave.setForeground(ThemeManager.COLOR_TEXT);
+        bOlvidaClave.setBackground(ThemeManager.COLOR_BACKGROUND);
+        bOlvidaClave.setOpaque(false);
+        bOlvidaClave.setFont(ThemeManager.TEXT_NORMAL);
+        bOlvidaClave.setFocusPainted(false);
+        bOlvidaClave.setBorderPainted(false);
+        bOlvidaClave.setAlignmentX(Component.CENTER_ALIGNMENT);
+        bOlvidaClave.setHorizontalAlignment(SwingConstants.CENTER);
+        bOlvidaClave.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                bOlvidaClave.setBackground(ThemeManager.COLOR_BACKGROUND);
+            }
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                bOlvidaClave.setBackground(ThemeManager.COLOR_BACKGROUND);
+            }
+        });
     }
 
     private void SetEvents() { // Configurar los eventos en los botones
@@ -252,143 +272,5 @@ public class MenuInicioSesion extends JPanel {
         } catch (Exception e1) {
             e1.printStackTrace();
         }
-    }
-
-    private JButton JB_ForgottenPassword(String texto) {
-        JButton button = new JButton(texto);
-        button.setMaximumSize(new Dimension(95, 12));
-        button.setForeground(ThemeManager.COLOR_TEXT);
-        button.setBackground(ThemeManager.COLOR_BACKGROUND);
-        button.setOpaque(false);
-        button.setFont(ThemeManager.TEXT_NORMAL);
-        button.setFocusPainted(false);
-        button.setBorderPainted(false);
-        button.setAlignmentX(Component.CENTER_ALIGNMENT);
-        button.setHorizontalAlignment(SwingConstants.CENTER);
-
-        //JButton - Hover
-        button.addMouseListener(new java.awt.event.MouseAdapter() {
-            @Override
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                button.setBackground(ThemeManager.COLOR_BACKGROUND);
-            }
-            @Override
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                button.setBackground(ThemeManager.COLOR_BACKGROUND);
-            }
-        });
-
-        return button;
-    }
-
-    private JToggleButton TGB_ShowPassword() {
-        JToggleButton JTGB = new JToggleButton();
-        JTGB.setPreferredSize(new Dimension(40, 35));
-        JTGB.setOpaque(false);
-        JTGB.setContentAreaFilled(true);
-        JTGB.setBackground(ThemeManager.COLOR_INPUT);
-        JTGB.setBorderPainted(false);
-        JTGB.setFocusPainted(false);
-        JTGB.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        return JTGB;
-    }
-
-    private JTextField TF_Username(String placeholder) {
-        JTextField TF = new JTextField("") {
-            @Override
-            protected void paintComponent(Graphics g) {
-                // Input - Border Radius
-                Graphics2D g2 = (Graphics2D) g.create();
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(getBackground());
-                g2.fillRoundRect(0, 0, getWidth()-1, getHeight()-1, ThemeManager.BORDER_RADIUS_PX, ThemeManager.BORDER_RADIUS_PX); 
-                g2.dispose();
-                super.paintComponent(g);
-
-                // Placeholder - Campo Vacio o Sin Focus
-                if (getText().isEmpty()) {
-                    Graphics2D gPlaceholder = (Graphics2D) g.create();
-                    gPlaceholder.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                    gPlaceholder.setColor(ThemeManager.COLOR_PLACEHOLDER);
-                    gPlaceholder.setFont(getFont());
-                    
-                    // Calcular centrado vertical basándonos en las fuentes e insets
-                    FontMetrics fm = gPlaceholder.getFontMetrics();
-                    Insets insets = getInsets();
-                    int x = insets.left;
-                    int y = (getHeight() - fm.getHeight()) / 2 + fm.getAscent();
-                    
-                    gPlaceholder.drawString(placeholder, x, y);
-                    gPlaceholder.dispose();
-                }
-            }
-        };
-
-        TF.setPreferredSize(new Dimension(250, 35));
-        TF.setBorder(BorderFactory.createEmptyBorder(6, 12, 6, 12));
-        TF.setOpaque(false);
-        TF.setFont(ThemeManager.TEXT_NORMAL);
-        TF.setBackground(ThemeManager.COLOR_INPUT);
-        TF.setForeground(ThemeManager.COLOR_TEXT_DARK);
-        TF.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
-
-        // Repintar al ganar o perder foco para refrescar el placeholder
-        TF.addFocusListener(new java.awt.event.FocusAdapter() {
-            @Override
-            public void focusGained(java.awt.event.FocusEvent evt) {TF.repaint(); }
-            @Override
-            public void focusLost(java.awt.event.FocusEvent evt) { TF.repaint(); }
-        });
-
-        return TF;
-    }
-
-    private JPasswordField PF_Password(String placeholder) {
-        JPasswordField PF = new JPasswordField("") {
-            @Override
-            protected void paintComponent(Graphics g) {
-                // Input - Border Radius
-                Graphics2D g2 = (Graphics2D) g.create();
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(getBackground());
-                g2.fillRoundRect(0, 0, getWidth()-1 , getHeight()-1, ThemeManager.BORDER_RADIUS_PX, ThemeManager.BORDER_RADIUS_PX);
-                g2.dispose();
-                super.paintComponent(g);
-
-                // Placeholder - Campo Vacio o Sin Focus
-                if (getPassword().length == 0) {
-                    Graphics2D gPlaceholder = (Graphics2D) g.create();
-                    gPlaceholder.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                    gPlaceholder.setColor(Color.GRAY);
-                    gPlaceholder.setFont(getFont());
-                    
-                    FontMetrics fm = gPlaceholder.getFontMetrics();
-                    Insets insets = getInsets();
-                    int x = insets.left;
-                    int y = (getHeight() - fm.getHeight()) / 2 + fm.getAscent();
-                    
-                    gPlaceholder.drawString(placeholder, x, y);
-                    gPlaceholder.dispose();
-                }
-            }
-        };
-        
-        PF.setPreferredSize(new Dimension(250, 35));
-        PF.setBorder(BorderFactory.createEmptyBorder(6, 12, 6, 1));
-        PF.setOpaque(false);
-        PF.setFont(ThemeManager.TEXT_NORMAL);
-        PF.setBackground(ThemeManager.COLOR_INPUT);
-        PF.setForeground(ThemeManager.COLOR_TEXT_DARK);
-        PF.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
-
-        // Repintar al ganar o perder foco para refrescar el placeholder
-        PF.addFocusListener(new java.awt.event.FocusAdapter() {
-            @Override
-            public void focusGained(java.awt.event.FocusEvent evt) { PF.repaint(); }
-            @Override
-            public void focusLost(java.awt.event.FocusEvent evt) { PF.repaint(); }
-        });
-        
-        return PF;
     }
 }
