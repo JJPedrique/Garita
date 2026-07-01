@@ -1,0 +1,34 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+        "type": "java",
+        "name": "App",
+        "request": "launch",
+        "mainClass": "App",
+        "projectName": "Garita_161cccb4"
+    },
+    {
+        "type": "java",
+        "name": "App",
+        "request": "launch",
+        "mainClass": "App",
+        "projectName": "Garita",
+        "classPaths": [
+            "${workspaceFolder}/bin",
+            "${workspaceFolder}/lib/*"
+        ]
+    },
+    {
+        "type": "java",
+        "name": "Run App",
+        "request": "launch",
+        "mainClass": "App",
+        "projectName": "Garita",
+        "classPaths": [
+            "${workspaceFolder}/bin",
+            "${workspaceFolder}/lib/*"
+        ]
+    }
+]
+}

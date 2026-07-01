@@ -6,6 +6,7 @@ import java.util.*;
 import javax.swing.*;
 
 import org.openpdf.text.DocumentException;
+import org.openpdf.text.Document;
 import org.openpdf.text.Paragraph;
 import org.openpdf.text.Phrase;
 import org.openpdf.text.pdf.PdfPCell;

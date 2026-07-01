@@ -1,6 +1,7 @@
 package Frontend.Residencia;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.border.EmptyBorder;
 import Backend.ConexionPostgres;
 import Backend.ThemeManager;
 import java.awt.*;
@@ -17,10 +18,6 @@ import java.util.List;
 
 public class MenuVivienda extends JPanel {
 
-    private static final int SIDEBAR_WIDTH = 190;
-    private static final int BUTTON_HEIGHT = 30;
-    private static final int INPUT_HEIGHT = 24;
-
     private DefaultTableModel tableModel = new DefaultTableModel(
         new Object[]{"Num Vivienda", "Calle", "Estado", "Opciones"}, 0
     ) {
@@ -34,25 +31,44 @@ public class MenuVivienda extends JPanel {
             return columnIndex == 3 ? Object.class : String.class;
         }
     };
-    private JTable table = new JTable(tableModel);
     private final ConexionPostgres db = new ConexionPostgres();
     private JTextField txtNum;
     private JTextField txtCalle;
 
+    private final JPanel pTable = new JPanel(new BorderLayout());
+    private final JPanel pTableHeader = new JPanel(new GridLayout(1, 4));
+    private final JPanel pTableBody = new JPanel(new GridBagLayout());
+    private final ArrayList<ViviendaItem> viviendas = new ArrayList<>();
+    private final String[] headers = {"Num Vivienda", "Calle", "Estado", "Opciones"};
+
+    private static class ViviendaItem {
+        private final String numero;
+        private final String calle;
+        private final String estado;
+        private final boolean activo;
+
+        private ViviendaItem(String numero, String calle, String estado, boolean activo) {
+            this.numero = numero;
+            this.calle = calle;
+            this.estado = estado;
+            this.activo = activo;
+        }
+    }
+
     public MenuVivienda() {
         this.setLayout(new BorderLayout());
-        this.setBackground(ThemeManager.COLOR_BACKGROUND);
+        this.setBackground(ThemeManager.COLOR_BACKGROUND_DARK);
+        this.setBorder(new EmptyBorder(20, 20, 20, 20));
 
         JPanel panelControles = new JPanel();
         panelControles.setLayout(new BoxLayout(panelControles, BoxLayout.Y_AXIS));
         panelControles.setBackground(ThemeManager.COLOR_BACKGROUND);
-        panelControles.setBorder(BorderFactory.createEmptyBorder(20, 8, 18, 8));
-        panelControles.setPreferredSize(new Dimension(SIDEBAR_WIDTH, 0));
+        panelControles.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
+        panelControles.setPreferredSize(new Dimension(315, 0));
 
         JButton btnAgregar = ThemeManager.Button("Agregar");
         btnAgregar.setAlignmentX(Component.CENTER_ALIGNMENT);
-        btnAgregar.setPreferredSize(new Dimension(136, BUTTON_HEIGHT));
-        btnAgregar.setMaximumSize(new Dimension(Integer.MAX_VALUE, BUTTON_HEIGHT));
+        btnAgregar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
         btnAgregar.addActionListener(e -> abrirFormularioVivienda(false, null, null, true));
 
         JLabel tituloAgregar = new JLabel("<html><div style='text-align:center;'>AGREGAR NUEVA VIVIENDA</div></html>", SwingConstants.CENTER);
@@ -62,8 +78,8 @@ public class MenuVivienda extends JPanel {
         tituloAgregar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 28));
 
         JSeparator separador = new JSeparator();
-        separador.setForeground(ThemeManager.COLOR_INFO);
-        separador.setBackground(ThemeManager.COLOR_INFO);
+        separador.setForeground(ThemeManager.COLOR_INPUT);
+        separador.setBackground(ThemeManager.COLOR_INPUT);
         separador.setMaximumSize(new Dimension(Integer.MAX_VALUE, 2));
         separador.setAlignmentX(Component.CENTER_ALIGNMENT);
 
@@ -84,12 +100,8 @@ public class MenuVivienda extends JPanel {
         lNum.setForeground(ThemeManager.COLOR_TEXT);
         lNum.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        txtNum = new JTextField();
-        txtNum.setPreferredSize(new Dimension(140, INPUT_HEIGHT));
-        txtNum.setMaximumSize(new Dimension(Integer.MAX_VALUE, INPUT_HEIGHT));
-        txtNum.setBackground(ThemeManager.COLOR_INPUT);
-        txtNum.setForeground(ThemeManager.COLOR_TEXT_DARK);
-        txtNum.setBorder(BorderFactory.createLineBorder(ThemeManager.COLOR_INPUT, 6));
+        txtNum = ThemeManager.Textfield();
+        txtNum.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
         txtNum.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         JLabel lCalle = new JLabel("Calle");
@@ -97,12 +109,8 @@ public class MenuVivienda extends JPanel {
         lCalle.setForeground(ThemeManager.COLOR_TEXT);
         lCalle.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        txtCalle = new JTextField();
-        txtCalle.setPreferredSize(new Dimension(140, INPUT_HEIGHT));
-        txtCalle.setMaximumSize(new Dimension(Integer.MAX_VALUE, INPUT_HEIGHT));
-        txtCalle.setBackground(ThemeManager.COLOR_INPUT);
-        txtCalle.setForeground(ThemeManager.COLOR_TEXT_DARK);
-        txtCalle.setBorder(BorderFactory.createLineBorder(ThemeManager.COLOR_INPUT, 6));
+        txtCalle = ThemeManager.Textfield();
+        txtCalle.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
         txtCalle.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         panelFiltros.add(lNum);
@@ -115,8 +123,7 @@ public class MenuVivienda extends JPanel {
 
         JButton btnBuscar = ThemeManager.Button("Buscar");
         btnBuscar.setAlignmentX(Component.CENTER_ALIGNMENT);
-        btnBuscar.setPreferredSize(new Dimension(136, BUTTON_HEIGHT));
-        btnBuscar.setMaximumSize(new Dimension(Integer.MAX_VALUE, BUTTON_HEIGHT));
+        btnBuscar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
         btnBuscar.addActionListener(e -> cargarViviendas());
 
         panelControles.add(tituloAgregar);
@@ -134,15 +141,31 @@ public class MenuVivienda extends JPanel {
 
         this.add(panelControles, BorderLayout.WEST);
 
-        table.setBackground(ThemeManager.COLOR_BACKGROUND_LIGHT);
-        table.setForeground(Color.WHITE);
-        table.setRowHeight(32);
-        table.getColumnModel().getColumn(3).setPreferredWidth(160);
-        table.getColumnModel().getColumn(3).setCellRenderer(new OpcionesRenderer());
-        table.getColumnModel().getColumn(3).setCellEditor(new OpcionesEditor());
-        JScrollPane scrollPane = new JScrollPane(table);
-        table.setFillsViewportHeight(true);
-        this.add(scrollPane, BorderLayout.CENTER);
+        pTable.setBackground(ThemeManager.COLOR_BACKGROUND_DARK);
+        pTableHeader.setBackground(ThemeManager.COLOR_PRIMARY);
+        pTableHeader.setPreferredSize(new Dimension(0, 40));
+
+        for (String header : headers) {
+            int alignment = header.equals("Opciones") ? SwingConstants.CENTER : SwingConstants.LEFT;
+            JLabel column = new JLabel(header, alignment);
+            column.setForeground(ThemeManager.COLOR_TEXT);
+            column.setFont(ThemeManager.TEXT_SUBTITLE);
+            if (alignment == SwingConstants.LEFT) {
+                column.setBorder(BorderFactory.createEmptyBorder(0, 15, 0, 0));
+            }
+            pTableHeader.add(column);
+        }
+
+        pTableBody.setBackground(ThemeManager.COLOR_BACKGROUND_DARK);
+        pTable.add(pTableHeader, BorderLayout.NORTH);
+
+        JScrollPane scrollPane = new JScrollPane(pTableBody);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.getViewport().setBackground(ThemeManager.COLOR_BACKGROUND_DARK);
+        scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        pTable.add(scrollPane, BorderLayout.CENTER);
+
+        this.add(pTable, BorderLayout.CENTER);
 
         cargarViviendas();
     }
@@ -180,19 +203,103 @@ public class MenuVivienda extends JPanel {
 
         try {
             ResultSet rs = db.consultar(sql.toString(), parametros);
-            tableModel.setRowCount(0);
+            viviendas.clear();
 
             while (rs != null && rs.next()) {
-                tableModel.addRow(new Object[]{
+                viviendas.add(new ViviendaItem(
                     rs.getString("numero_vivienda"),
                     rs.getString("calle"),
                     rs.getString("estado"),
-                    rs.getString("numero_vivienda")
-                });
+                    true
+                ));
             }
+            actualizarTablaViviendas();
         } catch (SQLException ex) {
             JOptionPane.showMessageDialog(this, "No se pudieron cargar las viviendas: " + ex.getMessage());
         }
+    }
+
+    private void actualizarTablaViviendas() {
+        pTableBody.removeAll();
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1;
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.insets = new Insets(10, 10, 5, 10);
+
+        for (ViviendaItem vivienda : viviendas) {
+            pTableBody.add(crearFilaVivienda(vivienda), gbc);
+            gbc.gridy += 1;
+        }
+
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weighty = 1;
+        pTableBody.add(new JLabel(""), gbc);
+        pTableBody.revalidate();
+        pTableBody.repaint();
+    }
+
+    private JPanel crearFilaVivienda(ViviendaItem vivienda) {
+        JPanel fila = new JPanel(new GridLayout(1, 4));
+        fila.setBackground(ThemeManager.COLOR_BACKGROUND_LIGHT);
+        fila.setPreferredSize(new Dimension(0, 45));
+        fila.setMinimumSize(new Dimension(0, 45));
+        fila.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45));
+
+        fila.add(crearCeldaTexto(vivienda.numero, false));
+        fila.add(crearCeldaTexto(vivienda.calle, false));
+        fila.add(crearEstado(vivienda.estado, vivienda.activo));
+        fila.add(crearAccionesVivienda(vivienda));
+        return fila;
+    }
+
+    private JLabel crearCeldaTexto(String texto, boolean centrado) {
+        JLabel label = ThemeManager.Label(texto);
+        label.setHorizontalAlignment(centrado ? SwingConstants.CENTER : SwingConstants.LEFT);
+        label.setBorder(BorderFactory.createEmptyBorder(0, 12, 0, 0));
+        return label;
+    }
+
+    private JLabel crearEstado(String texto, boolean activo) {
+        JLabel label = ThemeManager.Label(texto);
+        label.setHorizontalAlignment(SwingConstants.CENTER);
+        label.setOpaque(true);
+        label.setForeground(ThemeManager.COLOR_TEXT_DARK);
+        label.setBackground(activo ? ThemeManager.COLOR_SECONDARY : ThemeManager.COLOR_ERROR);
+        label.setFont(ThemeManager.TEXT_NORMAL);
+        label.setPreferredSize(new Dimension(76, 20));
+        label.setMinimumSize(new Dimension(76, 20));
+        label.setMaximumSize(new Dimension(76, 20));
+        return label;
+    }
+
+    private JPanel crearAccionesVivienda(ViviendaItem vivienda) {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 6, 0));
+        panel.setOpaque(false);
+
+        JButton btnEditar = crearBotonIcono("img\\edit.png");
+        JButton btnEliminar = crearBotonIcono("img\\delete.png");
+
+        btnEditar.addActionListener(e -> editarVivienda(vivienda.numero, vivienda.calle, vivienda.activo));
+        btnEliminar.addActionListener(e -> cambiarEstadoVivienda(vivienda.numero, vivienda.activo));
+
+        panel.add(btnEditar);
+        panel.add(btnEliminar);
+        return panel;
+    }
+
+    private JButton crearBotonIcono(String ruta) {
+        JButton boton = new JButton(ThemeManager.SetImgIcon(ruta, ThemeManager.ICON_WIDTH_PX, ThemeManager.ICON_HEIGHT_PX));
+        boton.setFocusPainted(false);
+        boton.setContentAreaFilled(false);
+        boton.setBorderPainted(false);
+        boton.setOpaque(false);
+        boton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        boton.setPreferredSize(new Dimension(28, 28));
+        boton.setMaximumSize(new Dimension(28, 28));
+        return boton;
     }
 
     private void editarVivienda(String numeroVivienda, String calleActual, boolean activoActual) {

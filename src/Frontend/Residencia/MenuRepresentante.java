@@ -1,6 +1,7 @@
 package Frontend.Residencia;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.border.EmptyBorder;
 import Backend.ConexionPostgres;
 import Backend.ThemeManager;
 import java.awt.*;
@@ -12,10 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MenuRepresentante extends JPanel {
-
-    private static final int SIDEBAR_WIDTH = 190;
-    private static final int BUTTON_HEIGHT = 30;
-    private static final int INPUT_HEIGHT = 24;
 
     private final ConexionPostgres db = new ConexionPostgres();
 
@@ -33,25 +30,42 @@ public class MenuRepresentante extends JPanel {
         }
     };
 
-    private final JTable table = new JTable(tableModel);
     private JTextField txtCedula;
     private JTextField txtNombre;
     private JTextField txtApellido;
 
+    private final JPanel pTable = new JPanel(new BorderLayout());
+    private final JPanel pTableHeader = new JPanel(new GridLayout(1, 4));
+    private final JPanel pTableBody = new JPanel(new GridBagLayout());
+    private final ArrayList<RepresentanteItem> representantes = new ArrayList<>();
+    private final String[] headers = {"Nombre Completo", "Cédula", "Teléfono", "Opciones"};
+
+    private static class RepresentanteItem {
+        private final String nombreCompleto;
+        private final String cedula;
+        private final String telefono;
+
+        private RepresentanteItem(String nombreCompleto, String cedula, String telefono) {
+            this.nombreCompleto = nombreCompleto;
+            this.cedula = cedula;
+            this.telefono = telefono;
+        }
+    }
+
     public MenuRepresentante() {
         this.setLayout(new BorderLayout());
-        this.setBackground(ThemeManager.COLOR_BACKGROUND);
+        this.setBackground(ThemeManager.COLOR_BACKGROUND_DARK);
+        this.setBorder(new EmptyBorder(20, 20, 20, 20));
 
         JPanel panelControles = new JPanel();
         panelControles.setLayout(new BoxLayout(panelControles, BoxLayout.Y_AXIS));
         panelControles.setBackground(ThemeManager.COLOR_BACKGROUND);
-        panelControles.setBorder(BorderFactory.createEmptyBorder(20, 8, 18, 8));
-        panelControles.setPreferredSize(new Dimension(SIDEBAR_WIDTH, 0));
+        panelControles.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
+        panelControles.setPreferredSize(new Dimension(315, 0));
 
         JButton btnAgregar = ThemeManager.Button("Agregar");
         btnAgregar.setAlignmentX(Component.CENTER_ALIGNMENT);
-        btnAgregar.setPreferredSize(new Dimension(136, BUTTON_HEIGHT));
-        btnAgregar.setMaximumSize(new Dimension(Integer.MAX_VALUE, BUTTON_HEIGHT));
+        btnAgregar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
         btnAgregar.addActionListener(e -> abrirFormularioRepresentante(false, null));
 
         JLabel tituloAgregar = new JLabel("<html><div style='text-align:center;'>AGREGAR NUEVO REPRESENTANTE</div></html>", SwingConstants.CENTER);
@@ -61,8 +75,8 @@ public class MenuRepresentante extends JPanel {
         tituloAgregar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 28));
 
         JSeparator separador = new JSeparator();
-        separador.setForeground(ThemeManager.COLOR_INFO);
-        separador.setBackground(ThemeManager.COLOR_INFO);
+        separador.setForeground(ThemeManager.COLOR_INPUT);
+        separador.setBackground(ThemeManager.COLOR_INPUT);
         separador.setMaximumSize(new Dimension(Integer.MAX_VALUE, 2));
         separador.setAlignmentX(Component.CENTER_ALIGNMENT);
 
@@ -83,21 +97,24 @@ public class MenuRepresentante extends JPanel {
         lCedula.setForeground(ThemeManager.COLOR_TEXT);
         lCedula.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        txtCedula = crearCampoTexto();
+        txtCedula = ThemeManager.Textfield();
+        txtCedula.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
 
         JLabel lNombre = new JLabel("Nombre Completo");
         lNombre.setFont(ThemeManager.TEXT_SMALL);
         lNombre.setForeground(ThemeManager.COLOR_TEXT);
         lNombre.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        txtNombre = crearCampoTexto();
+        txtNombre = ThemeManager.Textfield();
+        txtNombre.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
 
         JLabel lApellido = new JLabel("Apellido Completo");
         lApellido.setFont(ThemeManager.TEXT_SMALL);
         lApellido.setForeground(ThemeManager.COLOR_TEXT);
         lApellido.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        txtApellido = crearCampoTexto();
+        txtApellido = ThemeManager.Textfield();
+        txtApellido.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
 
         panelFiltros.add(lCedula);
         panelFiltros.add(Box.createRigidArea(new Dimension(0, 6)));
@@ -113,8 +130,7 @@ public class MenuRepresentante extends JPanel {
 
         JButton btnBuscar = ThemeManager.Button("Buscar");
         btnBuscar.setAlignmentX(Component.CENTER_ALIGNMENT);
-        btnBuscar.setPreferredSize(new Dimension(136, BUTTON_HEIGHT));
-        btnBuscar.setMaximumSize(new Dimension(Integer.MAX_VALUE, BUTTON_HEIGHT));
+        btnBuscar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
         btnBuscar.addActionListener(e -> cargarRepresentantes());
 
         panelControles.add(tituloAgregar);
@@ -132,29 +148,33 @@ public class MenuRepresentante extends JPanel {
 
         this.add(panelControles, BorderLayout.WEST);
 
-        table.setBackground(ThemeManager.COLOR_BACKGROUND_LIGHT);
-        table.setForeground(Color.WHITE);
-        table.setRowHeight(32);
-        table.setFillsViewportHeight(true);
-        table.getColumnModel().getColumn(3).setPreferredWidth(160);
-        table.getColumnModel().getColumn(3).setCellRenderer(new OpcionesRenderer());
-        table.getColumnModel().getColumn(3).setCellEditor(new OpcionesEditor());
+        pTable.setBackground(ThemeManager.COLOR_BACKGROUND_DARK);
+        pTableHeader.setBackground(ThemeManager.COLOR_PRIMARY);
+        pTableHeader.setPreferredSize(new Dimension(0, 40));
 
-        JScrollPane scrollPane = new JScrollPane(table);
-        this.add(scrollPane, BorderLayout.CENTER);
+        for (String header : headers) {
+            int alignment = header.equals("Opciones") ? SwingConstants.CENTER : SwingConstants.LEFT;
+            JLabel column = new JLabel(header, alignment);
+            column.setForeground(ThemeManager.COLOR_TEXT);
+            column.setFont(ThemeManager.TEXT_SUBTITLE);
+            if (alignment == SwingConstants.LEFT) {
+                column.setBorder(BorderFactory.createEmptyBorder(0, 15, 0, 0));
+            }
+            pTableHeader.add(column);
+        }
+
+        pTableBody.setBackground(ThemeManager.COLOR_BACKGROUND_DARK);
+        pTable.add(pTableHeader, BorderLayout.NORTH);
+
+        JScrollPane scrollPane = new JScrollPane(pTableBody);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.getViewport().setBackground(ThemeManager.COLOR_BACKGROUND_DARK);
+        scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        pTable.add(scrollPane, BorderLayout.CENTER);
+
+        this.add(pTable, BorderLayout.CENTER);
 
         cargarRepresentantes();
-    }
-
-    private JTextField crearCampoTexto() {
-        JTextField campo = new JTextField();
-        campo.setPreferredSize(new Dimension(140, INPUT_HEIGHT));
-        campo.setMaximumSize(new Dimension(Integer.MAX_VALUE, INPUT_HEIGHT));
-        campo.setBackground(ThemeManager.COLOR_INPUT);
-        campo.setForeground(ThemeManager.COLOR_TEXT_DARK);
-        campo.setBorder(BorderFactory.createLineBorder(ThemeManager.COLOR_INPUT, 6));
-        campo.setAlignmentX(Component.LEFT_ALIGNMENT);
-        return campo;
     }
 
     private void cargarRepresentantes() {
@@ -187,19 +207,89 @@ public class MenuRepresentante extends JPanel {
 
         try {
             ResultSet rs = db.consultar(sql.toString(), parametros.isEmpty() ? null : parametros.toArray());
-            tableModel.setRowCount(0);
+            representantes.clear();
 
             while (rs != null && rs.next()) {
-                tableModel.addRow(new Object[]{
+                representantes.add(new RepresentanteItem(
                     rs.getString("nombre_completo"),
                     rs.getString("cedula"),
-                    rs.getString("telefono"),
-                    ""
-                });
+                    rs.getString("telefono")
+                ));
             }
+            actualizarTablaRepresentantes();
         } catch (SQLException ex) {
             mostrarDialogoError("No se pudieron cargar los representantes: " + ex.getMessage());
         }
+    }
+
+    private void actualizarTablaRepresentantes() {
+        pTableBody.removeAll();
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1;
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.insets = new Insets(10, 10, 5, 10);
+
+        for (RepresentanteItem representante : representantes) {
+            pTableBody.add(crearFilaRepresentante(representante), gbc);
+            gbc.gridy += 1;
+        }
+
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weighty = 1;
+        pTableBody.add(new JLabel(""), gbc);
+        pTableBody.revalidate();
+        pTableBody.repaint();
+    }
+
+    private JPanel crearFilaRepresentante(RepresentanteItem representante) {
+        JPanel fila = new JPanel(new GridLayout(1, 4));
+        fila.setBackground(ThemeManager.COLOR_BACKGROUND_LIGHT);
+        fila.setPreferredSize(new Dimension(0, 45));
+        fila.setMinimumSize(new Dimension(0, 45));
+        fila.setMaximumSize(new Dimension(Integer.MAX_VALUE, 45));
+
+        fila.add(crearCeldaTexto(representante.nombreCompleto));
+        fila.add(crearCeldaTexto(representante.cedula));
+        fila.add(crearCeldaTexto(representante.telefono));
+        fila.add(crearAccionesRepresentante(representante));
+        return fila;
+    }
+
+    private JLabel crearCeldaTexto(String texto) {
+        JLabel label = ThemeManager.Label(texto);
+        label.setHorizontalAlignment(SwingConstants.LEFT);
+        label.setBorder(BorderFactory.createEmptyBorder(0, 12, 0, 0));
+        return label;
+    }
+
+    private JPanel crearAccionesRepresentante(RepresentanteItem representante) {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 6, 0));
+        panel.setOpaque(false);
+
+        JButton btnEditar = crearBotonIcono("img\\edit.png");
+        JButton btnEliminar = crearBotonIcono("img\\delete.png");
+
+        btnEditar.addActionListener(e -> editarRepresentante(representante.cedula));
+        btnEliminar.addActionListener(e -> cambiarEstadoRepresentante(representante.cedula));
+
+        panel.add(btnEditar);
+        panel.add(btnEliminar);
+        return panel;
+    }
+
+    private JButton crearBotonIcono(String ruta) {
+        JButton boton = new JButton(ThemeManager.SetImgIcon(ruta, ThemeManager.ICON_WIDTH_PX, ThemeManager.ICON_HEIGHT_PX));
+        boton.setFocusPainted(false);
+        boton.setContentAreaFilled(false);
+        boton.setBorderPainted(false);
+        boton.setOpaque(false);
+        boton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        boton.setPreferredSize(new Dimension(28, 28));
+        boton.setMaximumSize(new Dimension(28, 28));
+        return boton;
     }
 
     private void editarRepresentante(String cedula) {
