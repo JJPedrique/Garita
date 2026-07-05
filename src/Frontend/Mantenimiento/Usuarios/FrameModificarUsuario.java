@@ -9,9 +9,12 @@ import Backend.ThemeManager;
 public class FrameModificarUsuario extends JDialog{
 
     ConexionPostgres DB = new ConexionPostgres();
-    int id;
-    String PRE_SQL = "SELECT clave,rol,nombre,apellido,cedula,telefono FROM usuarios WHERE id = ?;";
-    String POST_SQL = "UPDATE usuarios SET clave = ?,rol = ?,nombre = ?,apellido = ?,cedula = ?,telefono = ? WHERE id = ?;";
+    int idM;
+    String INIT_SQL = "SELECT clave,rol,nombre,apellido,cedula,telefono FROM usuarios WHERE id = ?;";
+    String PRE_SQL = "select id,activo from usuarios where cedula = ?;";    
+    String SQL = "UPDATE usuarios SET clave = ?,rol = ?,nombre = ?,apellido = ?,cedula = ?,telefono = ?, activo = ? WHERE id = ?;";
+    String POST_SQL = "DELETE FROM usuarios WHERE id = ?;";
+
 
     JTextField InputNombre = ThemeManager.Textfield();
     JTextField InputApellido = ThemeManager.Textfield();
@@ -23,7 +26,7 @@ public class FrameModificarUsuario extends JDialog{
     String ROLES[] = {"Vigilancia","Junta","Administrador"};
 
     public FrameModificarUsuario(int newId){
-        id = newId;
+        idM = newId;
         this.setLayout(new BorderLayout());
         this.setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
         this.setTitle("Agregar Usuario");
@@ -125,7 +128,7 @@ public class FrameModificarUsuario extends JDialog{
     }
 
     void Init() throws SQLException{
-        ResultSet RS_DATA = DB.consultar(PRE_SQL,new Object[]{id});
+        ResultSet RS_DATA = DB.consultar(INIT_SQL,new Object[]{idM});
         while (RS_DATA.next()) {
             InputNombre.setText(RS_DATA.getString("nombre"));
             InputApellido.setText(RS_DATA.getString("apellido"));
@@ -161,7 +164,22 @@ public class FrameModificarUsuario extends JDialog{
         if(!strClave.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d\\W_]{8,}$")){
             ThemeManager.MostrarMensajeError(this,"ERROR - La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número");return;}
 
-        DB.comandoDML(POST_SQL,new Object[]{strClave, strRol, strNombre, strApellido, strCedula, strTelefono,id});
+        
+        ResultSet RS_DATA = DB.consultar(PRE_SQL,new Object[]{strCedula});
+        int id = -1; boolean active = false;
+        while (RS_DATA.next()) {
+            id = RS_DATA.getInt("id");
+            active = RS_DATA.getBoolean("activo");
+        }
+
+
+        if(id == idM){DB.comandoDML(SQL,new Object[]{strClave, strRol, strNombre, strApellido, strCedula, strTelefono,true,idM});}
+        else if(active){ThemeManager.MostrarMensajeError(this,"ERROR - Esa cedula ya ha sido registrada."); return;}
+        else{
+            DB.comandoDML(POST_SQL,new Object[]{idM});
+            DB.comandoDML(SQL,new Object[]{strClave, strRol, strNombre, strApellido, strCedula, strTelefono,true,id});
+        }
+
         ThemeManager.MostrarMensajeExito(this,"EXITO - Usuario modificado exitosamente.");
         this.dispose();
     }

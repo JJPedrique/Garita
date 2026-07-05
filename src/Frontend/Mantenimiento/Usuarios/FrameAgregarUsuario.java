@@ -9,8 +9,8 @@ import Backend.ThemeManager;
 public class FrameAgregarUsuario extends JDialog {
 
     ConexionPostgres DB = new ConexionPostgres();
-    String PRE_SQL = "SELECT id FROM usuarios WHERE cedula = ? AND activo = ?;";
-    String A_SQL = "INSERT INTO usuarios (clave,rol,nombre,apellido,cedula,telefono) VALUES (?,?,?,?,?,?);";
+    String PRE_SQL = "select id,activo from usuarios where cedula = ?;";
+    String SQL = "INSERT INTO usuarios (clave,rol,nombre,apellido,cedula,telefono) VALUES (?,?,?,?,?,?);";
     String POST_SQL = "UPDATE usuarios SET clave = ?,rol = ?,nombre = ?,apellido = ?,cedula = ?,telefono = ?, activo = ? WHERE id = ?;";
    
     JTextField InputNombre = ThemeManager.Textfield();
@@ -148,7 +148,17 @@ public class FrameAgregarUsuario extends JDialog {
             ThemeManager.MostrarMensajeError(this,"ERROR - La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número");return;}
 
 
-        DB.comandoDML(POST_SQL,new Object[]{strClave, strRol, strNombre, strApellido, strCedula, strTelefono});
+        ResultSet RS_DATA = DB.consultar(PRE_SQL,new Object[]{strCedula});
+        int id = -1; boolean active = false;
+        while (RS_DATA.next()) {
+            id = RS_DATA.getInt("id");
+            active = RS_DATA.getBoolean("activo");
+        }
+
+        if(id == -1){DB.comandoDML(SQL,new Object[]{strClave, strRol, strNombre, strApellido, strCedula, strTelefono});}
+        else if(active){ThemeManager.MostrarMensajeError(this,"ERROR - Esa cedula ya ha sido registrada."); return;}
+        else{DB.comandoDML(POST_SQL,new Object[]{strClave, strRol, strNombre, strApellido, strCedula, strTelefono,true,id});}
+
         ThemeManager.MostrarMensajeExito(this,"EXITO - Usuario agregado exitosamente.");
         this.dispose();
     }
