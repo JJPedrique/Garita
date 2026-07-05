@@ -5,17 +5,13 @@ import java.awt.*;
 import java.util.*;
 import javax.swing.*;
 
-import org.openpdf.text.DocumentException;
-import org.openpdf.text.Document;
-import org.openpdf.text.Paragraph;
-import org.openpdf.text.Phrase;
 import org.openpdf.text.pdf.PdfPCell;
 import org.openpdf.text.pdf.PdfPTable;
 import org.openpdf.text.pdf.PdfWriter;
 
 import java.awt.event.*;
-//import org.openpdf.text.*;
-//import org.openpdf.text.pdf.*;
+import org.openpdf.text.*;
+import org.openpdf.text.pdf.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -348,7 +344,7 @@ public class MenuReporte extends JPanel {
         BtnImprimir.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                //ImprimirPDF();
+                ImprimirPDF();
             }
         });
  
@@ -540,7 +536,7 @@ public class MenuReporte extends JPanel {
             documento.open();
 
             Paragraph titulo = new Paragraph("Reporte Garita -"+ Modulos.getSelectedItem().toString());
-            //titulo.setAlignment(Element.ALIGN_CENTER);
+            titulo.setAlignment(Element.ALIGN_CENTER);
             titulo.setSpacingAfter(20);
             documento.add(titulo);
 
@@ -579,10 +575,10 @@ public class MenuReporte extends JPanel {
             }
                
             documento.add(tabla);
-            System.out.println("¡PDF creado con éxito con OpenPDF!");
+            ThemeManager.MostrarMensajeExito(this, "Se genero el reporte en la carpeta descarga");
 
         } catch (DocumentException | FileNotFoundException e) {
-            e.printStackTrace();
+            ThemeManager.MostrarMensajeError(this, "ERROR - No se genero el reporte");
         } finally {
             if (documento.isOpen()) {
                 documento.close();
