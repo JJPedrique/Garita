@@ -111,7 +111,7 @@ public class ConexionPostgres {
         }
     }
 
-    public static void backupDatabase() {
+    public static void backupDatabase() throws Exception {
         try {
             
             String rutaDescargas = System.getProperty("user.home") + File.separator + "Downloads";
@@ -140,11 +140,11 @@ public class ConexionPostgres {
 
         } catch (IOException | InterruptedException e) {
             System.out.println("Error al ejecutar el proceso: " + e.getMessage());
-            e.printStackTrace();
+            throw new Exception();
         }
     }
 
-    public static void restoreDatabase() {
+    public static void restoreDatabase() throws Exception {
         try {
             try {UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
             } catch (Exception e) {System.out.println("No se pudo cargar el aspecto nativo de Windows.");}
@@ -183,7 +183,7 @@ public class ConexionPostgres {
         
 
         } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
+            throw new Exception();
         }
     }
 }

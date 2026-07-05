@@ -228,7 +228,7 @@ public class MenuBitacora extends JPanel {
             }
         }
 
-        System.out.println(MAIN_QUERY);
+        //System.out.println(MAIN_QUERY);
 
         ArrayList<String> headersDB = new ArrayList<>();
         headersDB.add("\"Nombre Completo\"");

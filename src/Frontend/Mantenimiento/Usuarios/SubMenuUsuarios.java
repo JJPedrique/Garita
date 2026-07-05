@@ -235,8 +235,8 @@ public class SubMenuUsuarios extends JPanel {
         String strCedula = inputCedula.getText().trim();
         
         if(!strNombre.isEmpty()){
-            if(!strNombre.matches("^[a-zA-Z0-9]+$")){
-                ThemeManager.MostrarMensajeError(this,"EL CEDULA DEBE SER ALFA-NUMERICO");
+            if(!strNombre.matches("^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\\s]+$")){
+                ThemeManager.MostrarMensajeError(this,"EL NOMBRE DEBE SER ALFA-NUMERICO");
                 return;
             }    
 
@@ -245,8 +245,8 @@ public class SubMenuUsuarios extends JPanel {
         }
 
         if(!strApellido.isEmpty()){
-            if(!strApellido.matches("^[a-zA-Z0-9]+$")){
-                ThemeManager.MostrarMensajeError(this,"EL CEDULA DEBE SER ALFA-NUMERICO");
+            if(!strApellido.matches("^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\\s]+$")){
+                ThemeManager.MostrarMensajeError(this,"EL APELLIDO DEBE SER ALFA-NUMERICO");
                 return;
             }    
 
@@ -255,8 +255,8 @@ public class SubMenuUsuarios extends JPanel {
         }
 
         if(!strCedula.isEmpty()){
-            if(!strCedula.matches("^[a-zA-Z0-9]+$")){
-                ThemeManager.MostrarMensajeError(this,"EL CEDULA DEBE SER ALFA-NUMERICO");
+            if(!strCedula.matches("^[VEve][-]\\d{7,8}$")){
+                ThemeManager.MostrarMensajeError(this,"LA CEDULA DEBE SER ALFA-NUMERICO");
                 return;
             }    
 

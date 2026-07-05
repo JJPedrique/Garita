@@ -10,7 +10,6 @@ import java.awt.event.*;
 
 public class SubMenuGestionDeRespaldos extends JPanel {
     ConexionPostgres DB = new ConexionPostgres();
-    //JLabel Last = new JLabel("Ultima Modificación: XXXX-XX-XX XX:XXxx");
 
     public SubMenuGestionDeRespaldos(){
         this.setLayout(new GridBagLayout());
@@ -22,12 +21,10 @@ public class SubMenuGestionDeRespaldos extends JPanel {
 
         this.setBackground(ThemeManager.COLOR_BACKGROUND);
         
-        JButton BtnRespladar = BTN("Generar Respaldo de la Base de Datos");
+        JButton BtnRespladar = ThemeManager.Button("Generar Respaldo de la Base de Datos");
         BtnRespladar.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
-                ConexionPostgres.backupDatabase();
-            }
+            public void actionPerformed(ActionEvent e) {Respaldar();}
         });
         this.add(BtnRespladar,gbc);
 
@@ -37,12 +34,10 @@ public class SubMenuGestionDeRespaldos extends JPanel {
         this.add(Line1,gbc);
 
         gbc.gridy =2; gbc.weightx =0; gbc.gridwidth =1;
-        JButton BtnRestaurar = BTN("Restaurar de la Base de Datos");
+        JButton BtnRestaurar = ThemeManager.Button("Restaurar de la Base de Datos");
         BtnRestaurar.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
-                ConexionPostgres.restoreDatabase();
-            }
+            public void actionPerformed(ActionEvent e) {Restaurar();}
         });
         this.add(BtnRestaurar,gbc);
 
@@ -50,39 +45,19 @@ public class SubMenuGestionDeRespaldos extends JPanel {
         JSeparator Line2 =  new JSeparator();
         this.add(Line2,gbc);
 
-        //gbc.gridy = 4;gbc.weightx =1; gbc.gridwidth =2;
-        //Last.setFont(ThemeManager.TEXT_NORMAL);
-        //Last.setForeground(ThemeManager.COLOR_TEXT);
-        //this.add(Last,gbc);
-
         gbc.gridy=5; gbc.weighty=1;gbc.fill=GridBagConstraints.BOTH;
         this.add(new JLabel(),gbc);
     }
 
-    JButton BTN(String texto){
-        JButton btn = new JButton(texto);
-        btn.setMaximumSize(new Dimension(175, 40));
-        btn.setForeground(ThemeManager.COLOR_TEXT);
-        btn.setBackground(ThemeManager.COLOR_PRIMARY);
-        btn.setFont(ThemeManager.TEXT_SUBTITLE);
-        btn.setFocusPainted(false);
-        btn.setBorderPainted(false);
-        btn.setAlignmentX(Component.CENTER_ALIGNMENT);
-        btn.setHorizontalAlignment(SwingConstants.LEFT);
-
-        btn.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                btn.setBackground(ThemeManager.COLOR_SECONDARY);
-            }
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                btn.setBackground(ThemeManager.COLOR_PRIMARY);
-            }
-        });
-
-        return btn;
+    void Respaldar(){
+       try {ConexionPostgres.backupDatabase();
+        ThemeManager.MostrarMensajeExito(this,"Se ha generado un respaldo en la carpeta descargas");
+        } catch (Exception e) {ThemeManager.MostrarMensajeError(this,"ERROR - No se logro Respaldar");}
     }
-
-
    
-
+    void Restaurar(){
+       try {ConexionPostgres.restoreDatabase();
+        ThemeManager.MostrarMensajeExito(this,"Se han restaurado los datos correctamente");
+        } catch (Exception e) {ThemeManager.MostrarMensajeError(this,"ERROR - No se logro Restaurar");}
+    }
 }

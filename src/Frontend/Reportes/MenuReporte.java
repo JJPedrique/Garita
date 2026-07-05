@@ -212,7 +212,11 @@ public class MenuReporte extends JPanel {
         Menu.addTab("Modulo",Modulo());
         Menu.addTab( "Filtros",Filtros());
         Menu.addTab("Imprimir",Imprimir());
-
+        UIManager.put("TabbedPane.tabAreaBackground", ThemeManager.COLOR_BACKGROUND_DARK);
+        UIManager.put("TabbedPane.background", ThemeManager.COLOR_BACKGROUND_DARK);
+        Menu.setForeground(ThemeManager.COLOR_TEXT);
+        Menu.setBackground(ThemeManager.COLOR_BACKGROUND_DARK);
+        Menu.setFont(ThemeManager.TEXT_NORMAL);
         this.add(Menu,BorderLayout.WEST);
         this.add(Table,BorderLayout.CENTER);
 

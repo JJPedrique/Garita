@@ -44,7 +44,7 @@ public class FrameModificarUsuario extends JDialog{
         JPanel newPanel = new JPanel(new FlowLayout());
         newPanel.setBackground(ThemeManager.COLOR_PRIMARY);
         
-        JLabel Titulo = ThemeManager.Label("Agregar Nuevo Usuario");
+        JLabel Titulo = ThemeManager.Label("Modificar Usuario");
         Titulo.setForeground(ThemeManager.COLOR_TEXT);
         Titulo.setFont(ThemeManager.TEXT_TITLE);
         newPanel.add(Titulo);
