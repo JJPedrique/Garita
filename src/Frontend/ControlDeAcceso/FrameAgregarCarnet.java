@@ -3,6 +3,7 @@ package Frontend.ControlDeAcceso;
 import java.awt.*;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import Backend.ConexionPostgres;
@@ -28,10 +29,12 @@ public class FrameAgregarCarnet extends JPanel {
     private final JButton bAgregarCarnet;
     
     private JDialog JDPadre;
+    private Runnable onActualizarTabla;
     //endregion
 
-    public FrameAgregarCarnet(JDialog JDPadre) {
+    public FrameAgregarCarnet(JDialog JDPadre, Runnable onActualizarTabla) {
         this.JDPadre = JDPadre;
+        this.onActualizarTabla = onActualizarTabla;
         this.tfCodigoCarnet = ThemeManager.Textfield();
         this.bAgregarCarnet = ThemeManager.Button("Agregar Carnet");
 
@@ -111,9 +114,9 @@ public class FrameAgregarCarnet extends JPanel {
         String query = "SELECT id, concat('Nro: ',numero_vivienda,' - Calle: ',calle) AS info FROM viviendas ORDER BY numero_vivienda,calle ASC;";
         try {
             ConexionPostgres BDD = new ConexionPostgres();
-            ResultSet RS = BDD.consultar(query, null);
-            while (RS != null && RS.next()) {
-                cbViviendas.addItem(RS.getString("info"));
+            ResultSet RS_Carnet = BDD.consultar(query, null);
+            while (RS_Carnet != null && RS_Carnet.next()) {
+                cbViviendas.addItem(RS_Carnet.getString("info"));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -139,31 +142,62 @@ public class FrameAgregarCarnet extends JPanel {
 
             try {
                 ConexionPostgres BDD = new ConexionPostgres();
-                ResultSet RS = BDD.consultar(
-                    "SELECT COUNT(*) AS total FROM carnets WHERE codigo = ? AND activo = true;", 
-                    new Object[]{sCodigo});
-                if (RS != null && RS.next() && RS.getInt("total") > 0) {
-                    ThemeManager.MostrarMensajeError(this,"Carnet Existente.");
-                    return;
-                }
-
+        
                 String sVivienda = cbViviendas.getSelectedItem().toString();
                 String sNumCasa = sVivienda.split(" - ")[0].replace("Nro: ", "").trim();
-                ResultSet rsId = BDD.consultar("SELECT id FROM viviendas WHERE numero_vivienda = ? LIMIT 1;", new Object[]{sNumCasa});
+                
+                ResultSet RS_Vivienda = BDD.consultar(
+                    "SELECT id FROM viviendas WHERE numero_vivienda = ? LIMIT 1;", 
+                    new Object[]{sNumCasa}
+                );
+        
                 int idVivienda = -1;
-                if (rsId != null && rsId.next()) {
-                    idVivienda = rsId.getInt("id");
+                if (RS_Vivienda != null && RS_Vivienda.next()) {
+                    idVivienda = RS_Vivienda.getInt("id");
+                }
+                
+                ResultSet RS_Carnet = BDD.consultar(
+                    "SELECT id,activo FROM carnets WHERE codigo = ? LIMIT 1;", 
+                    new Object[]{sCodigo}
+                );
+
+                int idCarnet = -1;
+                boolean activo = true;
+                if (RS_Carnet != null && RS_Carnet.next()) {
+                    idCarnet = RS_Carnet.getInt("id");
+                    activo = RS_Carnet.getBoolean("activo");
+                }
+
+                if(idCarnet != -1 && activo == false){
+                    BDD.comandoDML("UPDATE carnets SET codigo = ?, id_vivienda = ?, activo = true WHERE id = ?;", 
+                    new Object[]{sCodigo, idVivienda, idCarnet});
+                    
+                    ThemeManager.MostrarMensajeExito(this,"Carnet registrado correctamente.");
+                    TriggerActualizarTabla();
+                    this.JDPadre.dispose();
+                    return;
+                }
+                if(idCarnet != -1 && activo == true){
+                    ThemeManager.MostrarMensajeError(this,"El carnet ya existe.");
+                    return;
                 }
 
                 String queryInsert = "INSERT INTO carnets (codigo, id_vivienda, activo) VALUES (?, ?, true);";
                 BDD.comandoDML(queryInsert, new Object[]{sCodigo, idVivienda});
 
                 ThemeManager.MostrarMensajeExito(this,"Carnet registrado correctamente.");
+                TriggerActualizarTabla();
                 this.JDPadre.dispose();
 
             } catch (SQLException ex) {
                 JOptionPane.showMessageDialog(this, "Error BD: " + ex.getMessage(), "ERROR", JOptionPane.ERROR_MESSAGE);
             }
         });
+    }
+
+    private void TriggerActualizarTabla(){
+        if(onActualizarTabla != null){
+            onActualizarTabla.run();
+        }
     }
 }
