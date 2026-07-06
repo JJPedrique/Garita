@@ -111,7 +111,7 @@ public class MenuRegistroDeAcceso extends JPanel {
 
     JButton bBuscar = ThemeManager.Button("Buscar");
     JSeparator hr = new JSeparator();
-    JButton bSolicitarAccesoVisitante = ThemeManager.Button("Solicitar Acceso a Vigilante");
+    JButton bSolicitarAccesoVisitante = ThemeManager.Button("Solicitar Acceso al Visitante");
 
     ArrayList<JRegistroAcceso> JRegistros = new ArrayList<>();
     String[] headers = {"Carnet","Tipo de Acceso","Fecha de Uso", "Estado", "Nombre"};
