@@ -285,7 +285,9 @@ public class MenuCarnets extends JPanel {
         JDAgregarCarnet.setSize(new Dimension(600, 400));
         JDAgregarCarnet.setLocationRelativeTo(this);
         JDAgregarCarnet.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-        JDAgregarCarnet.add(new FrameAgregarCarnet(JDAgregarCarnet));
+        JDAgregarCarnet.add(new FrameAgregarCarnet(JDAgregarCarnet, () -> {
+            ActualizarTabla(tfCodigo.getText().trim());
+        }));
         JDAgregarCarnet.setVisible(true);
     });
 
