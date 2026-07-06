@@ -1,452 +1,450 @@
 package Frontend.Cuotas;
+
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
-
-import Backend.ThemeManager;
-
-import java.awt.*;
-
+import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.MatteBorder;
 import com.toedter.calendar.JDateChooser;
-
 import Backend.ConexionPostgres;
-import java.awt.event.*;
+import Backend.ThemeManager;
+import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 
+// =======================================================================
+// COMPONENTE TARJETA: Filas con GridBagLayout y Pesos Estrictos
+// =======================================================================
+class JTarjetaCuota {
+    String id;
+    String descripcionOriginal;
+    String montoOriginal;
+    String fechaLimiteOriginal;
+
+    JPanel panelRow;
+    JLabel Descripcion;
+    JLabel Monto;
+    JLabel FechaEmision;
+    JLabel FechaLimite;
+    JLabel Estado;
+    JButton Borrar;
+
+    public JTarjetaCuota(String id, String desc, String monto, String fEmision, String fLimite, boolean activo, MenuCuotas menuPadre) {
+        this.id = id;
+        this.descripcionOriginal = desc;
+        this.montoOriginal = monto;
+        this.fechaLimiteOriginal = fLimite;
+
+        this.Descripcion = ThemeManager.Label(desc);
+        this.Monto = ThemeManager.Label(monto + " $");
+        this.FechaEmision = ThemeManager.Label(fEmision);
+        this.FechaLimite = ThemeManager.Label(fLimite);
+        this.Estado = ThemeManager.Label(activo ? "Activo" : "Inactivo");
+        
+        // Estilo del Estado
+        this.Estado.setOpaque(true);
+        this.Estado.setHorizontalAlignment(SwingConstants.CENTER);
+        if (activo) {
+            this.Estado.setBackground(new Color(46, 125, 50, 40));
+            this.Estado.setForeground(new Color(129, 199, 132));
+        } else {
+            this.Estado.setBackground(new Color(198, 40, 40, 40));
+            this.Estado.setForeground(new Color(240, 128, 128));
+        }
+
+        this.Borrar = new JButton(ThemeManager.SetImgIcon("img\\delete.png", ThemeManager.ICON_WIDTH_PX, ThemeManager.ICON_HEIGHT_PX));
+        this.Borrar.setFocusPainted(false);
+        this.Borrar.setContentAreaFilled(false);
+        this.Borrar.setBorderPainted(false);
+        this.Borrar.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        Border margin = BorderFactory.createEmptyBorder(0, 10, 0, 10);
+        this.Descripcion.setBorder(margin);
+        this.Monto.setBorder(margin);
+        this.FechaEmision.setBorder(margin);
+        this.FechaLimite.setBorder(margin);
+
+        this.Borrar.addActionListener(e -> {
+            int opcion = JOptionPane.showConfirmDialog(
+                null, 
+                "¿Seguro que desea eliminar la cuota: \"" + desc + "\"?\nEsta acción no se puede deshacer.", 
+                "Confirmar Eliminación", 
+                JOptionPane.YES_NO_OPTION, 
+                JOptionPane.WARNING_MESSAGE
+            );
+            if (opcion == JOptionPane.YES_OPTION) {
+                try {
+                    ConexionPostgres DB = new ConexionPostgres();
+                    DB.comandoDML("DELETE FROM cuotas WHERE id = ?::integer", new Object[]{id});
+                    menuPadre.Search();
+                } catch (SQLException ex) {
+                    JOptionPane.showMessageDialog(null, "Error al eliminar cuota: " + ex.getMessage());
+                }
+            }
+        });
+
+        // Contenedor de la fila
+        this.panelRow = new JPanel(new GridBagLayout());
+        this.panelRow.setBackground(ThemeManager.COLOR_BACKGROUND_LIGHT);
+        this.panelRow.setPreferredSize(new Dimension(0, 52));
+        this.panelRow.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weighty = 1;
+        gbc.gridy = 0;
+
+        // Distribución en columnas con pesos explícitos asignados a gbc.weightx en cada paso
+        gbc.weightx = 0.30; gbc.gridx = 0; panelRow.add(Descripcion, gbc);
+        gbc.weightx = 0.15; gbc.gridx = 1; panelRow.add(Monto, gbc);
+        gbc.weightx = 0.20; gbc.gridx = 2; panelRow.add(FechaEmision, gbc);
+        gbc.weightx = 0.20; gbc.gridx = 3; panelRow.add(FechaLimite, gbc);
+        
+        // Estado (Centrado y con margen interno)
+        gbc.weightx = 0.10; gbc.gridx = 4; gbc.fill = GridBagConstraints.BOTH; 
+        gbc.insets = new Insets(10, 5, 10, 5); panelRow.add(Estado, gbc);
+        
+        // Botón Borrar
+        gbc.insets = new Insets(0, 0, 0, 0); gbc.weightx = 0.05; gbc.gridx = 5; 
+        gbc.fill = GridBagConstraints.NONE; panelRow.add(Borrar, gbc);
+
+        this.panelRow.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    JFrame frameAncestro = (JFrame) SwingUtilities.getWindowAncestor(panelRow);
+                    VentanaActualizarCuota vActualizar = new VentanaActualizarCuota(
+                        frameAncestro, 
+                        menuPadre, 
+                        descripcionOriginal, 
+                        montoOriginal, 
+                        fechaLimiteOriginal, 
+                        id
+                    );
+                    vActualizar.setVisible(true);
+                }
+            }
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                panelRow.setBackground(ThemeManager.COLOR_BACKGROUND_LIGHT.brighter());
+            }
+            @Override
+            public void mouseExited(MouseEvent e) {
+                panelRow.setBackground(ThemeManager.COLOR_BACKGROUND_LIGHT);
+            }
+        });
+    }
+
+    public JPanel toPanel() {
+        return this.panelRow;
+    }
+}
+
+// =======================================================================
+// INTERFAZ PRINCIPAL CON CABECERA ALINEADA
+// =======================================================================
 public class MenuCuotas extends JPanel {
 
     ConexionPostgres DB = new ConexionPostgres();
 
-    String SQL = "SELECT descripcion, monto, fecha_emision, fecha_limite, activo, id FROM cuotas";
-
-    JTextField inputDescripcion =  new JTextField();
-    JTextField inputMonto = new JTextField();
-    JTextField inputFechaInicial =  new JTextField();
-    JTextField inputFechaFinal =  new JTextField();
+    JButton bAgregarCuota = ThemeManager.Button("Añadir Cuota");
+    JTextField inputDescripcion = ThemeManager.Textfield();
+    JTextField inputMonto = ThemeManager.Textfield();
+    
+    private final JDateChooser jdcDesde = new JDateChooser();
+    private final JSpinner jsHoraDesde = createTimeSpinner();
+    
+    private final JDateChooser jdcHasta = new JDateChooser();
+    private final JSpinner jsHoraHasta = createTimeSpinner();
     
     JRadioButton radioTodos = new JRadioButton("Todos");
     JRadioButton radioActivo = new JRadioButton("Activo");
     JRadioButton radioInactivo = new JRadioButton("Inactivo");
-
-    private final JDateChooser jdcDesde = new JDateChooser();
-    private final JSpinner jspHoraDesde = new JSpinner(new SpinnerDateModel());
-
-    private final JDateChooser jdcHasta = new JDateChooser();
-    private final JSpinner jspHoraHasta = new JSpinner(new SpinnerDateModel());
+    ButtonGroup bgEstado = new ButtonGroup();
     
-    DefaultTableModel DATA = new DefaultTableModel(new String[][]{}, new String[]{}) {
-        @Override
-        public boolean isCellEditable(int row, int column) {
-            return column == 5;
-        }
+    JButton bBuscar = ThemeManager.Button("Buscar");
 
-        @Override
-        public Class<?> getColumnClass(int columnIndex) {
-            return columnIndex == 5 ? Object.class : String.class;
-        }
-    };
+    JPanel pTableBody = new JPanel();
+    JScrollPane scrollTable;
+    ArrayList<JTarjetaCuota> JTarjetas = new ArrayList<>();
 
-   
-    private JTable TABLA = new JTable(DATA);
+    public MenuCuotas() {
+        this.setLayout(new BorderLayout(15, 0));
+        this.setBackground(ThemeManager.COLOR_BACKGROUND_DARK);
+        this.setBorder(new EmptyBorder(10, 10, 10, 10));
 
-    public MenuCuotas() {        
-        this.setLayout(new BorderLayout());
-        this.setBackground(ThemeManager.COLOR_BACKGROUND);
-
-      
-        this.add(new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, Filtros(), Preview()), BorderLayout.CENTER);
-        Search();
-
-        KeyStroke enterKey = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
-        this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(enterKey, "executeSearch");
-        this.getActionMap().put("executeSearch", new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Search();
-            }
-        });
-    }
-
-  
-    JPanel Preview() {
-        JPanel newPanel = new JPanel(new BorderLayout());
+        // 1. PANEL LATERAL DE FILTROS
+        JPanel pFiltros = new JPanel(new GridBagLayout());
+        pFiltros.setBackground(ThemeManager.COLOR_BACKGROUND_DARK);
+        pFiltros.setPreferredSize(new Dimension(250, 0));
+        pFiltros.setBorder(new MatteBorder(0, 0, 0, 1, ThemeManager.COLOR_BACKGROUND_LIGHT));
         
-        TABLA.setBackground(ThemeManager.COLOR_BACKGROUND_LIGHT);
-        TABLA.setForeground(Color.WHITE);
-        TABLA.setRowHeight(32);
-        
-
-        TABLA.setFillsViewportHeight(true);
-        
-        JScrollPane scrollPane = new JScrollPane(TABLA);
-        newPanel.add(scrollPane, BorderLayout.CENTER);
-        return newPanel;
-    } 
-
-    JPanel Filtros() {
-        JPanel newPanel =  new JPanel(new GridBagLayout());
-        newPanel.setBackground(ThemeManager.COLOR_BACKGROUND_LIGHT);
-
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridy=0; gbc.gridx=0; gbc.weightx=1;
-        gbc.fill=GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(6,6,6,6);
-        gbc.gridwidth=2;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1;
+        gbc.gridx = 0;
 
-        JButton btnAddCuota = new JButton("Programar Cuota");
-        btnAddCuota.setFont(ThemeManager.TEXT_NORMAL);
-        btnAddCuota.setForeground(ThemeManager.COLOR_TEXT);
-        btnAddCuota.setBackground(ThemeManager.COLOR_PRIMARY);
-        btnAddCuota.setFont(ThemeManager.TEXT_SUBTITLE);
-        newPanel.add(btnAddCuota, gbc);
+        JLabel lTituloFiltros = ThemeManager.Label("GESTIÓN DE CUOTAS");
+        lTituloFiltros.setFont(ThemeManager.TEXT_SUBTITLE);
+        lTituloFiltros.setForeground(ThemeManager.COLOR_PRIMARY);
+        gbc.gridy = 0; gbc.insets = new Insets(5, 5, 15, 15);
+        pFiltros.add(lTituloFiltros, gbc);
 
-        btnAddCuota.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Window ventanaPadre = SwingUtilities.getWindowAncestor(MenuCuotas.this);
-                if (ventanaPadre instanceof JFrame) {
-                    VentanaProgramarCuota dialog = new VentanaProgramarCuota((JFrame) ventanaPadre, MenuCuotas.this);
-                    dialog.setVisible(true);
-                }
-            }
-        });
+        bAgregarCuota.setPreferredSize(new Dimension(0, 40));
+        bAgregarCuota.setFont(ThemeManager.TEXT_SUBTITLE);
+        gbc.gridy = 1; gbc.insets = new Insets(0, 5, 25, 15);
+        pFiltros.add(bAgregarCuota, gbc);
 
-        gbc.gridy=1;
-        JLabel Filtros = new JLabel("Busqueda y Filtros"); 
-        Filtros.setForeground(ThemeManager.COLOR_TEXT);       
-        Filtros.setFont(ThemeManager.TEXT_SUBTITLE);
-        newPanel.add(Filtros, gbc);
+        JLabel lFiltrosLabel = ThemeManager.Label("Filtros de Búsqueda");
+        lFiltrosLabel.setFont(ThemeManager.TEXT_NORMAL);
+        lFiltrosLabel.setForeground(Color.GRAY);
+        gbc.gridy = 2; gbc.insets = new Insets(0, 5, 8, 15);
+        pFiltros.add(lFiltrosLabel, gbc);
 
-        gbc.gridwidth=1; gbc.gridy=2; gbc.weightx=0;
+        JLabel lDesc = ThemeManager.Label("Descripción:");
+        gbc.gridy = 3; gbc.insets = new Insets(4, 5, 2, 15);
+        pFiltros.add(lDesc, gbc);
+        inputDescripcion.setPreferredSize(new Dimension(0, 32));
+        gbc.gridy = 4; gbc.insets = new Insets(0, 5, 10, 15);
+        pFiltros.add(inputDescripcion, gbc);
 
-        JLabel Descripcion = new JLabel("Descripcion:");   
-        Descripcion.setForeground(ThemeManager.COLOR_TEXT);     
-        Descripcion.setFont(ThemeManager.TEXT_NORMAL);
-        newPanel.add(Descripcion, gbc);
+        JLabel lMonto = ThemeManager.Label("Monto Máximo ($):");
+        gbc.gridy = 5; gbc.insets = new Insets(4, 5, 2, 15);
+        pFiltros.add(lMonto, gbc);
+        inputMonto.setPreferredSize(new Dimension(0, 32));
+        gbc.gridy = 6; gbc.insets = new Insets(0, 5, 10, 15);
+        pFiltros.add(inputMonto, gbc);
         
-        gbc.gridx=1; gbc.weightx=1;
-        inputDescripcion =  new JTextField();
-        inputDescripcion.setFont(ThemeManager.TEXT_NORMAL);
-        inputDescripcion.setForeground(ThemeManager.COLOR_TEXT);
-        inputDescripcion.setBackground(ThemeManager.COLOR_BACKGROUND);
-        newPanel.add(inputDescripcion, gbc);
+        JLabel lDesde = ThemeManager.Label("Desde (Fecha Límite):");
+        gbc.gridy = 7; gbc.insets = new Insets(4, 5, 2, 15);
+        pFiltros.add(lDesde, gbc);
+        jdcDesde.setPreferredSize(new Dimension(0, 32));
+        SetupDateChooser(jdcDesde);
+        gbc.gridy = 8; gbc.insets = new Insets(0, 5, 4, 15);
+        pFiltros.add(jdcDesde, gbc);
+        gbc.gridy = 9; gbc.insets = new Insets(0, 5, 12, 15);
+        pFiltros.add(jsHoraDesde, gbc);
 
-        gbc.gridwidth=1; gbc.gridy=3; gbc.weightx=0; gbc.gridx=0;
+        JLabel lHasta = ThemeManager.Label("Hasta (Fecha Límite):");
+        gbc.gridy = 10; gbc.insets = new Insets(4, 5, 2, 15);
+        pFiltros.add(lHasta, gbc);
+        jdcHasta.setPreferredSize(new Dimension(0, 32));
+        SetupDateChooser(jdcHasta);
+        gbc.gridy = 11; gbc.insets = new Insets(0, 5, 4, 15);
+        pFiltros.add(jdcHasta, gbc);
+        gbc.gridy = 12; gbc.insets = new Insets(0, 5, 12, 15);
+        pFiltros.add(jsHoraHasta, gbc);
 
-        JLabel Monto = new JLabel("Monto ($):");   
-        Monto.setForeground(ThemeManager.COLOR_TEXT);     
-        Monto.setFont(ThemeManager.TEXT_NORMAL);
-        newPanel.add(Monto, gbc);
+        JLabel lEstado = ThemeManager.Label("Estado:");
+        gbc.gridy = 13; gbc.insets = new Insets(4, 5, 2, 15);
+        pFiltros.add(lEstado, gbc);
         
-        gbc.gridx=1; gbc.weightx=1;
-        inputMonto =  new JTextField();
-        inputMonto.setFont(ThemeManager.TEXT_NORMAL);
-        inputMonto.setForeground(ThemeManager.COLOR_TEXT);
-        inputMonto.setBackground(ThemeManager.COLOR_BACKGROUND);
-        newPanel.add(inputMonto, gbc);
+        JPanel pRadios = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+        pRadios.setOpaque(false);
+        SetupRadioButtons();
+        pRadios.add(radioTodos); pRadios.add(radioActivo); pRadios.add(radioInactivo);
+        gbc.gridy = 14; gbc.insets = new Insets(0, 5, 20, 15);
+        pFiltros.add(pRadios, gbc);
 
-        ButtonGroup grupo= new ButtonGroup();   
-        grupo.add(radioTodos);
-        grupo.add(radioActivo);
-        grupo.add(radioInactivo);
-        
-        gbc.gridy=4; gbc.gridx=0; gbc.weightx=0;
-        radioTodos.setFont(ThemeManager.TEXT_NORMAL);
-        radioTodos.setForeground(ThemeManager.COLOR_TEXT);
-        radioTodos.setBackground(ThemeManager.COLOR_BACKGROUND);
-        newPanel.add(radioTodos, gbc);
+        bBuscar.setPreferredSize(new Dimension(0, 35));
+        gbc.gridy = 15; gbc.insets = new Insets(5, 5, 5, 15);
+        pFiltros.add(bBuscar, gbc);
 
-        gbc.gridy=4; gbc.gridx=1; gbc.weightx=0;
-        radioActivo.setFont(ThemeManager.TEXT_NORMAL);
-        radioActivo.setForeground(ThemeManager.COLOR_TEXT);
-        radioActivo.setBackground(ThemeManager.COLOR_BACKGROUND);
-        radioActivo.setSelected(true); 
-        newPanel.add(radioActivo, gbc);
+        gbc.gridy = 16; gbc.weighty = 1;
+        pFiltros.add(Box.createGlue(), gbc);
 
-        gbc.gridy=4; gbc.gridx=2; gbc.weightx=0;
-        radioInactivo.setFont(ThemeManager.TEXT_NORMAL);
-        radioInactivo.setForeground(ThemeManager.COLOR_TEXT);
-        radioInactivo.setBackground(ThemeManager.COLOR_BACKGROUND);
-        newPanel.add(radioInactivo, gbc);
+        this.add(pFiltros, BorderLayout.WEST);
 
-        gbc.gridy=5; gbc.gridx=0; gbc.weightx=0;
-        JLabel fechaInicial = new JLabel("Fecha Emisión:");  
-        fechaInicial.setForeground(ThemeManager.COLOR_TEXT);      
-        fechaInicial.setFont(ThemeManager.TEXT_NORMAL);
-        newPanel.add(fechaInicial, gbc);
+        // 2. PANEL CENTRAL (Cabeceras + Cuerpo)
+        JPanel pCentral = new JPanel(new BorderLayout());
+        pCentral.setBackground(ThemeManager.COLOR_BACKGROUND_DARK);
 
-        gbc.gridx=1; gbc.weightx=1;
-        JSpinner.DateEditor editorDesde = new JSpinner.DateEditor(jspHoraDesde, "HH:mm:ss");
-        jspHoraDesde.setEditor(editorDesde);
-        newPanel.add(jdcDesde, gbc);
-        
-        gbc.gridx=2; gbc.weightx=1;
-        newPanel.add(jspHoraDesde, gbc);
+        // CORRECCIÓN AQUÍ: Se usa GridBagLayout con GridBagConstraints explícitos en la Cabecera
+        JPanel pTableHeader = new JPanel(new GridBagLayout());
+        pTableHeader.setBackground(ThemeManager.COLOR_PRIMARY);
+        pTableHeader.setPreferredSize(new Dimension(0, 40));
 
-        gbc.gridy=6; gbc.gridx=0; gbc.weightx=0;
-        JLabel fechaFinal = new JLabel("Fecha limite:");  
-        fechaFinal.setForeground(ThemeManager.COLOR_TEXT);      
-        fechaFinal.setFont(ThemeManager.TEXT_NORMAL);
-        newPanel.add(fechaFinal, gbc);
+        GridBagConstraints headerGbc = new GridBagConstraints();
+        headerGbc.fill = GridBagConstraints.HORIZONTAL;
+        headerGbc.weighty = 1;
+        headerGbc.gridy = 0;
 
-        gbc.gridx=1; gbc.weightx=1;
-        JSpinner.DateEditor editorHasta = new JSpinner.DateEditor(jspHoraHasta, "HH:mm:ss");
-        jspHoraHasta.setEditor(editorHasta);
-        newPanel.add(jdcHasta, gbc);
-        
-        gbc.gridx=2; gbc.weightx=1;
-        newPanel.add(jspHoraHasta, gbc);
+        String[] headers = {"Descripción", "Monto", "Fecha Emisión", "Fecha Límite", "Estado", "Acción"};
+        double[] weights = {0.30, 0.15, 0.20, 0.20, 0.10, 0.05}; // Mismos pesos exactos que la tarjeta
 
-        gbc.gridwidth=3; gbc.gridy=7; gbc.gridx=0;  
-        JButton Buscar = new JButton("Buscar");
-        Buscar.setFont(ThemeManager.TEXT_NORMAL);
-        Buscar.setForeground(ThemeManager.COLOR_TEXT);
-        Buscar.setBackground(ThemeManager.COLOR_PRIMARY);
-        Buscar.setFont(ThemeManager.TEXT_SUBTITLE);
-        newPanel.add(Buscar, gbc);
+        for (int i = 0; i < headers.length; i++) {
+            JLabel lbl = ThemeManager.Label(headers[i]);
+            lbl.setFont(ThemeManager.TEXT_SUBTITLE);
+            lbl.setForeground(Color.WHITE);
+            lbl.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0));
+            if (headers[i].equals("Estado")) lbl.setHorizontalAlignment(SwingConstants.CENTER);
+            
+            // Asignación correcta de pesos por columna para obligar al Layout a estructurar celdas proporcionales
+            headerGbc.weightx = weights[i];
+            headerGbc.gridx = i;
+            pTableHeader.add(lbl, headerGbc);
+        }
+        pCentral.add(pTableHeader, BorderLayout.NORTH);
 
-        Buscar.addActionListener(e -> Search());
-        Buscar.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                Buscar.setBackground(ThemeManager.COLOR_SECONDARY);
-            }
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                Buscar.setBackground(ThemeManager.COLOR_PRIMARY);
-            }
-        });
+        pTableBody.setLayout(new GridBagLayout());
+        pTableBody.setBackground(ThemeManager.COLOR_BACKGROUND_DARK);
 
-        gbc.gridy=8; gbc.fill=GridBagConstraints.BOTH; gbc.weighty=1;
-        JLabel empty = new JLabel();
-        newPanel.add(empty, gbc);
+        scrollTable = new JScrollPane(pTableBody);
+        scrollTable.setBorder(BorderFactory.createEmptyBorder());
+        scrollTable.getVerticalScrollBar().setUnitIncrement(16);
+        pCentral.add(scrollTable, BorderLayout.CENTER);
 
-        return newPanel;
+        this.add(pCentral, BorderLayout.CENTER);
+
+        SetEvents();
+        Search();
     }
 
-    void Search() {
-        String MAIN_QUERY = SQL;
+    private JSpinner createTimeSpinner() {
+        SpinnerDateModel model = new SpinnerDateModel();
+        JSpinner spinner = new JSpinner(model);
+        JSpinner.DateEditor editor = new JSpinner.DateEditor(spinner, "HH:mm");
+        spinner.setEditor(editor);
+        spinner.setPreferredSize(new Dimension(0, 32));
+        editor.getTextField().setFont(ThemeManager.TEXT_NORMAL);
+        editor.getTextField().setBackground(ThemeManager.COLOR_INPUT);
+        editor.getTextField().setForeground(ThemeManager.COLOR_TEXT_DARK);
+        return spinner;
+    }
 
-        String strDesc = inputDescripcion.getText().trim();
-        if(!strDesc.isEmpty()) {
-            if(!strDesc.matches("^[a-zA-Z0-9ñÑ ]+$")) {
-                JOptionPane.showMessageDialog(this, "LA DESCRIPCIÓN DEBE SER ALFA-NUMÉRICA");
-                return;
-            }   
-            MAIN_QUERY += " WHERE descripcion ILIKE '" + strDesc + "%'";
+    private void SetupDateChooser(JDateChooser JDC) {
+        JDC.setDateFormatString("yyyy-MM-dd");
+        JDC.getJCalendar().getYearChooser().setFont(ThemeManager.TEXT_NORMAL);
+        JDC.getJCalendar().getMonthChooser().getComboBox().setFont(ThemeManager.TEXT_NORMAL);
+        JDC.getJCalendar().getDayChooser().getDayPanel().setFont(ThemeManager.TEXT_NORMAL);
+    }
+
+    private void SetupRadioButtons() {
+        bgEstado.add(radioTodos); bgEstado.add(radioActivo); bgEstado.add(radioInactivo);
+        radioTodos.setSelected(true);
+        JRadioButton[] rbs = {radioTodos, radioActivo, radioInactivo};
+        for (JRadioButton rb : rbs) {
+            rb.setOpaque(false);
+            rb.setForeground(Color.WHITE);
+            rb.setFont(ThemeManager.TEXT_NORMAL);
+        }
+    }
+
+    private void RenderTable() {
+        pTableBody.removeAll();
+        GridBagConstraints GBC = new GridBagConstraints();
+        GBC.anchor = GridBagConstraints.NORTH; 
+        GBC.fill = GridBagConstraints.HORIZONTAL;
+        GBC.gridwidth = 1; 
+        GBC.weighty = 0;
+        
+        for (int i = 0; i < JTarjetas.size(); i++) {
+            JTarjetaCuota actual = JTarjetas.get(i);
+            GBC.gridx = 0; 
+            GBC.gridy = i; 
+            GBC.weightx = 1; 
+            GBC.insets = new Insets((i == 0) ? 10 : 5, 10, 5, 10); 
+            pTableBody.add(actual.toPanel(), GBC);
         }
         
-        String strMonto = inputMonto.getText().trim();
-        if(!strMonto.isEmpty()) {
-            if(!strMonto.matches("^[0-9]+(\\.[0-9]{1,2})?$")) {
-                JOptionPane.showMessageDialog(this, "EL MONTO DEBE SER NUMÉRICO (EJ: 10 o 12.50)");
-                return;
-            }   
-            if (MAIN_QUERY.contains("WHERE")) {
-                MAIN_QUERY += " AND monto = " + strMonto + "::numeric";
-            } else {
-                MAIN_QUERY += " WHERE monto = " + strMonto + "::numeric";
-            }
-        }
+        GBC.anchor = GridBagConstraints.NORTH; 
+        GBC.fill = GridBagConstraints.HORIZONTAL;
+        GBC.weightx = 1; GBC.weighty = 1;
+        GBC.gridx = 0; GBC.gridy = 9999; GBC.gridwidth = 1; 
+        pTableBody.add(Box.createGlue(), GBC);
         
-        if (radioActivo.isSelected()) {
-            MAIN_QUERY += MAIN_QUERY.contains("WHERE") ? " AND activo = true" : " WHERE activo = true";
-        } else if (radioInactivo.isSelected()) {
-            MAIN_QUERY += MAIN_QUERY.contains("WHERE") ? " AND activo = false" : " WHERE activo = false";
+        pTableBody.revalidate();
+        pTableBody.repaint();
+    }
+
+    public void Search() {
+        JTarjetas.clear();
+        String MAIN_QUERY = "SELECT id, descripcion, monto, fecha_emision, fecha_limite, activo FROM cuotas WHERE 1=1 ";
+        ArrayList<Object> params = new ArrayList<>();
+
+        String desc = inputDescripcion.getText().trim();
+        if (!desc.isEmpty()) {
+            MAIN_QUERY += "AND descripcion ILIKE ? ";
+            params.add("%" + desc + "%");
+        }
+
+        String montoStr = inputMonto.getText().trim();
+        if (!montoStr.isEmpty()) {
+            try {
+                double monto = Double.parseDouble(montoStr);
+                MAIN_QUERY += "AND monto <= ? ";
+                params.add(monto);
+            } catch (NumberFormatException e) {}
         }
 
         if (jdcDesde.getDate() != null) {
-            java.util.Date fecha = jdcDesde.getDate();
-            java.util.Date hora = (java.util.Date) jspHoraDesde.getValue();
-            java.util.Calendar cal = java.util.Calendar.getInstance();
-            cal.setTime(fecha);
-            java.util.Calendar calHora = java.util.Calendar.getInstance();
-            calHora.setTime(hora);
-            cal.set(java.util.Calendar.HOUR_OF_DAY, calHora.get(java.util.Calendar.HOUR_OF_DAY));
-            cal.set(java.util.Calendar.MINUTE, calHora.get(java.util.Calendar.MINUTE));
-            cal.set(java.util.Calendar.SECOND, calHora.get(java.util.Calendar.SECOND));
+            Calendar calFecha = Calendar.getInstance();
+            calFecha.setTime(jdcDesde.getDate());
+            Calendar calHora = Calendar.getInstance();
+            calHora.setTime((Date) jsHoraDesde.getValue());
+            calFecha.set(Calendar.HOUR_OF_DAY, calHora.get(Calendar.HOUR_OF_DAY));
+            calFecha.set(Calendar.MINUTE, calHora.get(Calendar.MINUTE));
+            calFecha.set(Calendar.SECOND, 0);
             
-            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            String strFechaDesde = sdf.format(cal.getTime());
-            
-            MAIN_QUERY += MAIN_QUERY.contains("WHERE") ? " AND fecha_emision >= '" + strFechaDesde + "'" : " WHERE fecha_emision >= '" + strFechaDesde + "'";
+            MAIN_QUERY += "AND fecha_limite >= ? ";
+            params.add(new java.sql.Timestamp(calFecha.getTimeInMillis()));
         }
 
         if (jdcHasta.getDate() != null) {
-            java.util.Date fecha = jdcHasta.getDate();
-            java.util.Date hora = (java.util.Date) jspHoraHasta.getValue();
-            java.util.Calendar cal = java.util.Calendar.getInstance();
-            cal.setTime(fecha);
-            java.util.Calendar calHora = java.util.Calendar.getInstance();
-            calHora.setTime(hora);
-            cal.set(java.util.Calendar.HOUR_OF_DAY, calHora.get(java.util.Calendar.HOUR_OF_DAY));
-            cal.set(java.util.Calendar.MINUTE, calHora.get(java.util.Calendar.MINUTE));
-            cal.set(java.util.Calendar.SECOND, calHora.get(java.util.Calendar.SECOND));
+            Calendar calFecha = Calendar.getInstance();
+            calFecha.setTime(jdcHasta.getDate());
+            Calendar calHora = Calendar.getInstance();
+            calHora.setTime((Date) jsHoraHasta.getValue());
+            calFecha.set(Calendar.HOUR_OF_DAY, calHora.get(Calendar.HOUR_OF_DAY));
+            calFecha.set(Calendar.MINUTE, calHora.get(Calendar.MINUTE));
+            calFecha.set(Calendar.SECOND, 59);
             
-            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            String strFechaHasta = sdf.format(cal.getTime());
-            
-            MAIN_QUERY += MAIN_QUERY.contains("WHERE") ? " AND fecha_limite <= '" + strFechaHasta + "'" : " WHERE fecha_limite <= '" + strFechaHasta + "'";
+            MAIN_QUERY += "AND fecha_limite <= ? ";
+            params.add(new java.sql.Timestamp(calFecha.getTimeInMillis()));
         }
 
-        ArrayList<String> headersDB = new ArrayList<>();
-        headersDB.add("\"descripcion\"");
-        headersDB.add("\"monto\"");
-        headersDB.add("\"fecha_emision\"");
-        headersDB.add("\"fecha_limite\"");
-        headersDB.add("\"activo\"");
-        headersDB.add("\"id\"");
-        String[] columnasVisuales = {"Descripción", "Monto", "Fecha Emisión", "Fecha Limite", "Activo", "Opciones"};
-        
+        if (radioActivo.isSelected()) {
+            MAIN_QUERY += "AND activo = true ";
+        } else if (radioInactivo.isSelected()) {
+            MAIN_QUERY += "AND activo = false ";
+        }
+
+        MAIN_QUERY += "ORDER BY id DESC;";
+
         try {
-            String[][] matrizDatos = GetData(MAIN_QUERY, headersDB);
-            DATA.setDataVector(matrizDatos, columnasVisuales);
-
-            
-            TABLA.getColumnModel().getColumn(5).setPreferredWidth(160);
-            TABLA.getColumnModel().getColumn(5).setCellRenderer(new OpcionesRenderer());
-            TABLA.getColumnModel().getColumn(5).setCellEditor(new OpcionesEditor());
-            
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Error al consultar la base de datos: " + e.getMessage(), "Error BD", JOptionPane.ERROR_MESSAGE);
-            e.printStackTrace();
-            DATA.setDataVector(new String[][]{}, columnasVisuales);
-        }
-
-        this.repaint();
-        this.revalidate();
-    }
-
-    
-    String[][] GetData(String SQL, ArrayList<String> header) throws SQLException {
-        ResultSet RS_DATA = DB.consultar(SQL, null);
-        
-        ArrayList<ArrayList<String>> Datas = new ArrayList<>();
-        while (RS_DATA.next()) {            
-            ArrayList<String> newData = new ArrayList<>();
-            for(String h : header) {
-                newData.add(RS_DATA.getString(h.substring(1, h.length() - 1)));
+            ResultSet rs = DB.consultar(MAIN_QUERY, params.isEmpty() ? null : params.toArray());
+            while (rs != null && rs.next()) {
+                JTarjetas.add(new JTarjetaCuota(
+                    rs.getString("id"),
+                    rs.getString("descripcion"),
+                    rs.getString("monto"),
+                    rs.getTimestamp("fecha_emision").toString(),
+                    rs.getTimestamp("fecha_limite").toString(),
+                    rs.getBoolean("activo"),
+                    this
+                ));
             }
-            newData.add(""); 
-            Datas.add(newData);
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(this, "Error al consultar cuotas: " + e.getMessage(), "Error BD", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
         }
 
-        String[][] result = new String[Datas.size()][];
-        for (int i = 0; i < Datas.size(); i++) {
-            ArrayList<String> row = Datas.get(i);
-            result[i] = row.toArray(new String[0]);
-        }
-        return result;
+        RenderTable();
     }
 
-    private JButton crearBoton(String texto) {
-        JButton boton = new JButton(texto);
-        boton.setFont(ThemeManager.TEXT_SMALL);
-        boton.setForeground(ThemeManager.COLOR_TEXT);
-        boton.setBackground(ThemeManager.COLOR_PRIMARY);
-        boton.setFocusPainted(false);
-        boton.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
-        boton.setPreferredSize(new Dimension(74, 24));
-        return boton;
-    }
+    private void SetEvents() {
+        bBuscar.addActionListener(e -> Search());
+        inputDescripcion.addActionListener(e -> Search());
+        inputMonto.addActionListener(e -> Search());
 
-    private class OpcionesRenderer extends JPanel implements javax.swing.table.TableCellRenderer {
-        private final JButton btnEditar = crearBoton("Editar");
-        private final JButton btnEliminar = crearBoton("Eliminar");
-
-        OpcionesRenderer() {
-            setOpaque(true);
-            setBackground(ThemeManager.COLOR_BACKGROUND_LIGHT);
-            setLayout(new FlowLayout(FlowLayout.CENTER, 6, 0));
-            add(btnEditar);
-            add(btnEliminar);
-        }
-
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            setBackground(isSelected ? ThemeManager.COLOR_BACKGROUND : ThemeManager.COLOR_BACKGROUND_LIGHT);
-            return this;
-        }
-    }
-
-private class OpcionesEditor extends AbstractCellEditor implements javax.swing.table.TableCellEditor {
-        private final JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 6, 0));
-        private final JButton btnEditar = crearBoton("Editar");
-        private final JButton btnEliminar = crearBoton("Eliminar");
-        
-        // Variables para capturar todo el contexto de la fila seleccionada
-        private String descripcionCuota;
-        private String montoCuota;
-        private String fechaLimiteCuota;
-        private String idCuota;
-
-        OpcionesEditor() {
-            panel.setOpaque(true);
-            panel.setBackground(ThemeManager.COLOR_BACKGROUND_LIGHT);
-            panel.add(btnEditar);
-            panel.add(btnEliminar);
-
-            
-            btnEditar.addActionListener(e -> {
-                fireEditingStopped(); 
-                
-                Window ventanaPadre = SwingUtilities.getWindowAncestor(MenuCuotas.this);
-                if (ventanaPadre instanceof JFrame) {
-                    VentanaActualizarCuota dialog = new VentanaActualizarCuota(
-                        (JFrame) ventanaPadre, 
-                        MenuCuotas.this, 
-                        descripcionCuota, 
-                        montoCuota, 
-                        fechaLimiteCuota,
-                        idCuota
-                    );
-                    dialog.setVisible(true);
-                }
-            });
-
-            // Acción de eliminar lógica (Se mantiene igual)
-            btnEliminar.addActionListener(e -> {
-                System.out.println(idCuota);
-                fireEditingStopped();
-                int opcion = JOptionPane.showConfirmDialog(
-                    MenuCuotas.this,
-                    "¿Desea Eliminar la cuota '" + descripcionCuota + "' del sistema?",
-                    "Confirmar eliminación",
-                    JOptionPane.YES_NO_OPTION,
-                    JOptionPane.WARNING_MESSAGE
-                );
-                System.out.println(idCuota);
-
-                if (opcion == JOptionPane.YES_OPTION) {
-                    try {
-                        DB.comandoDML(
-                            //"UPDATE cuotas SET activo = false WHERE descripcion = ?",
-                            "DELETE FROM cuotas WHERE id =?::integer",
-                            new Object[]{idCuota}
-                        );
-                        Search();
-                    } catch (SQLException ex) {
-                        JOptionPane.showMessageDialog(MenuCuotas.this, "Error al desactivar cuota: " + ex.getMessage());
-                    }
-                }
-            });
-        }
-
-        @Override
-        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-            // Mapeamos los índices reales de tus columnasVisuales:
-            // 0 = Descripción, 1 = Monto, 3 = Fecha Límite
-            descripcionCuota = String.valueOf(table.getValueAt(row, 0));
-            montoCuota = String.valueOf(table.getValueAt(row, 1));
-            fechaLimiteCuota = String.valueOf(table.getValueAt(row, 3));
-            idCuota = String.valueOf(table.getValueAt(row, 5));
-            
-            panel.setBackground(ThemeManager.COLOR_BACKGROUND_LIGHT);
-            return panel;
-        }
-
-        @Override
-        public Object getCellEditorValue() {
-            return idCuota;
-        }
+        bAgregarCuota.addActionListener(e -> {
+            JFrame frameAncestro = (JFrame) SwingUtilities.getWindowAncestor(this);
+            VentanaProgramarCuota vProgramar = new VentanaProgramarCuota(frameAncestro, this);
+            vProgramar.setVisible(true);
+        });
     }
 }
