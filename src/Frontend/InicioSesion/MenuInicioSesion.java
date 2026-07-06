@@ -242,7 +242,7 @@ public class MenuInicioSesion extends JPanel {
                 return;
             }
 
-            ThemeManager.MostrarMensajeExito(this, "¡Inicio de sesión exitoso!\nBienvenido, " + T.get(1) + ".");
+            ThemeManager.MostrarMensajeExito(this, "¡Inicio de sesión exitoso!\n Bienvenido/a, " + T.get(1) + ".");
             
             JFrame ventanaPadre = (JFrame) SwingUtilities.getWindowAncestor(this);
             if (ventanaPadre != null) {
