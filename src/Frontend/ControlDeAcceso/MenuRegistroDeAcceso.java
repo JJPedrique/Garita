@@ -1,6 +1,7 @@
 package Frontend.ControlDeAcceso;
 
 import javax.swing.*;
+import javax.swing.Timer;
 import javax.swing.border.*;
 import java.awt.*;
 import java.sql.ResultSet;
@@ -93,6 +94,8 @@ public class MenuRegistroDeAcceso extends JPanel {
     JDateChooser dcDesde = new JDateChooser();
     JDateChooser dcHasta = new JDateChooser();
 
+    Timer tActualizarHora;
+
     JSpinner spHoraDesde = new JSpinner(new SpinnerDateModel());
     JSpinner spHoraHasta = new JSpinner(new SpinnerDateModel());
 
@@ -164,10 +167,13 @@ public class MenuRegistroDeAcceso extends JPanel {
         dcHasta.setDate(CAL.getTime());
         spHoraHasta.setValue(CAL.getTime());
 
+
         // Inicializar Desde (Hace 2 mese por ejemplo)
         CAL.add(Calendar.MONTH, -2); 
         dcDesde.setDate(CAL.getTime());
         spHoraDesde.setValue(CAL.getTime());
+
+        IniciarTemporizador();
 
         GBC.weightx = 1;
         GBC.fill = GridBagConstraints.HORIZONTAL;
@@ -490,6 +496,17 @@ public class MenuRegistroDeAcceso extends JPanel {
 
         JP.add(pInputs, BorderLayout.CENTER);
         return JP;
+    }
+
+    private void IniciarTemporizador(){
+        tActualizarHora = new Timer(1000, e -> {
+            Date FechaActual = new Date();
+
+            dcHasta.setDate(FechaActual);
+            spHoraHasta.setValue(FechaActual);
+        });
+
+        tActualizarHora.start();
     }
     //endregion
 }
