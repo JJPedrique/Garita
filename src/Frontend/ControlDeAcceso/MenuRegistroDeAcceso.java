@@ -5,11 +5,11 @@ import javax.swing.Timer;
 import javax.swing.border.*;
 import java.awt.*;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.util.*;
 
 import com.toedter.calendar.JDateChooser;
 
-import Backend.ConexionPostgres;
 import Backend.ThemeManager;
 
 //region JComponentes
@@ -88,13 +88,14 @@ public class MenuRegistroDeAcceso extends JPanel {
     JTextField tfCodigoCarnet = ThemeManager.Textfield();
     JTextField tfNombreVisita = ThemeManager.Textfield();
 
+    JCheckBox cbTiempoReal = new JCheckBox("Tiempo Real (Últimas 24h)", true);
+    Timer tTiempoReal;
+
     JLabel lDesde = ThemeManager.Label("Desde");
     JLabel lHasta = ThemeManager.Label("Hasta");
 
     JDateChooser dcDesde = new JDateChooser();
     JDateChooser dcHasta = new JDateChooser();
-
-    Timer tActualizarHora;
 
     JSpinner spHoraDesde = new JSpinner(new SpinnerDateModel());
     JSpinner spHoraHasta = new JSpinner(new SpinnerDateModel());
@@ -142,6 +143,10 @@ public class MenuRegistroDeAcceso extends JPanel {
         SetupTimeSpinner(spHoraDesde);
         SetupTimeSpinner(spHoraHasta);
         
+        cbTiempoReal.setOpaque(false);
+        cbTiempoReal.setForeground(Color.WHITE);
+        cbTiempoReal.setFont(ThemeManager.TEXT_NORMAL);
+
         pTablaHeader.setBackground(ThemeManager.COLOR_PRIMARY); 
         pTablaHeader.setPreferredSize(new Dimension(0, 40));
         pTablaBody.setBackground(ThemeManager.COLOR_BACKGROUND_DARK);
@@ -153,27 +158,25 @@ public class MenuRegistroDeAcceso extends JPanel {
     }
     //endregion
 
-    //region Configuracion
+    //region Configuration
     public MenuRegistroDeAcceso() {
         this.setLayout(new BorderLayout(20, 0));
         this.setBorder(new EmptyBorder(20, 20, 20, 20));
         
         SetTheme();
         SetupRadioBtns();
+        SetEnableButtons();
         
         Calendar CAL = Calendar.getInstance();
         
-        // Inicializar Hasta (Hoy)
+        // Inicializar Hasta
         dcHasta.setDate(CAL.getTime());
         spHoraHasta.setValue(CAL.getTime());
 
-
-        // Inicializar Desde (Hace 2 mese por ejemplo)
-        CAL.add(Calendar.MONTH, -2); 
+        // Inicializar Desde (Hace 1 mes por defecto)
+        CAL.add(Calendar.MONTH, -1); 
         dcDesde.setDate(CAL.getTime());
         spHoraDesde.setValue(CAL.getTime());
-
-        IniciarTemporizador();
 
         GBC.weightx = 1;
         GBC.fill = GridBagConstraints.HORIZONTAL;
@@ -208,18 +211,20 @@ public class MenuRegistroDeAcceso extends JPanel {
         GBC.insets = new Insets(0, 0, 10, 0);
         GBC.gridy = 6; pFunctions.add(pRadioIdent, GBC);
 
-        GBC.insets = new Insets(5, 0, 5, 0);
-        GBC.gridy = 7; pFunctions.add(DateTimeRow(lDesde, dcDesde, spHoraDesde), GBC);
-        GBC.gridy = 8; pFunctions.add(DateTimeRow(lHasta, dcHasta, spHoraHasta), GBC);
+        GBC.insets = new Insets(5, 0, 10, 0);
+        GBC.gridy = 7; pFunctions.add(cbTiempoReal, GBC);
+
+        GBC.gridy = 8; pFunctions.add(DateTimeRow(lDesde, dcDesde, spHoraDesde), GBC);
+        GBC.gridy = 9; pFunctions.add(DateTimeRow(lHasta, dcHasta, spHoraHasta), GBC);
 
         GBC.insets = new Insets(15, 0, 15, 0);
-        GBC.gridy = 9; pFunctions.add(bBuscar, GBC);
-        GBC.gridy = 10; pFunctions.add(hr, GBC);
+        GBC.gridy = 10; pFunctions.add(bBuscar, GBC);
+        GBC.gridy = 11; pFunctions.add(hr, GBC);
 
         GBC.insets = new Insets(15, 0, 5, 0);
-        GBC.gridy = 11; pFunctions.add(bSolicitarAccesoVisitante, GBC);
+        GBC.gridy = 12; pFunctions.add(bSolicitarAccesoVisitante, GBC);
 
-        GBC.gridy = 12; GBC.weighty = 1.0;
+        GBC.gridy = 13; GBC.weighty = 1.0;
         pFunctions.add(Box.createGlue(), GBC);
 
         pTabla.setLayout(new BorderLayout());
@@ -239,7 +244,10 @@ public class MenuRegistroDeAcceso extends JPanel {
         
         pTablaBody.setLayout(GBL); 
 
-        ActualizarTabla();
+        SetupTiempoRealTimer();
+
+        // Consulta inicial
+        ActualizarTabla(false);
 
         JScrollPane JSP = new JScrollPane(pTablaBody);
         JSP.setBorder(BorderFactory.createEmptyBorder());
@@ -247,7 +255,6 @@ public class MenuRegistroDeAcceso extends JPanel {
         JSP.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         pTabla.add(JSP, BorderLayout.CENTER);
 
-        // --- SOLUCIÓN DEL ERROR: Agregar explícitamente los subpaneles al BorderLayout principal ---
         this.add(pFunctions, BorderLayout.WEST);
         this.add(pTabla, BorderLayout.CENTER);
 
@@ -256,8 +263,9 @@ public class MenuRegistroDeAcceso extends JPanel {
     //endregion
 
     //region Tabla
-    public void ActualizarTabla() {
-        if (dcDesde.getDate() != null && dcHasta.getDate() != null) {
+    // Recibe un booleano para saber si la actualización es automática del Timer o manual (Buscar)
+    public void ActualizarTabla(boolean esAutomatica) {
+        if (!cbTiempoReal.isSelected() && dcDesde.getDate() != null && dcHasta.getDate() != null) {
             Calendar cDesde = Calendar.getInstance();
             cDesde.setTime(dcDesde.getDate());
             Calendar hDesde = Calendar.getInstance();
@@ -297,17 +305,20 @@ public class MenuRegistroDeAcceso extends JPanel {
 
         ArrayList<Object> Parametros = new ArrayList<>();
 
-        String sCodigo = tfCodigoCarnet.getText().trim().toUpperCase();
-        if (!sCodigo.isEmpty()) {
-            Query.append("AND C.codigo LIKE ? ");
-            Parametros.add("%" + sCodigo + "%");
-        }
+        // REGLA: Si es actualización en tiempo real automática por segundo, ignoramos los TextFields
+        if (!esAutomatica) {
+            String sCodigo = tfCodigoCarnet.getText().trim().toUpperCase();
+            if (!sCodigo.isEmpty()) {
+                Query.append("AND C.codigo LIKE ? ");
+                Parametros.add("%" + sCodigo + "%");
+            }
 
-        String sNombre = tfNombreVisita.getText().trim();
-        if (!sNombre.isEmpty()) {
-            Query.append("AND (A.nombre_visita ILIKE ? OR R.nombre ILIKE ? OR R.apellido ILIKE ?) ");
-            String match = "%" + sNombre + "%";
-            Parametros.add(match); Parametros.add(match); Parametros.add(match);
+            String sNombre = tfNombreVisita.getText().trim();
+            if (!sNombre.isEmpty()) {
+                Query.append("AND (A.nombre_visita ILIKE ? OR COALESCE(R.nombre, '') ILIKE ? OR COALESCE(R.apellido, '') ILIKE ?) ");
+                String match = "%" + sNombre + "%";
+                Parametros.add(match); Parametros.add(match); Parametros.add(match);
+            }
         }
 
         if (rbEstadoPermitido.isSelected()) {
@@ -322,42 +333,44 @@ public class MenuRegistroDeAcceso extends JPanel {
             Query.append("AND A.id_carnet IS NULL ");
         }
 
-        if (dcDesde.getDate() != null) {
-            Calendar Fecha = Calendar.getInstance();
-            Fecha.setTime(dcDesde.getDate());
-            
-            Calendar Hora = Calendar.getInstance();
-            Hora.setTime((Date) spHoraDesde.getValue());
-            
-            Fecha.set(Calendar.HOUR_OF_DAY, Hora.get(Calendar.HOUR_OF_DAY));
-            Fecha.set(Calendar.MINUTE, Hora.get(Calendar.MINUTE));
-            Fecha.set(Calendar.SECOND, Hora.get(Calendar.SECOND));
-
+        if (cbTiempoReal.isSelected()) {
+            Calendar Ultimas24H = Calendar.getInstance();
+            Ultimas24H.add(Calendar.DAY_OF_YEAR, -1);
             Query.append("AND A.fecha_hora >= ? ");
-            Parametros.add(new java.sql.Timestamp(Fecha.getTimeInMillis()));
-        }
-        
-        if (dcHasta.getDate() != null) {
-            Calendar Fecha = Calendar.getInstance();
-            Fecha.setTime(dcHasta.getDate());
-            
-            Calendar Hora = Calendar.getInstance();
-            Hora.setTime((Date) spHoraHasta.getValue());
-            
-            Fecha.set(Calendar.HOUR_OF_DAY, Hora.get(Calendar.HOUR_OF_DAY));
-            Fecha.set(Calendar.MINUTE, Hora.get(Calendar.MINUTE));
-            Fecha.set(Calendar.SECOND, Hora.get(Calendar.SECOND));
+            Parametros.add(new Timestamp(Ultimas24H.getTimeInMillis()));
+        } else {
+            if (dcDesde.getDate() != null) {
+                Calendar Fecha = Calendar.getInstance();
+                Fecha.setTime(dcDesde.getDate());
+                Calendar Hora = Calendar.getInstance();
+                Hora.setTime((Date) spHoraDesde.getValue());
+                Fecha.set(Calendar.HOUR_OF_DAY, Hora.get(Calendar.HOUR_OF_DAY));
+                Fecha.set(Calendar.MINUTE, Hora.get(Calendar.MINUTE));
+                Fecha.set(Calendar.SECOND, Hora.get(Calendar.SECOND));
 
-            Query.append("AND A.fecha_hora <= ? ");
-            Parametros.add(new java.sql.Timestamp(Fecha.getTimeInMillis()));
+                Query.append("AND A.fecha_hora >= ? ");
+                Parametros.add(new Timestamp(Fecha.getTimeInMillis()));
+            }
+            
+            if (dcHasta.getDate() != null) {
+                Calendar Fecha = Calendar.getInstance();
+                Fecha.setTime(dcHasta.getDate());
+                Calendar Hora = Calendar.getInstance();
+                Hora.setTime((Date) spHoraHasta.getValue());
+                Fecha.set(Calendar.HOUR_OF_DAY, Hora.get(Calendar.HOUR_OF_DAY));
+                Fecha.set(Calendar.MINUTE, Hora.get(Calendar.MINUTE));
+                Fecha.set(Calendar.SECOND, Hora.get(Calendar.SECOND));
+
+                Query.append("AND A.fecha_hora <= ? ");
+                Parametros.add(new Timestamp(Fecha.getTimeInMillis()));
+            }
         }
 
         Query.append("ORDER BY A.fecha_hora DESC;");
 
         try {
-            ConexionPostgres BDD = new ConexionPostgres();
             Object[] paramsArray = Parametros.isEmpty() ? null : Parametros.toArray();
-            ResultSet RS = BDD.consultar(Query.toString(), paramsArray);
+            ResultSet RS = MenuControlDeAcceso.BDD.consultar(Query.toString(), paramsArray);
             
             while (RS != null && RS.next()) {
                 String sCarnet = RS.getString("codigo_carnet");
@@ -393,23 +406,45 @@ public class MenuRegistroDeAcceso extends JPanel {
 
     //region Events
     private void SetEvents() {
-        bBuscar.addActionListener(e -> ActualizarTabla());
+        bBuscar.addActionListener(e -> ActualizarTabla(false));
+
+        cbTiempoReal.addActionListener(e -> {
+            SetEnableButtons();
+            ActualizarTabla(false);
+        });
 
         bSolicitarAccesoVisitante.addActionListener(e -> {
             JDialog JDAccesoVisitante = new JDialog((Window) SwingUtilities.getWindowAncestor(this), "Sistema Garita - Registrar Acceso Visitante", Dialog.ModalityType.APPLICATION_MODAL);
             JDAccesoVisitante.setSize(new Dimension(650, 500));
             JDAccesoVisitante.setLocationRelativeTo(this);
             JDAccesoVisitante.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-            
             JDAccesoVisitante.add(new FrameSolicitarAccesoVisitante(JDAccesoVisitante));
-            
             JDAccesoVisitante.setVisible(true);
-            ActualizarTabla(); 
+            ActualizarTabla(false); 
         });
+    }
+
+    private void SetupTiempoRealTimer() {
+        tTiempoReal = new Timer(1000, e -> {
+            if (cbTiempoReal.isSelected()) {
+                ActualizarTabla(true);
+            }
+        });
+        tTiempoReal.start();
     }
     //endregion
 
     //region Helper Functions
+    private void SetEnableButtons(){
+        boolean enTiempoReal = cbTiempoReal.isSelected();
+        dcDesde.setEnabled(!enTiempoReal);
+        spHoraDesde.setEnabled(!enTiempoReal);
+        dcHasta.setEnabled(!enTiempoReal);
+        spHoraHasta.setEnabled(!enTiempoReal);
+        dcDesde.getCalendarButton().setEnabled(!enTiempoReal);
+        dcHasta.getCalendarButton().setEnabled(!enTiempoReal);
+    }
+
     private void SetupDateChooser(JDateChooser JDC) {
         JDC.setDateFormatString("dd/MM/yyyy");
         JDC.setOpaque(false);
@@ -496,17 +531,6 @@ public class MenuRegistroDeAcceso extends JPanel {
 
         JP.add(pInputs, BorderLayout.CENTER);
         return JP;
-    }
-
-    private void IniciarTemporizador(){
-        tActualizarHora = new Timer(1000, e -> {
-            Date FechaActual = new Date();
-
-            dcHasta.setDate(FechaActual);
-            spHoraHasta.setValue(FechaActual);
-        });
-
-        tActualizarHora.start();
     }
     //endregion
 }

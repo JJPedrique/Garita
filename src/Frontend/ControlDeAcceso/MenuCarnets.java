@@ -239,9 +239,9 @@ public class MenuCarnets extends JPanel {
         Query += "ORDER BY codigo ASC;";
 
         try {
-            ConexionPostgres BDD = new ConexionPostgres();
+
             Object[] parametros = tieneFiltro ? new Object[]{"%"+filtroCodigo.trim()+"%"} : null;
-            ResultSet RS = BDD.consultar(Query, parametros);
+            ResultSet RS = MenuControlDeAcceso.BDD.consultar(Query, parametros);
             
             while(RS != null && RS.next()){
                 String sCodigo = RS.getString("codigo");

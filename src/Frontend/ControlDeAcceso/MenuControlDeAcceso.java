@@ -2,6 +2,7 @@ package Frontend.ControlDeAcceso;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
+import Backend.ConexionPostgres;
 import Backend.ThemeManager;
 
 import java.awt.*;
@@ -10,7 +11,10 @@ public class MenuControlDeAcceso extends JPanel {
 
     public int PADDING = 10;
 
+    public static ConexionPostgres BDD = new ConexionPostgres();
+
     public MenuControlDeAcceso(){
+
         this.setLayout(new BorderLayout());
         JTabbedPane TabMenu = new JTabbedPane();
         TabMenu.add("Carnets",new MenuCarnets());
