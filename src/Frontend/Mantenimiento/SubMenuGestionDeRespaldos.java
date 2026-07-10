@@ -9,7 +9,6 @@ import java.awt.event.*;
 
 
 public class SubMenuGestionDeRespaldos extends JPanel {
-    ConexionPostgres DB = new ConexionPostgres();
 
     public SubMenuGestionDeRespaldos(){
         this.setLayout(new GridBagLayout());

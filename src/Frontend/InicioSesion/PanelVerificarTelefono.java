@@ -156,8 +156,7 @@ public class PanelVerificarTelefono extends JPanel {
             String Query = "SELECT id FROM usuarios WHERE cedula = ? AND telefono = ? LIMIT 1";
             Object Parametros[] = {usuario,telefono};
             try {
-                ConexionPostgres BDD = new ConexionPostgres();
-                ResultSet RS = BDD.consultar(Query,Parametros);
+                ResultSet RS = ConexionPostgres.consultar(Query,Parametros);
 
                 ArrayList<Object> TUPLA = new ArrayList<>();
                 while(RS != null && RS.next()){

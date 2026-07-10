@@ -31,7 +31,6 @@ public class MenuVivienda extends JPanel {
             return columnIndex == 3 ? Object.class : String.class;
         }
     };
-    private final ConexionPostgres db = new ConexionPostgres();
     private JTextField txtNum;
     private JTextField txtCalle;
 
@@ -202,7 +201,7 @@ public class MenuVivienda extends JPanel {
         Object[] parametros = paramsList.isEmpty() ? null : paramsList.toArray();
 
         try {
-            ResultSet rs = db.consultar(sql.toString(), parametros);
+            ResultSet rs = ConexionPostgres.consultar(sql.toString(), parametros);
             viviendas.clear();
 
             while (rs != null && rs.next()) {
@@ -319,7 +318,7 @@ public class MenuVivienda extends JPanel {
         }
 
         try {
-            db.comandoDML(
+            ConexionPostgres.comandoDML(
                 "UPDATE viviendas SET activo = false WHERE numero_vivienda = ?",
                 new Object[]{numeroVivienda}
             );
@@ -495,12 +494,12 @@ public class MenuVivienda extends JPanel {
 
             try {
                 if (esEdicion) {
-                    db.comandoDML(
+                    ConexionPostgres.comandoDML(
                         "UPDATE viviendas SET calle = ?, numero_vivienda = ? WHERE numero_vivienda = ?",
                         new Object[]{calle, numero, numeroOriginal}
                     );
                 } else {
-                    ResultSet rsExiste = db.consultar(
+                    ResultSet rsExiste = ConexionPostgres.consultar(
                         "SELECT activo FROM viviendas WHERE numero_vivienda = ?",
                         new Object[]{numero}
                     );
@@ -512,12 +511,12 @@ public class MenuVivienda extends JPanel {
                             return;
                         }
 
-                        db.comandoDML(
+                        ConexionPostgres.comandoDML(
                             "UPDATE viviendas SET calle = ?, activo = true WHERE numero_vivienda = ?",
                             new Object[]{calle, numero}
                         );
                     } else {
-                        db.comandoDML(
+                        ConexionPostgres.comandoDML(
                             "INSERT INTO viviendas (calle, numero_vivienda, activo) VALUES (?, ?, true)",
                             new Object[]{calle, numero}
                         );

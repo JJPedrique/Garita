@@ -112,9 +112,16 @@ public class FrameAgregarCarnet extends JPanel {
         
         String query = "SELECT id, concat('Nro: ',numero_vivienda,' - Calle: ',calle) AS info FROM viviendas ORDER BY numero_vivienda,calle ASC;";
         try {
+<<<<<<< Updated upstream
             ResultSet RS_Carnet = MenuControlDeAcceso.BDD.consultar(query, null);
             while (RS_Carnet != null && RS_Carnet.next()) {
                 cbViviendas.addItem(RS_Carnet.getString("info"));
+=======
+            
+            ResultSet RS = ConexionPostgres.consultar(query, null);
+            while (RS != null && RS.next()) {
+                cbViviendas.addItem(RS.getString("info"));
+>>>>>>> Stashed changes
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -139,6 +146,7 @@ public class FrameAgregarCarnet extends JPanel {
             }
 
             try {
+<<<<<<< Updated upstream
         
                 String sVivienda = cbViviendas.getSelectedItem().toString();
                 String sNumCasa = sVivienda.split(" - ")[0].replace("Nro: ", "").trim();
@@ -181,6 +189,26 @@ public class FrameAgregarCarnet extends JPanel {
 
                 String queryInsert = "INSERT INTO carnets (codigo, id_vivienda, activo) VALUES (?, ?, true);";
                 MenuControlDeAcceso.BDD.comandoDML(queryInsert, new Object[]{sCodigo, idVivienda});
+=======
+                ResultSet RS = ConexionPostgres.consultar(
+                    "SELECT COUNT(*) AS total FROM carnets WHERE codigo = ? AND activo = true;", 
+                    new Object[]{sCodigo});
+                if (RS != null && RS.next() && RS.getInt("total") > 0) {
+                    ThemeManager.MostrarMensajeError(this,"Carnet Existente.");
+                    return;
+                }
+
+                String sVivienda = cbViviendas.getSelectedItem().toString();
+                String sNumCasa = sVivienda.split(" - ")[0].replace("Nro: ", "").trim();
+                ResultSet rsId = ConexionPostgres.consultar("SELECT id FROM viviendas WHERE numero_vivienda = ? LIMIT 1;", new Object[]{sNumCasa});
+                int idVivienda = -1;
+                if (rsId != null && rsId.next()) {
+                    idVivienda = rsId.getInt("id");
+                }
+
+                String queryInsert = "INSERT INTO carnets (codigo, id_vivienda, activo) VALUES (?, ?, true);";
+                ConexionPostgres.comandoDML(queryInsert, new Object[]{sCodigo, idVivienda});
+>>>>>>> Stashed changes
 
                 ThemeManager.MostrarMensajeExito(this,"Carnet registrado correctamente.");
                 TriggerActualizarTabla();

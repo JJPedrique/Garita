@@ -58,10 +58,33 @@ class JRegistroBitacora {
 // =======================================================================
 public class MenuBitacora extends JPanel {
     
+<<<<<<< Updated upstream
     ConexionPostgres DB = new ConexionPostgres();
 
     // Componentes de Filtros (Barra Lateral)
     JTextField inputNombreCompleto = ThemeManager.Textfield();
+=======
+                //region esto va en Menu Inicio pero de momento se queda aqui pq es timido 
+                /*
+                Object[] parametrosVacios = {};
+                String querySesion  = "SET app.usuario_actual = '"+usuario+"'";
+                BDD.comandoDML(querySesion,parametrosVacios); // cambiar consultar por otro
+                */
+
+    String SQL = "SELECT concat(nombre,' ',apellido) AS \"Nombre Completo\", usuario, accion, \n" + "tabla_modificada, fecha_modificacion FROM bitacoras \n" + "LEFT JOIN usuarios on usuarios.cedula = bitacoras.usuario";
+
+
+
+    JTextField inputNombre =  new JTextField();
+    JTextField inputFechaInicial =  new JTextField();
+    JTextField inputFechaFinal =  new JTextField();
+
+    private final JDateChooser jdcDesde = new JDateChooser();
+    private final JSpinner jspHoraDesde = new JSpinner(new SpinnerDateModel());
+
+    private final JDateChooser jdcHasta = new JDateChooser();
+    private final JSpinner jspHoraHasta = new JSpinner(new SpinnerDateModel());
+>>>>>>> Stashed changes
     
     private final JDateChooser jdcDesde = new JDateChooser();
     private final JSpinner jsHoraDesde = createTimeSpinner();
@@ -301,8 +324,30 @@ public class MenuBitacora extends JPanel {
         RenderTable();
     }
 
+<<<<<<< Updated upstream
     private void SetEvents() {
         bBuscar.addActionListener(e -> CargarBitacora());
         inputNombreCompleto.addActionListener(e -> CargarBitacora());
+=======
+    String[][] GetData(String SQL,ArrayList<String> header) throws SQLException{
+        ResultSet RS_DATA = ConexionPostgres.consultar(SQL, null);
+        
+        //Getting Data
+        ArrayList<ArrayList<String>> Datas = new ArrayList<>();
+        while (RS_DATA.next()) {            
+            ArrayList<String> newData = new ArrayList<>();
+            for(String h: header){newData.add(RS_DATA.getString(h.substring(1,h.length()-1)));}
+            Datas.add(newData);
+        }
+
+        //Converting...
+        String[][] result = new String[Datas.size()][];
+        for (int i = 0; i < Datas.size(); i++) {
+            ArrayList<String> row = Datas.get(i);
+            result[i] = row.toArray(new String[0]);
+        }
+
+        return result;
+>>>>>>> Stashed changes
     }
 }

@@ -14,7 +14,6 @@ import java.util.List;
 
 public class MenuRepresentante extends JPanel {
 
-    private final ConexionPostgres db = new ConexionPostgres();
 
     private final DefaultTableModel tableModel = new DefaultTableModel(
         new Object[]{"Nombre Completo", "Cédula", "Teléfono", "Opciones"}, 0
@@ -206,7 +205,7 @@ public class MenuRepresentante extends JPanel {
         sql.append(" ORDER BY r.apellido, r.nombre");
 
         try {
-            ResultSet rs = db.consultar(sql.toString(), parametros.isEmpty() ? null : parametros.toArray());
+            ResultSet rs = ConexionPostgres.consultar(sql.toString(), parametros.isEmpty() ? null : parametros.toArray());
             representantes.clear();
 
             while (rs != null && rs.next()) {
@@ -316,7 +315,7 @@ public class MenuRepresentante extends JPanel {
         }
 
         try {
-            db.comandoDML(
+            ConexionPostgres.comandoDML(
                 "UPDATE representantes SET activo = false WHERE cedula = ?",
                 new Object[]{cedula}
             );
@@ -548,12 +547,12 @@ public class MenuRepresentante extends JPanel {
 
             try {
                 if (esEdicion) {
-                    db.comandoDML(
+                    ConexionPostgres.comandoDML(
                         "UPDATE representantes SET id_vivienda = ?, nombre = ?, apellido = ?, cedula = ?, telefono = ? WHERE cedula = ?",
                         new Object[]{viviendaSeleccionada.id, nombre, apellido, cedula, telefono, dataInicial.cedula}
                     );
                 } else {
-                    ResultSet rsExiste = db.consultar(
+                    ResultSet rsExiste = ConexionPostgres.consultar(
                         "SELECT activo FROM representantes WHERE cedula = ?",
                         new Object[]{cedula}
                     );
@@ -565,12 +564,12 @@ public class MenuRepresentante extends JPanel {
                             return;
                         }
 
-                        db.comandoDML(
+                        ConexionPostgres.comandoDML(
                             "UPDATE representantes SET id_vivienda = ?, nombre = ?, apellido = ?, telefono = ?, activo = true WHERE cedula = ?",
                             new Object[]{viviendaSeleccionada.id, nombre, apellido, telefono, cedula}
                         );
                     } else {
-                        db.comandoDML(
+                        ConexionPostgres.comandoDML(
                             "INSERT INTO representantes (id_vivienda, nombre, apellido, cedula, telefono, activo) VALUES (?, ?, ?, ?, ?, true)",
                             new Object[]{viviendaSeleccionada.id, nombre, apellido, cedula, telefono}
                         );
@@ -605,7 +604,7 @@ public class MenuRepresentante extends JPanel {
         List<ViviendaItem> viviendas = new ArrayList<>();
 
         try {
-            ResultSet rs = db.consultar(
+            ResultSet rs = ConexionPostgres.consultar(
                 "SELECT id, calle, numero_vivienda FROM viviendas WHERE activo = true ORDER BY numero_vivienda",
                 null
             );
@@ -644,7 +643,7 @@ public class MenuRepresentante extends JPanel {
 
     private RepresentanteData obtenerRepresentantePorCedula(String cedula) {
         try {
-            ResultSet rs = db.consultar(
+            ResultSet rs = ConexionPostgres.consultar(
                 "SELECT id_vivienda, nombre, apellido, cedula, telefono FROM representantes WHERE cedula = ? LIMIT 1",
                 new Object[]{cedula}
             );

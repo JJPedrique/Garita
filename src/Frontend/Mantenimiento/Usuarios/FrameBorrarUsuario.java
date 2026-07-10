@@ -13,7 +13,6 @@ import Backend.ThemeManager;
 
 public class FrameBorrarUsuario extends JDialog {
     
-    ConexionPostgres DB = new ConexionPostgres();
     int id;
     String SQL = "UPDATE usuarios SET activo = ? WHERE id = ?;";
 
@@ -108,7 +107,7 @@ public class FrameBorrarUsuario extends JDialog {
 
     void Eliminar() throws SQLException{
 
-        DB.comandoDML(SQL,new Object[]{false,id});
+        ConexionPostgres.comandoDML(SQL,new Object[]{false,id});
         ThemeManager.MostrarMensajeExito(this,"EXITO - Usuario agregado exitosamente.");
         this.dispose();
     }

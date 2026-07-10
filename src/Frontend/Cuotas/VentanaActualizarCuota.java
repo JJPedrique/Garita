@@ -10,7 +10,6 @@ import com.toedter.calendar.JDateChooser;
 
 public class VentanaActualizarCuota extends JDialog {
 
-    private final ConexionPostgres DB = new ConexionPostgres();
     private final MenuCuotas menuPadre;
     
     // Guardamos la descripción original para usarla en el WHERE del UPDATE
@@ -196,7 +195,7 @@ public class VentanaActualizarCuota extends JDialog {
             String queryUpdate = "UPDATE cuotas SET descripcion = ?, monto = ?::numeric, fecha_limite = ?::timestamp, activo = ? WHERE id = ?::integer";
             Object[] valores = {nuevaDesc, Double.parseDouble(nuevoMonto), java.sql.Timestamp.valueOf(strFecha), nuevoEstado,idCuota};
             System.out.println(idCuota);
-            DB.comandoDML(queryUpdate, valores);
+            ConexionPostgres.comandoDML(queryUpdate, valores);
             
             JOptionPane.showMessageDialog(this, "Cuota actualizada correctamente.", "Sistema Garita", JOptionPane.INFORMATION_MESSAGE);
             dispose();

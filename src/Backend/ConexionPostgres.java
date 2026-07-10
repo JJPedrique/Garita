@@ -8,7 +8,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 public class ConexionPostgres {
     
-    Connection conexion = null;
+    public static Connection conexion = null;
 
     // Configuración de la base de datos
     // El puerto por defecto de PostgreSQL es 5432    
@@ -24,8 +24,8 @@ public class ConexionPostgres {
     static final String DEST_PATH = "C:/respaldos/Garita.backup";
 
 
-    public Connection conectar() {
-        this.conexion = null;
+    public static Connection conectar() {
+        ConexionPostgres.conexion = null;
         
         try {
             // Intentar establecer la conexión
@@ -39,9 +39,9 @@ public class ConexionPostgres {
     }   
     
     // para el INSERT | UPDATE | DELETE
-    public void comandoDML(String QUERY, Object VALUES[]) throws SQLException{
+    public static void comandoDML(String QUERY, Object VALUES[]) throws SQLException{
         
-        if (this.conexion == null || this.conexion.isClosed()) {
+        if (ConexionPostgres.conexion == null || ConexionPostgres.conexion.isClosed()) {
             conectar();
         }
         
@@ -85,14 +85,14 @@ public class ConexionPostgres {
     }
     
     // Para SELECT
-    public ResultSet consultar(String QUERY, Object[] PARAMETROS) throws SQLException {
+    public static ResultSet consultar(String QUERY, Object[] PARAMETROS) throws SQLException {
         
-        if (this.conexion == null || this.conexion.isClosed()) {
+        if (ConexionPostgres.conexion == null || ConexionPostgres.conexion.isClosed()) {
             conectar();
         }
         
         try {
-            PreparedStatement PS = this.conexion.prepareStatement(QUERY);
+            PreparedStatement PS = ConexionPostgres.conexion.prepareStatement(QUERY);
             if (PARAMETROS != null) {
                 for (int i=0; i<PARAMETROS.length; i++) {
                     if (PARAMETROS[i] instanceof String) {

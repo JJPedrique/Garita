@@ -8,7 +8,6 @@ import Backend.ThemeManager;
 
 public class FrameModificarUsuario extends JDialog{
 
-    ConexionPostgres DB = new ConexionPostgres();
     int idM;
     String INIT_SQL = "SELECT clave,rol,nombre,apellido,cedula,telefono FROM usuarios WHERE id = ?;";
     String PRE_SQL = "select id,activo from usuarios where cedula = ?;";    
@@ -128,7 +127,7 @@ public class FrameModificarUsuario extends JDialog{
     }
 
     void Init() throws SQLException{
-        ResultSet RS_DATA = DB.consultar(INIT_SQL,new Object[]{idM});
+        ResultSet RS_DATA = ConexionPostgres.consultar(INIT_SQL,new Object[]{idM});
         while (RS_DATA.next()) {
             InputNombre.setText(RS_DATA.getString("nombre"));
             InputApellido.setText(RS_DATA.getString("apellido"));
@@ -165,7 +164,7 @@ public class FrameModificarUsuario extends JDialog{
             ThemeManager.MostrarMensajeError(this,"ERROR - La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número");return;}
 
         
-        ResultSet RS_DATA = DB.consultar(PRE_SQL,new Object[]{strCedula});
+        ResultSet RS_DATA = ConexionPostgres.consultar(PRE_SQL,new Object[]{strCedula});
         int id = -1; boolean active = false;
         while (RS_DATA.next()) {
             id = RS_DATA.getInt("id");
@@ -173,11 +172,11 @@ public class FrameModificarUsuario extends JDialog{
         }
 
 
-        if(id == idM){DB.comandoDML(SQL,new Object[]{strClave, strRol, strNombre, strApellido, strCedula, strTelefono,true,idM});}
+        if(id == idM){ConexionPostgres.comandoDML(SQL,new Object[]{strClave, strRol, strNombre, strApellido, strCedula, strTelefono,true,idM});}
         else if(active){ThemeManager.MostrarMensajeError(this,"ERROR - Esa cedula ya ha sido registrada."); return;}
         else{
-            DB.comandoDML(POST_SQL,new Object[]{idM});
-            DB.comandoDML(SQL,new Object[]{strClave, strRol, strNombre, strApellido, strCedula, strTelefono,true,id});
+            ConexionPostgres.comandoDML(POST_SQL,new Object[]{idM});
+            ConexionPostgres.comandoDML(SQL,new Object[]{strClave, strRol, strNombre, strApellido, strCedula, strTelefono,true,id});
         }
 
         ThemeManager.MostrarMensajeExito(this,"EXITO - Usuario modificado exitosamente.");

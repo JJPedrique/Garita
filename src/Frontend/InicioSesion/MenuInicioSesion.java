@@ -203,9 +203,8 @@ public class MenuInicioSesion extends JPanel {
     //region Helper Functions
     private void ValidarInicioSesion(String usuario, String clave){
         try {
-            ConexionPostgres BDD = new ConexionPostgres();
             
-            ResultSet RS = BDD.consultar(
+            ResultSet RS = ConexionPostgres.consultar(
                 "SELECT id, concat(nombre,' ',apellido) AS nombre_completo, intentos_fallidos, clave FROM usuarios WHERE cedula = ? LIMIT 1;",
                 new Object[]{usuario}
             );
@@ -232,7 +231,7 @@ public class MenuInicioSesion extends JPanel {
             }
 
             if (!claveCorrectaBD.equals(clave)) {
-                BDD.comandoDML("UPDATE usuarios SET intentos_fallidos = intentos_fallidos + 1 WHERE cedula = ?", new Object[]{usuario});
+                ConexionPostgres.comandoDML("UPDATE usuarios SET intentos_fallidos = intentos_fallidos + 1 WHERE cedula = ?", new Object[]{usuario});
                 
                 if ((intentosActuales + 1) > 3) {
                     ThemeManager.MostrarMensajeError(this, "Has alcanzado el límite de 3 intentos. Tu cuenta ha sido bloqueada.");
@@ -265,7 +264,7 @@ public class MenuInicioSesion extends JPanel {
                 return;
             }
 
-            BDD.comandoDML("UPDATE usuarios SET intentos_fallidos = 0 WHERE cedula = ?;", new Object[]{usuario});
+            ConexionPostgres.comandoDML("UPDATE usuarios SET intentos_fallidos = 0 WHERE cedula = ?;", new Object[]{usuario});
         } catch (SQLException ex) {
             JOptionPane.showMessageDialog(this, ex.getMessage());
             return;

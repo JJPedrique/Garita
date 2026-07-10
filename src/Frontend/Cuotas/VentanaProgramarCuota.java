@@ -17,7 +17,6 @@ public class VentanaProgramarCuota extends JDialog {
     private JTextField inputDescription;
     private JTextField txtMonto;
     private final MenuCuotas menuPadre; 
-    ConexionPostgres DB = new ConexionPostgres();
 
     String queryInsert = "INSERT INTO cuotas (descripcion, monto, fecha_emision, fecha_limite, activo) VALUES (?, ?, ?, ?, ?)";
     
@@ -183,7 +182,7 @@ public class VentanaProgramarCuota extends JDialog {
             };
 
         try {
-                DB.comandoDML(queryInsert, valores);
+                ConexionPostgres.comandoDML(queryInsert, valores);
                 
                 JOptionPane.showMessageDialog(this, "Cuota creada correctamente.", "Sistema Garita", JOptionPane.INFORMATION_MESSAGE);
                 dispose();

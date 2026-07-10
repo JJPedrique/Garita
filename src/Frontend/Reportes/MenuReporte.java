@@ -20,7 +20,6 @@ import Frontend.Reportes.DataInputs.*;
 
 
 public class MenuReporte extends JPanel {
-    ConexionPostgres DB = new ConexionPostgres();
 
 //#region TABLE
     class MyTable extends JPanel {
@@ -368,17 +367,17 @@ public class MenuReporte extends JPanel {
 
         String SQL_query = CONSULTAS.get(Module);
         String TempView = "CREATE OR REPLACE TEMP VIEW vista_analisis_columnas AS " + SQL_query;
-        DB.comandoDML(TempView, new Object[]{});
+        ConexionPostgres.comandoDML(TempView, new Object[]{});
 
         String SQL_HEADER = "SELECT column_name AS columna_nombre, data_type AS tipo_base " + 
                             "FROM information_schema.columns " + 
                             "WHERE table_name = 'vista_analisis_columnas' " + 
                             "ORDER BY ordinal_position;";
 
-        ResultSet RS_DATA = DB.consultar(SQL_HEADER, null);
+        ResultSet RS_DATA = ConexionPostgres.consultar(SQL_HEADER, null);
         
         TempView = "DROP VIEW vista_analisis_columnas;";
-        DB.comandoDML(TempView, new Object[]{});
+        ConexionPostgres.comandoDML(TempView, new Object[]{});
 
         while (RS_DATA.next()) {            
             TableHeader.put(RS_DATA.getString("columna_nombre"), RS_DATA.getString("tipo_base"));
@@ -506,7 +505,7 @@ public class MenuReporte extends JPanel {
         
         //BDD
         try {
-            ResultSet RS_DATA = DB.consultar(MAIN_QUERY, Param.toArray());
+            ResultSet RS_DATA = ConexionPostgres.consultar(MAIN_QUERY, Param.toArray());
             ArrayList<ArrayList<String>> Rows = new ArrayList<>();
 
             while (RS_DATA.next()) {            

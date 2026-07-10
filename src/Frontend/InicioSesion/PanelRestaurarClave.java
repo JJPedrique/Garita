@@ -176,11 +176,10 @@ public class PanelRestaurarClave extends JPanel{
             String Query = "UPDATE usuarios SET clave = ? WHERE id = ?;";
             Object Parametros[] = {nuevaClave,PanelVerificarTelefono.idUsuario};
             try {
-                ConexionPostgres BDD = new ConexionPostgres();
-                BDD.comandoDML(Query,Parametros);
+                ConexionPostgres.comandoDML(Query,Parametros);
                 
                 ThemeManager.MostrarMensajeExito(this, "¡Clave restaurada con éxito!");
-                BDD.comandoDML("UPDATE usuarios SET intentos_fallidos = 0 WHERE id = ?;", new Object[]{PanelVerificarTelefono.idUsuario});
+                ConexionPostgres.comandoDML("UPDATE usuarios SET intentos_fallidos = 0 WHERE id = ?;", new Object[]{PanelVerificarTelefono.idUsuario});
             } catch (SQLException ex) {
                 JOptionPane.showMessageDialog(this,ex.getMessage(),"ERROR",JOptionPane.ERROR_MESSAGE);
                 return;
