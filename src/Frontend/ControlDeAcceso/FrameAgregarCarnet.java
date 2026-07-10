@@ -6,7 +6,6 @@ import java.sql.SQLException;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import Backend.ConexionPostgres;
 import Backend.ThemeManager;
 
 public class FrameAgregarCarnet extends JPanel {
@@ -113,8 +112,7 @@ public class FrameAgregarCarnet extends JPanel {
         
         String query = "SELECT id, concat('Nro: ',numero_vivienda,' - Calle: ',calle) AS info FROM viviendas ORDER BY numero_vivienda,calle ASC;";
         try {
-            ConexionPostgres BDD = new ConexionPostgres();
-            ResultSet RS_Carnet = BDD.consultar(query, null);
+            ResultSet RS_Carnet = MenuControlDeAcceso.BDD.consultar(query, null);
             while (RS_Carnet != null && RS_Carnet.next()) {
                 cbViviendas.addItem(RS_Carnet.getString("info"));
             }
@@ -141,12 +139,11 @@ public class FrameAgregarCarnet extends JPanel {
             }
 
             try {
-                ConexionPostgres BDD = new ConexionPostgres();
         
                 String sVivienda = cbViviendas.getSelectedItem().toString();
                 String sNumCasa = sVivienda.split(" - ")[0].replace("Nro: ", "").trim();
                 
-                ResultSet RS_Vivienda = BDD.consultar(
+                ResultSet RS_Vivienda = MenuControlDeAcceso.BDD.consultar(
                     "SELECT id FROM viviendas WHERE numero_vivienda = ? LIMIT 1;", 
                     new Object[]{sNumCasa}
                 );
@@ -156,7 +153,7 @@ public class FrameAgregarCarnet extends JPanel {
                     idVivienda = RS_Vivienda.getInt("id");
                 }
                 
-                ResultSet RS_Carnet = BDD.consultar(
+                ResultSet RS_Carnet = MenuControlDeAcceso.BDD.consultar(
                     "SELECT id,activo FROM carnets WHERE codigo = ? LIMIT 1;", 
                     new Object[]{sCodigo}
                 );
@@ -169,7 +166,7 @@ public class FrameAgregarCarnet extends JPanel {
                 }
 
                 if(idCarnet != -1 && activo == false){
-                    BDD.comandoDML("UPDATE carnets SET codigo = ?, id_vivienda = ?, activo = true WHERE id = ?;", 
+                    MenuControlDeAcceso.BDD.comandoDML("UPDATE carnets SET codigo = ?, id_vivienda = ?, activo = true WHERE id = ?;", 
                     new Object[]{sCodigo, idVivienda, idCarnet});
                     
                     ThemeManager.MostrarMensajeExito(this,"Carnet registrado correctamente.");
@@ -183,7 +180,7 @@ public class FrameAgregarCarnet extends JPanel {
                 }
 
                 String queryInsert = "INSERT INTO carnets (codigo, id_vivienda, activo) VALUES (?, ?, true);";
-                BDD.comandoDML(queryInsert, new Object[]{sCodigo, idVivienda});
+                MenuControlDeAcceso.BDD.comandoDML(queryInsert, new Object[]{sCodigo, idVivienda});
 
                 ThemeManager.MostrarMensajeExito(this,"Carnet registrado correctamente.");
                 TriggerActualizarTabla();

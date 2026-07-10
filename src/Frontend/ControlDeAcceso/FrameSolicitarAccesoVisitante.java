@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
-import Backend.ConexionPostgres;
 import Backend.ThemeManager;
 
 public class FrameSolicitarAccesoVisitante extends JPanel {
@@ -163,8 +162,7 @@ public class FrameSolicitarAccesoVisitante extends JPanel {
                         "WHERE nombre ILIKE ? OR apellido ILIKE ? \n" +
                         "ORDER BY nombre_completo,numero_vivienda,calle ASC;";
         try {
-            ConexionPostgres BDD = new ConexionPostgres();
-            ResultSet RS = BDD.consultar(Query, new Object[]{"%" + filtro + "%", "%" + filtro + "%"});
+            ResultSet RS = MenuControlDeAcceso.BDD.consultar(Query, new Object[]{"%" + filtro + "%", "%" + filtro + "%"});
             
             while (RS != null && RS.next()) {
                 String sNombre = RS.getString("nombre_completo");
@@ -212,8 +210,7 @@ public class FrameSolicitarAccesoVisitante extends JPanel {
         String QueryInsert = "INSERT INTO accesos (id_carnet, tipo, fecha_hora, estado, nombre_visita) " +
                              "VALUES (NULL, 'Entrada', CURRENT_TIMESTAMP, ?, ?);";
         try {
-            ConexionPostgres BDD = new ConexionPostgres();
-            BDD.comandoDML(QueryInsert, new Object[]{estadoAcceso, sVisitante});
+            MenuControlDeAcceso.BDD.comandoDML(QueryInsert, new Object[]{estadoAcceso, sVisitante});
             
             String msgExito = estadoAcceso.equals("Permitido") ? "Acceso garantizado." : "Acceso denegado.";
             ThemeManager.MostrarMensajeExito(this, msgExito);
