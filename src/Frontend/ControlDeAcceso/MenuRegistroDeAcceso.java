@@ -10,6 +10,7 @@ import java.util.*;
 
 import com.toedter.calendar.JDateChooser;
 
+import Backend.ConexionPostgres;
 import Backend.ThemeManager;
 
 //region JComponentes
@@ -370,11 +371,7 @@ public class MenuRegistroDeAcceso extends JPanel {
 
         try {
             Object[] paramsArray = Parametros.isEmpty() ? null : Parametros.toArray();
-<<<<<<< Updated upstream
-            ResultSet RS = MenuControlDeAcceso.BDD.consultar(Query.toString(), paramsArray);
-=======
             ResultSet RS = ConexionPostgres.consultar(Query.toString(), paramsArray);
->>>>>>> Stashed changes
             
             while (RS != null && RS.next()) {
                 String sCarnet = RS.getString("codigo_carnet");

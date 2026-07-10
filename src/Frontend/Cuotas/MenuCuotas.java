@@ -149,7 +149,6 @@ class JTarjetaCuota {
 // =======================================================================
 public class MenuCuotas extends JPanel {
 
-<<<<<<< Updated upstream
     ConexionPostgres DB = new ConexionPostgres();
 
     JButton bAgregarCuota = ThemeManager.Button("Añadir Cuota");
@@ -161,14 +160,6 @@ public class MenuCuotas extends JPanel {
     
     private final JDateChooser jdcHasta = new JDateChooser();
     private final JSpinner jsHoraHasta = createTimeSpinner();
-=======
-    String SQL = "SELECT descripcion, monto, fecha_emision, fecha_limite, activo, id FROM cuotas";
-
-    JTextField inputDescripcion =  new JTextField();
-    JTextField inputMonto = new JTextField();
-    JTextField inputFechaInicial =  new JTextField();
-    JTextField inputFechaFinal =  new JTextField();
->>>>>>> Stashed changes
     
     JRadioButton radioTodos = new JRadioButton("Todos");
     JRadioButton radioActivo = new JRadioButton("Activo");
@@ -425,8 +416,7 @@ public class MenuCuotas extends JPanel {
         MAIN_QUERY += "ORDER BY id DESC;";
 
         try {
-<<<<<<< Updated upstream
-            ResultSet rs = DB.consultar(MAIN_QUERY, params.isEmpty() ? null : params.toArray());
+            ResultSet rs = ConexionPostgres.consultar(MAIN_QUERY, params.isEmpty() ? null : params.toArray());
             while (rs != null && rs.next()) {
                 JTarjetas.add(new JTarjetaCuota(
                     rs.getString("id"),
@@ -437,35 +427,6 @@ public class MenuCuotas extends JPanel {
                     rs.getBoolean("activo"),
                     this
                 ));
-=======
-            String[][] matrizDatos = GetData(MAIN_QUERY, headersDB);
-            DATA.setDataVector(matrizDatos, columnasVisuales);
-
-            
-            TABLA.getColumnModel().getColumn(5).setPreferredWidth(160);
-            TABLA.getColumnModel().getColumn(5).setCellRenderer(new OpcionesRenderer());
-            TABLA.getColumnModel().getColumn(5).setCellEditor(new OpcionesEditor());
-            
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(this, "Error al consultar la base de datos: " + e.getMessage(), "Error BD", JOptionPane.ERROR_MESSAGE);
-            e.printStackTrace();
-            DATA.setDataVector(new String[][]{}, columnasVisuales);
-        }
-
-        this.repaint();
-        this.revalidate();
-    }
-
-    
-    String[][] GetData(String SQL, ArrayList<String> header) throws SQLException {
-        ResultSet RS_DATA = ConexionPostgres.consultar(SQL, null);
-        
-        ArrayList<ArrayList<String>> Datas = new ArrayList<>();
-        while (RS_DATA.next()) {            
-            ArrayList<String> newData = new ArrayList<>();
-            for(String h : header) {
-                newData.add(RS_DATA.getString(h.substring(1, h.length() - 1)));
->>>>>>> Stashed changes
             }
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(this, "Error al consultar cuotas: " + e.getMessage(), "Error BD", JOptionPane.ERROR_MESSAGE);
@@ -480,112 +441,10 @@ public class MenuCuotas extends JPanel {
         inputDescripcion.addActionListener(e -> Search());
         inputMonto.addActionListener(e -> Search());
 
-<<<<<<< Updated upstream
         bAgregarCuota.addActionListener(e -> {
             JFrame frameAncestro = (JFrame) SwingUtilities.getWindowAncestor(this);
             VentanaProgramarCuota vProgramar = new VentanaProgramarCuota(frameAncestro, this);
             vProgramar.setVisible(true);
         });
-=======
-    private class OpcionesRenderer extends JPanel implements javax.swing.table.TableCellRenderer {
-        private final JButton btnEditar = crearBoton("Editar");
-        private final JButton btnEliminar = crearBoton("Eliminar");
-
-        OpcionesRenderer() {
-            setOpaque(true);
-            setBackground(ThemeManager.COLOR_BACKGROUND_LIGHT);
-            setLayout(new FlowLayout(FlowLayout.CENTER, 6, 0));
-            add(btnEditar);
-            add(btnEliminar);
-        }
-
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            setBackground(isSelected ? ThemeManager.COLOR_BACKGROUND : ThemeManager.COLOR_BACKGROUND_LIGHT);
-            return this;
-        }
-    }
-
-private class OpcionesEditor extends AbstractCellEditor implements javax.swing.table.TableCellEditor {
-        private final JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 6, 0));
-        private final JButton btnEditar = crearBoton("Editar");
-        private final JButton btnEliminar = crearBoton("Eliminar");
-        
-        // Variables para capturar todo el contexto de la fila seleccionada
-        private String descripcionCuota;
-        private String montoCuota;
-        private String fechaLimiteCuota;
-        private String idCuota;
-
-        OpcionesEditor() {
-            panel.setOpaque(true);
-            panel.setBackground(ThemeManager.COLOR_BACKGROUND_LIGHT);
-            panel.add(btnEditar);
-            panel.add(btnEliminar);
-
-            
-            btnEditar.addActionListener(e -> {
-                fireEditingStopped(); 
-                
-                Window ventanaPadre = SwingUtilities.getWindowAncestor(MenuCuotas.this);
-                if (ventanaPadre instanceof JFrame) {
-                    VentanaActualizarCuota dialog = new VentanaActualizarCuota(
-                        (JFrame) ventanaPadre, 
-                        MenuCuotas.this, 
-                        descripcionCuota, 
-                        montoCuota, 
-                        fechaLimiteCuota,
-                        idCuota
-                    );
-                    dialog.setVisible(true);
-                }
-            });
-
-            // Acción de eliminar lógica (Se mantiene igual)
-            btnEliminar.addActionListener(e -> {
-                System.out.println(idCuota);
-                fireEditingStopped();
-                int opcion = JOptionPane.showConfirmDialog(
-                    MenuCuotas.this,
-                    "¿Desea Eliminar la cuota '" + descripcionCuota + "' del sistema?",
-                    "Confirmar eliminación",
-                    JOptionPane.YES_NO_OPTION,
-                    JOptionPane.WARNING_MESSAGE
-                );
-                System.out.println(idCuota);
-
-                if (opcion == JOptionPane.YES_OPTION) {
-                    try {
-                        ConexionPostgres.comandoDML(
-                            //"UPDATE cuotas SET activo = false WHERE descripcion = ?",
-                            "DELETE FROM cuotas WHERE id =?::integer",
-                            new Object[]{idCuota}
-                        );
-                        Search();
-                    } catch (SQLException ex) {
-                        JOptionPane.showMessageDialog(MenuCuotas.this, "Error al desactivar cuota: " + ex.getMessage());
-                    }
-                }
-            });
-        }
-
-        @Override
-        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-            // Mapeamos los índices reales de tus columnasVisuales:
-            // 0 = Descripción, 1 = Monto, 3 = Fecha Límite
-            descripcionCuota = String.valueOf(table.getValueAt(row, 0));
-            montoCuota = String.valueOf(table.getValueAt(row, 1));
-            fechaLimiteCuota = String.valueOf(table.getValueAt(row, 3));
-            idCuota = String.valueOf(table.getValueAt(row, 5));
-            
-            panel.setBackground(ThemeManager.COLOR_BACKGROUND_LIGHT);
-            return panel;
-        }
-
-        @Override
-        public Object getCellEditorValue() {
-            return idCuota;
-        }
->>>>>>> Stashed changes
     }
 }
