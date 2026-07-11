@@ -1,60 +1,67 @@
--- 1. CREACIÓN DE TABLAS (Solo si no existen)
+-- 1. TABLA: viviendas (Se crea primero porque varias tablas dependen de ella)
+CREATE TABLE IF NOT EXISTS "viviendas" (
+  "id" integer PRIMARY KEY,
+  "calle" varchar(20) NOT NULL,
+  "numero_vivienda" varchar(10) UNIQUE NOT NULL,
+  "fecha_registro" timestamp NOT NULL,
+  "activo" boolean NOT NULL DEFAULT true
+);
 
+-- 2. TABLA: usuarios
 CREATE TABLE IF NOT EXISTS "usuarios" (
-  "id" integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  "id" smallint PRIMARY KEY,
   "clave" varchar(16) NOT NULL,
   "rol" varchar(20) NOT NULL,
   "nombre" varchar(20) NOT NULL,
   "apellido" varchar(20) NOT NULL,
   "cedula" varchar(13) UNIQUE NOT NULL,
   "telefono" varchar(13) NOT NULL,
-  "activo" bool NOT NULL DEFAULT true,
-  "intentos_fallidos" integer DEFAULT 0
+  "activo" boolean NOT NULL DEFAULT true,
+  "numero_intentos" integer NOT NULL DEFAULT 0
 );
 
+-- 3. TABLA: bitacoras
 CREATE TABLE IF NOT EXISTS "bitacoras" (
-  "id" integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  "usuario" varchar(13) NOT NULL,
+  "id" integer PRIMARY KEY,
+  "usuario" varchar(13) UNIQUE NOT NULL,
   "accion" varchar(6) NOT NULL,
   "tabla_modificada" varchar(16) NOT NULL,
   "fecha_modificacion" timestamp NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS "viviendas" (
-  "id" integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  "calle" varchar(20) NOT NULL,
-  "numero_vivienda" varchar(10) UNIQUE NOT NULL,
-  "activo" bool NOT NULL DEFAULT true
-);
-
+-- 4. TABLA: representantes
 CREATE TABLE IF NOT EXISTS "representantes" (
-  "id" integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  "id" integer PRIMARY KEY,
   "id_vivienda" integer NOT NULL,
   "nombre" varchar(20) NOT NULL,
   "apellido" varchar(20) NOT NULL,
   "cedula" varchar(13) UNIQUE NOT NULL,
   "telefono" varchar(13) NOT NULL,
-  "activo" bool NOT NULL DEFAULT true
+  "activo" boolean NOT NULL DEFAULT true
 );
 
+-- 5. TABLA: carnets
 CREATE TABLE IF NOT EXISTS "carnets" (
-  "id" integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  "id" integer PRIMARY KEY,
   "codigo" varchar(10) UNIQUE NOT NULL,
   "id_vivienda" integer NOT NULL,
-  "activo" bool NOT NULL DEFAULT true
+  "activo" boolean NOT NULL DEFAULT true
 );
 
+-- 6. TABLA: cuotas
 CREATE TABLE IF NOT EXISTS "cuotas" (
-  "id" integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  "id" integer PRIMARY KEY,
   "monto" numeric(6,2) NOT NULL,
   "descripcion" varchar(14) UNIQUE NOT NULL,
   "fecha_emision" timestamp NOT NULL,
   "fecha_limite" timestamp NOT NULL,
-  "activo" bool NOT NULL DEFAULT true
+  "activo" boolean NOT NULL DEFAULT true,
+  "borrada" boolean NOT NULL DEFAULT true
 );
 
+-- 7. TABLA: pagos_realizados
 CREATE TABLE IF NOT EXISTS "pagos_realizados" (
-  "id" integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  "id" integer PRIMARY KEY,
   "id_vivienda" integer NOT NULL,
   "id_cuota" integer NOT NULL,
   "tipo_pago" varchar(15) NOT NULL,
@@ -62,8 +69,9 @@ CREATE TABLE IF NOT EXISTS "pagos_realizados" (
   "fecha_de_pago" timestamp NOT NULL
 );
 
+-- 8. TABLA: accesos
 CREATE TABLE IF NOT EXISTS "accesos" (
-  "id" integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  "id" integer PRIMARY KEY,
   "fecha_hora" timestamp NOT NULL,
   "tipo" varchar(10) NOT NULL,
   "estado" varchar(10) NOT NULL,
@@ -71,14 +79,24 @@ CREATE TABLE IF NOT EXISTS "accesos" (
   "nombre_visita" varchar(40)
 );
 
--- Comentarios en Columnas (Se pueden ejecutar siempre, sobrescriben el comentario existente)
-
+---
+--- COMENTARIOS DE COLUMNAS
+---
 COMMENT ON COLUMN "usuarios"."cedula" IS 'Candidata';
 COMMENT ON COLUMN "bitacoras"."usuario" IS 'Candidata';
 COMMENT ON COLUMN "viviendas"."numero_vivienda" IS 'Candidata';
 COMMENT ON COLUMN "representantes"."cedula" IS 'Candidata';
 COMMENT ON COLUMN "carnets"."codigo" IS 'Candidata';
 COMMENT ON COLUMN "cuotas"."descripcion" IS 'Candidata';
+
+---
+--- RELACIONES (LLAVES FORÁNEAS)
+---
+ALTER TABLE "accesos" ADD FOREIGN KEY ("id_carnet") REFERENCES "carnets" ("id") DEFERRABLE INITIALLY IMMEDIATE;
+ALTER TABLE "representantes" ADD FOREIGN KEY ("id_vivienda") REFERENCES "viviendas" ("id") DEFERRABLE INITIALLY IMMEDIATE;
+ALTER TABLE "carnets" ADD FOREIGN KEY ("id_vivienda") REFERENCES "viviendas" ("id") DEFERRABLE INITIALLY IMMEDIATE;
+ALTER TABLE "pagos_realizados" ADD FOREIGN KEY ("id_vivienda") REFERENCES "viviendas" ("id") DEFERRABLE INITIALLY IMMEDIATE;
+ALTER TABLE "pagos_realizados" ADD FOREIGN KEY ("id_cuota") REFERENCES "cuotas" ("id") DEFERRABLE INITIALLY IMMEDIATE;
 
 -- 2. RESTRICCIONES DE LLAVE FORÁNEA (Solo si no existen)
 -- Para evitar errores de duplicados, envolvemos cada una en una verificación rápida

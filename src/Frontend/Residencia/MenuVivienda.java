@@ -321,7 +321,7 @@ public class MenuVivienda extends JPanel {
                 String miUsuario = Backend.SesionUsuario.getInstancia().getCedula();
                 if (miUsuario == null) miUsuario = "Sistema_Java";
 
-            db.comandoDML(
+            ConexionPostgres.comandoDML(
                 "DO $$ BEGIN PERFORM set_config('app.usuario_actual', '" + miUsuario + "', true); END $$; "
                                        + "UPDATE viviendas SET activo = false WHERE numero_vivienda = ?",
                 new Object[]{numeroVivienda}
@@ -501,7 +501,7 @@ public class MenuVivienda extends JPanel {
             try {
                 if (esEdicion) {
 
-                    db.comandoDML(
+                    ConexionPostgres.comandoDML(
                         "DO $$ BEGIN PERFORM set_config('app.usuario_actual', '" + miUsuario + "', true); END $$; "
                                        + "UPDATE viviendas SET calle = ?, numero_vivienda = ? WHERE numero_vivienda = ?",
                         new Object[]{calle, numero, numeroOriginal}
@@ -520,13 +520,13 @@ public class MenuVivienda extends JPanel {
                         }
 
 
-                        db.comandoDML(
+                        ConexionPostgres.comandoDML(
                             "DO $$ BEGIN PERFORM set_config('app.usuario_actual', '" + miUsuario + "', true); END $$; "
                                        + "UPDATE viviendas SET calle = ?, activo = true WHERE numero_vivienda = ?",
                             new Object[]{calle, numero}
                         );
                     } else {
-                        db.comandoDML(
+                        ConexionPostgres.comandoDML(
                             "DO $$ BEGIN PERFORM set_config('app.usuario_actual', '" + miUsuario + "', true); END $$; "
                                        + "INSERT INTO viviendas (calle, numero_vivienda, activo) VALUES (?, ?, true)",
                             new Object[]{calle, numero}

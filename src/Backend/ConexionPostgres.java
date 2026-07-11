@@ -16,6 +16,7 @@ public class ConexionPostgres {
     //#endregion
     static final String pgDumpPath = "C:\\Program Files\\PostgreSQL\\15\\bin\\pg_dump.exe";
     static final String pgRestorePath = "C:\\Program Files\\PostgreSQL\\15\\bin\\pg_restore.exe";  
+    static final String psqlPath = "C:\\Program Files\\PostgreSQL\\15\\bin\\psql.exe";
     public static final String USER = "postgres";
     private static final String PASSWORD = "1234";
 
@@ -110,6 +111,50 @@ public class ConexionPostgres {
             return null;
         }
     }
+
+    public static void InitDatabase() throws Exception{
+        // psql -h localhost -U postgres -d Garita -f ruta/al/archivo.sql
+        ProcessBuilder pb = new ProcessBuilder(
+            psqlPath,
+            "-h",  "localhost", 
+            "-U",  "postgres",
+            "-d", "Garita",                      // -d indica la base de datos de destino
+            "-f", "src\\Backend\\BDD\\InitDatabase.sql" // -f indica el archivo .sql a ejecutar
+        );
+
+        // Configurar la contraseña en el entorno para que no la pida por consola
+        Map<String, String> env = pb.environment();
+        env.put("PGPASSWORD", PASSWORD);
+
+        // Redirigir el flujo de error para poder leerlo junto con la salida estándar
+        pb.redirectErrorStream(true);
+
+        try {
+            System.out.println("Ejecutando script SQL...");
+            Process proceso = pb.start();
+
+            // Es fundamental leer la salida del proceso para que no se bloquee
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(proceso.getInputStream()))) {
+                String linea;
+                while ((linea = reader.readLine()) != null) {
+                    //System.out.println("[psql] " + linea);
+                }
+            }
+
+            // Esperar a que el proceso termine y obtener el código de salida
+            int codigoSalida = proceso.waitFor();
+            if (codigoSalida == 0) {
+                System.out.println("¡Script ejecutado con éxito!");
+            } else {
+                System.err.println("Hubo un error al ejecutar el script. Código de salida: " + codigoSalida);
+            }
+
+        } catch (IOException | InterruptedException e) {
+            System.err.println("Error al interactuar con el proceso de psql: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
 
     public static void backupDatabase() throws Exception {
         try {
