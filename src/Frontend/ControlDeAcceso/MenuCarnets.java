@@ -255,7 +255,7 @@ public class MenuCarnets extends JPanel {
                 
                 JCarnets.add(new JCarnet(sCodigo, sNumeroVivienda, sCalle, sNombreCompleto, () -> {
                     // Aquí definimos que la función que disparará el JCarnet, es el de actualizar la tabla
-                    ActualizarTabla(tfCodigo.getText()); 
+                    ActualizarTabla(tfCodigo.getText().trim()); 
                 }));
             }
         } catch (SQLException e) {

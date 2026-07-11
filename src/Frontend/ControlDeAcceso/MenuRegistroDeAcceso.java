@@ -3,12 +3,14 @@ package Frontend.ControlDeAcceso;
 import javax.swing.*;
 import javax.swing.Timer;
 import javax.swing.border.*;
+
+import com.toedter.calendar.JDateChooser;
+
 import java.awt.*;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.*;
 
-import com.toedter.calendar.JDateChooser;
 
 import Backend.ConexionPostgres;
 import Backend.ThemeManager;
@@ -114,6 +116,7 @@ public class MenuRegistroDeAcceso extends JPanel {
     JButton bBuscar = ThemeManager.Button("Buscar");
     JSeparator hr = new JSeparator();
     JButton bSolicitarAccesoVisitante = ThemeManager.Button("Solicitar Acceso al Visitante");
+    JButton bSolicitarAccesoResidente = ThemeManager.Button("Solicitar Acceso al Residente");
 
     ArrayList<JRegistroAcceso> JRegistros = new ArrayList<>();
     String[] headers = {"Carnet","Tipo de Acceso","Fecha de Uso", "Estado", "Nombre"};
@@ -156,6 +159,7 @@ public class MenuRegistroDeAcceso extends JPanel {
         hr.setForeground(ThemeManager.COLOR_INPUT);
         bBuscar.setPreferredSize(new Dimension(0, 40));
         bSolicitarAccesoVisitante.setPreferredSize(new Dimension(0, 40));
+        bSolicitarAccesoResidente.setPreferredSize(new Dimension(0, 40));
     }
     //endregion
 
@@ -225,7 +229,10 @@ public class MenuRegistroDeAcceso extends JPanel {
         GBC.insets = new Insets(15, 0, 5, 0);
         GBC.gridy = 12; pFunctions.add(bSolicitarAccesoVisitante, GBC);
 
-        GBC.gridy = 13; GBC.weighty = 1.0;
+        GBC.insets = new Insets(15, 0, 5, 0);
+        GBC.gridy = 13; pFunctions.add(bSolicitarAccesoResidente, GBC);
+
+        GBC.gridy = 14; GBC.weighty = 1.0;
         pFunctions.add(Box.createGlue(), GBC);
 
         pTabla.setLayout(new BorderLayout());
@@ -415,11 +422,20 @@ public class MenuRegistroDeAcceso extends JPanel {
         });
 
         bSolicitarAccesoVisitante.addActionListener(e -> {
-            JDialog JDAccesoVisitante = new JDialog((Window) SwingUtilities.getWindowAncestor(this), "Sistema Garita - Registrar Acceso Visitante", Dialog.ModalityType.APPLICATION_MODAL);
+            JDialog JDAccesoVisitante = new JDialog((Window) SwingUtilities.getWindowAncestor(this), "Sistema Garita - Solicitar Acceso Visitante", Dialog.ModalityType.APPLICATION_MODAL);
             JDAccesoVisitante.setSize(new Dimension(650, 500));
             JDAccesoVisitante.setLocationRelativeTo(this);
             JDAccesoVisitante.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
             JDAccesoVisitante.add(new FrameSolicitarAccesoVisitante(JDAccesoVisitante));
+            JDAccesoVisitante.setVisible(true);
+            ActualizarTabla(false); 
+        });
+        bSolicitarAccesoResidente.addActionListener(e -> {
+            JDialog JDAccesoVisitante = new JDialog((Window) SwingUtilities.getWindowAncestor(this), "Sistema Garita - Solicitar Acceso Residente", Dialog.ModalityType.APPLICATION_MODAL);
+            JDAccesoVisitante.setSize(new Dimension(650, 400));
+            JDAccesoVisitante.setLocationRelativeTo(this);
+            JDAccesoVisitante.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+            JDAccesoVisitante.add(new FrameSolicitarAccesoResidente(JDAccesoVisitante));
             JDAccesoVisitante.setVisible(true);
             ActualizarTabla(false); 
         });
