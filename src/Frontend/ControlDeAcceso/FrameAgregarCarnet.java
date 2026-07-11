@@ -112,6 +112,8 @@ public class FrameAgregarCarnet extends JPanel {
         cbViviendas.removeAllItems();
         cbViviendas.addItem("Seleccione una vivienda...");
         
+   
+
         String query = "SELECT id, concat('Nro: ',numero_vivienda,' - Calle: ',calle) AS info FROM viviendas ORDER BY numero_vivienda,calle ASC;";
         try {
             ResultSet RS_Carnet = ConexionPostgres.consultar(query, null);
@@ -180,8 +182,11 @@ public class FrameAgregarCarnet extends JPanel {
                     ThemeManager.MostrarMensajeError(this,"El carnet ya existe.");
                     return;
                 }
+                String miUsuario = Backend.SesionUsuario.getInstancia().getCedula();
+                if (miUsuario == null) miUsuario = "Sistema_Java";
 
-                String queryInsert = "INSERT INTO carnets (codigo, id_vivienda, activo) VALUES (?, ?, true);";
+                String queryInsert = "DO $$ BEGIN PERFORM set_config('app.usuario_actual', '" + miUsuario + "', true); END $$; "
+                                       + "INSERT INTO carnets (codigo, id_vivienda, activo) VALUES (?, ?, true);";
                 ConexionPostgres.comandoDML(queryInsert, new Object[]{sCodigo, idVivienda});
 
                 ThemeManager.MostrarMensajeExito(this,"Carnet registrado correctamente.");

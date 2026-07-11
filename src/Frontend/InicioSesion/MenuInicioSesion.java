@@ -9,6 +9,7 @@ import javax.swing.*;
 
 import Backend.ConexionPostgres;
 import Backend.ThemeManager;
+import Backend.SesionUsuario;
 import Frontend.MenuPrincipal;
 
 public class MenuInicioSesion extends JPanel {
@@ -205,7 +206,7 @@ public class MenuInicioSesion extends JPanel {
         try {
             
             ResultSet RS = ConexionPostgres.consultar(
-                "SELECT id, concat(nombre,' ',apellido) AS nombre_completo, intentos_fallidos, clave FROM usuarios WHERE cedula = ? LIMIT 1;",
+                "SELECT id, concat(nombre,' ',apellido) AS nombre_completo clave FROM usuarios WHERE cedula = ? LIMIT 1;",
                 new Object[]{usuario}
             );
 
@@ -213,7 +214,7 @@ public class MenuInicioSesion extends JPanel {
             while(RS != null && RS.next()){
                 T.add(RS.getInt("id"));
                 T.add(RS.getString("nombre_completo"));
-                T.add(RS.getInt("intentos_fallidos"));
+                //T.add(RS.getInt("intentos_fallidos"));
                 T.add(RS.getString("clave"));
             }
 
@@ -221,15 +222,15 @@ public class MenuInicioSesion extends JPanel {
                 ThemeManager.MostrarMensajeError(this, "Usuario o Clave incorrecto.");
                 return;
             }
-
+            /*
             int intentosActuales = Integer.parseInt(T.get(2).toString());
             String claveCorrectaBD = T.get(3).toString();
-
+            
             if(intentosActuales >= 3){
                 ThemeManager.MostrarMensajeError(this, "Cuenta restringida por número máximo de intentos.\nConsulte con el administrador o restaure su contraseña.");
                 return;
             }
-
+            
             if (!claveCorrectaBD.equals(clave)) {
                 ConexionPostgres.comandoDML("UPDATE usuarios SET intentos_fallidos = intentos_fallidos + 1 WHERE cedula = ?", new Object[]{usuario});
                 
@@ -237,12 +238,15 @@ public class MenuInicioSesion extends JPanel {
                     ThemeManager.MostrarMensajeError(this, "Has alcanzado el límite de 3 intentos. Tu cuenta ha sido bloqueada.");
                 } else {
                     ThemeManager.MostrarMensajeError(this, "Usuario o Clave incorrecto.");
-                }
-                return;
             }
-
+            return;
+        }
+        
+        */
             ThemeManager.MostrarMensajeExito(this, "¡Inicio de sesión exitoso!\n Bienvenido/a, " + T.get(1) + ".");
-            
+
+            Backend.SesionUsuario.getInstancia().iniciarSesion(usuario, T.get(1).toString());
+
             JFrame ventanaPadre = (JFrame) SwingUtilities.getWindowAncestor(this);
             if (ventanaPadre != null) {
                 ventanaPadre.remove(this);

@@ -50,7 +50,12 @@ class JCarnet {
             
             if (seleccion == JOptionPane.YES_OPTION) {
                 try {
-                    String Query = "UPDATE carnets SET activo = false WHERE codigo = ?;";
+                                String miUsuario = Backend.SesionUsuario.getInstancia().getCedula();
+                if (miUsuario == null) miUsuario = "Sistema_Java";
+
+
+                    String Query = "DO $$ BEGIN PERFORM set_config('app.usuario_actual', '" + miUsuario + "', true); END $$; "
+                                       + "UPDATE carnets SET activo = false WHERE codigo = ?;";
                     Object Parametros[] = {Codigo};
                     ConexionPostgres.comandoDML(Query, Parametros);
                     

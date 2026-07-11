@@ -1,7 +1,5 @@
--- 1. CREACIÓN DE TABLAS (Solo si no existen)
-
 CREATE TABLE IF NOT EXISTS "usuarios" (
-  "id" integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  "id" int PRIMARY KEY,
   "clave" varchar(16) NOT NULL,
   "rol" varchar(20) NOT NULL,
   "nombre" varchar(20) NOT NULL,
@@ -9,27 +7,28 @@ CREATE TABLE IF NOT EXISTS "usuarios" (
   "cedula" varchar(13) UNIQUE NOT NULL,
   "telefono" varchar(13) NOT NULL,
   "activo" bool NOT NULL DEFAULT true,
-  "intentos_fallidos" integer DEFAULT 0
+  "intentos_fallidos" int NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS "bitacoras" (
-  "id" integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  "usuario" varchar(13) NOT NULL,
+  "id" int PRIMARY KEY,
+  "usuario" varchar(13) UNIQUE NOT NULL,
   "accion" varchar(6) NOT NULL,
   "tabla_modificada" varchar(16) NOT NULL,
   "fecha_modificacion" timestamp NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS "viviendas" (
-  "id" integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  "id" int PRIMARY KEY,
   "calle" varchar(20) NOT NULL,
   "numero_vivienda" varchar(10) UNIQUE NOT NULL,
+  "fecha_registro" timestamp NOT NULL,
   "activo" bool NOT NULL DEFAULT true
 );
 
 CREATE TABLE IF NOT EXISTS "representantes" (
-  "id" integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  "id_vivienda" integer NOT NULL,
+  "id" int PRIMARY KEY,
+  "id_vivienda" int NOT NULL,
   "nombre" varchar(20) NOT NULL,
   "apellido" varchar(20) NOT NULL,
   "cedula" varchar(13) UNIQUE NOT NULL,
@@ -38,47 +37,54 @@ CREATE TABLE IF NOT EXISTS "representantes" (
 );
 
 CREATE TABLE IF NOT EXISTS "carnets" (
-  "id" integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  "id" int PRIMARY KEY,
   "codigo" varchar(10) UNIQUE NOT NULL,
-  "id_vivienda" integer NOT NULL,
+  "id_vivienda" int NOT NULL,
   "activo" bool NOT NULL DEFAULT true
 );
 
 CREATE TABLE IF NOT EXISTS "cuotas" (
-  "id" integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  "id" int PRIMARY KEY,
   "monto" numeric(6,2) NOT NULL,
   "descripcion" varchar(14) UNIQUE NOT NULL,
   "fecha_emision" timestamp NOT NULL,
   "fecha_limite" timestamp NOT NULL,
-  "activo" bool NOT NULL DEFAULT true
+  "activo" bool NOT NULL DEFAULT true,
+  "borrada" bool NOT NULL DEFAULT true
 );
 
 CREATE TABLE IF NOT EXISTS "pagos_realizados" (
-  "id" integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  "id_vivienda" integer NOT NULL,
-  "id_cuota" integer NOT NULL,
+  "id" int PRIMARY KEY,
+  "id_vivienda" int NOT NULL,
+  "id_cuota" int NOT NULL,
   "tipo_pago" varchar(15) NOT NULL,
   "referencia" varchar(30),
   "fecha_de_pago" timestamp NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS "accesos" (
-  "id" integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  "id" int PRIMARY KEY,
   "fecha_hora" timestamp NOT NULL,
   "tipo" varchar(10) NOT NULL,
   "estado" varchar(10) NOT NULL,
-  "id_carnet" integer,
+  "id_carnet" int,
   "nombre_visita" varchar(40)
 );
 
--- Comentarios en Columnas (Se pueden ejecutar siempre, sobrescriben el comentario existente)
-
+-- Comentarios de columnas
 COMMENT ON COLUMN "usuarios"."cedula" IS 'Candidata';
 COMMENT ON COLUMN "bitacoras"."usuario" IS 'Candidata';
 COMMENT ON COLUMN "viviendas"."numero_vivienda" IS 'Candidata';
 COMMENT ON COLUMN "representantes"."cedula" IS 'Candidata';
 COMMENT ON COLUMN "carnets"."codigo" IS 'Candidata';
 COMMENT ON COLUMN "cuotas"."descripcion" IS 'Candidata';
+
+-- Llaves foráneas
+ALTER TABLE "accesos" ADD FOREIGN KEY ("id_carnet") REFERENCES "carnets" ("id") DEFERRABLE INITIALLY IMMEDIATE;
+ALTER TABLE "representantes" ADD FOREIGN KEY ("id_vivienda") REFERENCES "viviendas" ("id") DEFERRABLE INITIALLY IMMEDIATE;
+ALTER TABLE "carnets" ADD FOREIGN KEY ("id_vivienda") REFERENCES "viviendas" ("id") DEFERRABLE INITIALLY IMMEDIATE;
+ALTER TABLE "pagos_realizados" ADD FOREIGN KEY ("id_vivienda") REFERENCES "viviendas" ("id") DEFERRABLE INITIALLY IMMEDIATE;
+ALTER TABLE "pagos_realizados" ADD FOREIGN KEY ("id_cuota") REFERENCES "cuotas" ("id") DEFERRABLE INITIALLY IMMEDIATE;
 
 -- 2. RESTRICCIONES DE LLAVE FORÁNEA (Solo si no existen)
 -- Para evitar errores de duplicados, envolvemos cada una en una verificación rápida

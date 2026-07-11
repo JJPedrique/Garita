@@ -14,10 +14,10 @@ En la tabla <b>registros</b> se almacenan todas los pago que una vivienda ha rea
 
 ### Requisitos
 <ul>
-  <li>VsCode</li>
-  <li>java version "1.8.0_51"</li>
-  <li>Postgre 15/16</li>
+  <li>VsCode + Extension Pack for Java</li>
+  <li>JavaSE-25 - jdk-25.0.3.9-hotspot</li>
+  <li>Postgre 15</li>
 </ul>
 
 ### Diagrama de BDD
-<img src ="BDD Diagram v10.svg">
+<img src ="BDD Diagram v11.svg">
