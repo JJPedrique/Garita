@@ -1,0 +1,21 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "App (Garita)",
+            "request": "launch",
+            "mainClass": "App",
+            "classPaths": [
+                "$Auto",
+                "${workspaceFolder}/lib/*"
+            ]
+        },
+        {
+            "type": "java",
+            "name": "Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        }
+    ]
+}
