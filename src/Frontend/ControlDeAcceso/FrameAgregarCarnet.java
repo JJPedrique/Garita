@@ -187,7 +187,7 @@ public class FrameAgregarCarnet extends JPanel {
 
                 String queryInsert = "DO $$ BEGIN PERFORM set_config('app.usuario_actual', '" + miUsuario + "', true); END $$; "
                                        + "INSERT INTO carnets (codigo, id_vivienda, activo) VALUES (?, ?, true);";
-                BDD.comandoDML(queryInsert, new Object[]{sCodigo, idVivienda});
+                ConexionPostgres.comandoDML(queryInsert, new Object[]{sCodigo, idVivienda});
 
                 ThemeManager.MostrarMensajeExito(this,"Carnet registrado correctamente.");
                 TriggerActualizarTabla();

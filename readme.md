@@ -20,4 +20,4 @@ En la tabla <b>registros</b> se almacenan todas los pago que una vivienda ha rea
 </ul>
 
 ### Diagrama de BDD
-<img src ="BDD Diagram v10.svg">
+<img src ="BDD Diagram v11.svg">

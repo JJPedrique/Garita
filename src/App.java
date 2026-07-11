@@ -11,6 +11,7 @@ public class App {
 
     public static void main(String[] args) throws Exception {
         ConexionPostgres.conexion = ConexionPostgres.conectar();
+        ConexionPostgres.InitDatabase();
 
         JFrame window = new JFrame("Sistema Garita");
         window.setSize(WIDTH,HEIGHT);

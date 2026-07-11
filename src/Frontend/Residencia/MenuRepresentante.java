@@ -317,7 +317,7 @@ public class MenuRepresentante extends JPanel {
                 if (miUsuario == null) miUsuario = "Sistema_Java";
 
         try {
-            db.comandoDML(
+            ConexionPostgres.comandoDML(
                 "DO $$ BEGIN PERFORM set_config('app.usuario_actual', '" + miUsuario + "', true); END $$; "
                                        + "UPDATE representantes SET activo = false WHERE cedula = ?",
                 new Object[]{cedula}
@@ -552,7 +552,7 @@ public class MenuRepresentante extends JPanel {
                             String miUsuario = Backend.SesionUsuario.getInstancia().getCedula();
                 if (miUsuario == null) miUsuario = "Sistema_Java";
                 if (esEdicion) {
-                    db.comandoDML(
+                    ConexionPostgres.comandoDML(
                         "DO $$ BEGIN PERFORM set_config('app.usuario_actual', '" + miUsuario + "', true); END $$; "
                                        + "UPDATE representantes SET id_vivienda = ?, nombre = ?, apellido = ?, cedula = ?, telefono = ? WHERE cedula = ?",
                         new Object[]{viviendaSeleccionada.id, nombre, apellido, cedula, telefono, dataInicial.cedula}
@@ -570,13 +570,13 @@ public class MenuRepresentante extends JPanel {
                             return;
                         }
 
-                        db.comandoDML(
+                        ConexionPostgres.comandoDML(
                             "DO $$ BEGIN PERFORM set_config('app.usuario_actual', '" + miUsuario + "', true); END $$; "
                                        + "UPDATE representantes SET id_vivienda = ?, nombre = ?, apellido = ?, telefono = ?, activo = true WHERE cedula = ?",
                             new Object[]{viviendaSeleccionada.id, nombre, apellido, telefono, cedula}
                         );
                     } else {
-                        db.comandoDML(
+                        ConexionPostgres.comandoDML(
                             "DO $$ BEGIN PERFORM set_config('app.usuario_actual', '" + miUsuario + "', true); END $$; "
                                        + "INSERT INTO representantes (id_vivienda, nombre, apellido, cedula, telefono, activo) VALUES (?, ?, ?, ?, ?, true)",
                             new Object[]{viviendaSeleccionada.id, nombre, apellido, cedula, telefono}

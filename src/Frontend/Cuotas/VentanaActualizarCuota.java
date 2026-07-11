@@ -195,7 +195,7 @@ public class VentanaActualizarCuota extends JDialog {
         try {
 
         String queryCheck = "Select fecha_emision From cuotas WHERE id = ?::integer";
-        java.sql.ResultSet rs = DB.consultar(queryCheck, new Object[]{idCuota});
+        java.sql.ResultSet rs = ConexionPostgres.consultar(queryCheck, new Object[]{idCuota});
 
         if (rs != null && rs.next()) {
                         java.sql.Timestamp tsEmisionActual = rs.getTimestamp("fecha_emision");
