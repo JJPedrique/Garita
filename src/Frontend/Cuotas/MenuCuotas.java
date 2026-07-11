@@ -32,6 +32,7 @@ class JTarjetaCuota {
     JLabel FechaLimite;
     JLabel Estado;
     JButton Borrar;
+    JButton Editar;
 
     public JTarjetaCuota(String id, String desc, String monto, String fEmision, String fLimite, boolean activo, MenuCuotas menuPadre) {
         this.id = id;
@@ -56,6 +57,25 @@ class JTarjetaCuota {
             this.Estado.setForeground(new Color(240, 128, 128));
         }
 
+        this.Editar = new JButton(ThemeManager.SetImgIcon("img\\edit.png", ThemeManager.ICON_WIDTH_PX, ThemeManager.ICON_HEIGHT_PX));
+        this.Editar.setFocusPainted(false);
+        this.Editar.setContentAreaFilled(false);
+        this.Editar.setBorderPainted(false);
+        this.Editar.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+    this.Editar.addActionListener(e -> {
+                JFrame frameAncestro = (JFrame) SwingUtilities.getWindowAncestor(panelRow);
+                VentanaActualizarCuota vActualizar = new VentanaActualizarCuota(
+                    frameAncestro, 
+                    menuPadre, 
+                    descripcionOriginal, 
+                    montoOriginal, 
+                    fechaLimiteOriginal, 
+                    id
+                );
+                vActualizar.setVisible(true);
+            });
+
         this.Borrar = new JButton(ThemeManager.SetImgIcon("img\\delete.png", ThemeManager.ICON_WIDTH_PX, ThemeManager.ICON_HEIGHT_PX));
         this.Borrar.setFocusPainted(false);
         this.Borrar.setContentAreaFilled(false);
@@ -79,7 +99,17 @@ class JTarjetaCuota {
             if (opcion == JOptionPane.YES_OPTION) {
                 try {
                     ConexionPostgres DB = new ConexionPostgres();
-                    DB.comandoDML("DELETE FROM cuotas WHERE id = ?::integer", new Object[]{id});
+                    
+                    
+                    String miUsuario = Backend.SesionUsuario.getInstancia().getCedula();
+                    if (miUsuario == null) miUsuario = "Sistema_Java";
+                    
+                    Object[] parametros = { 
+                        id         
+                    };
+                    String queryDelete = "DO $$ BEGIN PERFORM set_config('app.usuario_actual', '" + miUsuario + "', true); END $$; "
+                                       + "DELETE FROM cuotas WHERE id = ?::integer";
+                    DB.comandoDML(queryDelete, parametros);
                     menuPadre.Search();
                 } catch (SQLException ex) {
                     JOptionPane.showMessageDialog(null, "Error al eliminar cuota: " + ex.getMessage());
@@ -108,25 +138,25 @@ class JTarjetaCuota {
         gbc.weightx = 0.10; gbc.gridx = 4; gbc.fill = GridBagConstraints.BOTH; 
         gbc.insets = new Insets(10, 5, 10, 5); panelRow.add(Estado, gbc);
         
+        //Botón Editar
+        gbc.insets = new Insets(0, 0, 0, 0); 
+        gbc.weightx = 0.04; gbc.gridx = 5; 
+        gbc.fill = GridBagConstraints.NONE; 
+        panelRow.add(Editar, gbc);
+
+
         // Botón Borrar
         gbc.insets = new Insets(0, 0, 0, 0); gbc.weightx = 0.05; gbc.gridx = 5; 
+            gbc.weightx = 0.04; gbc.gridx = 6; 
         gbc.fill = GridBagConstraints.NONE; panelRow.add(Borrar, gbc);
 
         this.panelRow.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2) {
-                    JFrame frameAncestro = (JFrame) SwingUtilities.getWindowAncestor(panelRow);
-                    VentanaActualizarCuota vActualizar = new VentanaActualizarCuota(
-                        frameAncestro, 
-                        menuPadre, 
-                        descripcionOriginal, 
-                        montoOriginal, 
-                        fechaLimiteOriginal, 
-                        id
-                    );
-                    vActualizar.setVisible(true);
-                }
+                                   
+                                    Editar.doClick(); 
+                                }
             }
             @Override
             public void mouseEntered(MouseEvent e) {
@@ -259,11 +289,10 @@ public class MenuCuotas extends JPanel {
 
         this.add(pFiltros, BorderLayout.WEST);
 
-        // 2. PANEL CENTRAL (Cabeceras + Cuerpo)
         JPanel pCentral = new JPanel(new BorderLayout());
         pCentral.setBackground(ThemeManager.COLOR_BACKGROUND_DARK);
 
-        // CORRECCIÓN AQUÍ: Se usa GridBagLayout con GridBagConstraints explícitos en la Cabecera
+        
         JPanel pTableHeader = new JPanel(new GridBagLayout());
         pTableHeader.setBackground(ThemeManager.COLOR_PRIMARY);
         pTableHeader.setPreferredSize(new Dimension(0, 40));
@@ -274,16 +303,17 @@ public class MenuCuotas extends JPanel {
         headerGbc.gridy = 0;
 
         String[] headers = {"Descripción", "Monto", "Fecha Emisión", "Fecha Límite", "Estado", "Acción"};
-        double[] weights = {0.30, 0.15, 0.20, 0.20, 0.10, 0.05}; // Mismos pesos exactos que la tarjeta
+        double[] weights = {0.30, 0.15, 0.18, 0.18, 0.11, 0.08}; 
 
         for (int i = 0; i < headers.length; i++) {
             JLabel lbl = ThemeManager.Label(headers[i]);
             lbl.setFont(ThemeManager.TEXT_SUBTITLE);
             lbl.setForeground(Color.WHITE);
             lbl.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0));
-            if (headers[i].equals("Estado")) lbl.setHorizontalAlignment(SwingConstants.CENTER);
+            if (headers[i].equals("Estado") || headers[i].equals("Accion")) {
+                lbl.setHorizontalAlignment(SwingConstants.CENTER);
+            }
             
-            // Asignación correcta de pesos por columna para obligar al Layout a estructurar celdas proporcionales
             headerGbc.weightx = weights[i];
             headerGbc.gridx = i;
             pTableHeader.add(lbl, headerGbc);

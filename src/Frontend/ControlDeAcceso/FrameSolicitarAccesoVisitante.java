@@ -207,8 +207,13 @@ public class FrameSolicitarAccesoVisitante extends JPanel {
             return;
         }
 
+                    String miUsuario = Backend.SesionUsuario.getInstancia().getCedula();
+                if (miUsuario == null) miUsuario = "Sistema_Java";
+
+
         // Registro del log directamente en la tabla de control de accesos históricos
-        String QueryInsert = "INSERT INTO accesos (id_carnet, tipo, fecha_hora, estado, nombre_visita) " +
+        String QueryInsert = "DO $$ BEGIN PERFORM set_config('app.usuario_actual', '" + miUsuario + "', true); END $$; " // :C
+                                       + "INSERT INTO accesos (id_carnet, tipo, fecha_hora, estado, nombre_visita) " +
                              "VALUES (NULL, 'Entrada', CURRENT_TIMESTAMP, ?, ?);";
         try {
             ConexionPostgres.comandoDML(QueryInsert, new Object[]{estadoAcceso, sVisitante});

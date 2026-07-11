@@ -318,8 +318,12 @@ public class MenuVivienda extends JPanel {
         }
 
         try {
-            ConexionPostgres.comandoDML(
-                "UPDATE viviendas SET activo = false WHERE numero_vivienda = ?",
+                String miUsuario = Backend.SesionUsuario.getInstancia().getCedula();
+                if (miUsuario == null) miUsuario = "Sistema_Java";
+
+            db.comandoDML(
+                "DO $$ BEGIN PERFORM set_config('app.usuario_actual', '" + miUsuario + "', true); END $$; "
+                                       + "UPDATE viviendas SET activo = false WHERE numero_vivienda = ?",
                 new Object[]{numeroVivienda}
             );
             cargarViviendas();
@@ -492,10 +496,14 @@ public class MenuVivienda extends JPanel {
                 return;
             }
 
+            String miUsuario = Backend.SesionUsuario.getInstancia().getCedula();
+            if (miUsuario == null) miUsuario = "Sistema_Java";
             try {
                 if (esEdicion) {
-                    ConexionPostgres.comandoDML(
-                        "UPDATE viviendas SET calle = ?, numero_vivienda = ? WHERE numero_vivienda = ?",
+
+                    db.comandoDML(
+                        "DO $$ BEGIN PERFORM set_config('app.usuario_actual', '" + miUsuario + "', true); END $$; "
+                                       + "UPDATE viviendas SET calle = ?, numero_vivienda = ? WHERE numero_vivienda = ?",
                         new Object[]{calle, numero, numeroOriginal}
                     );
                 } else {
@@ -511,13 +519,16 @@ public class MenuVivienda extends JPanel {
                             return;
                         }
 
-                        ConexionPostgres.comandoDML(
-                            "UPDATE viviendas SET calle = ?, activo = true WHERE numero_vivienda = ?",
+
+                        db.comandoDML(
+                            "DO $$ BEGIN PERFORM set_config('app.usuario_actual', '" + miUsuario + "', true); END $$; "
+                                       + "UPDATE viviendas SET calle = ?, activo = true WHERE numero_vivienda = ?",
                             new Object[]{calle, numero}
                         );
                     } else {
-                        ConexionPostgres.comandoDML(
-                            "INSERT INTO viviendas (calle, numero_vivienda, activo) VALUES (?, ?, true)",
+                        db.comandoDML(
+                            "DO $$ BEGIN PERFORM set_config('app.usuario_actual', '" + miUsuario + "', true); END $$; "
+                                       + "INSERT INTO viviendas (calle, numero_vivienda, activo) VALUES (?, ?, true)",
                             new Object[]{calle, numero}
                         );
                     }

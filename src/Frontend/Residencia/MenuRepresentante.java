@@ -313,10 +313,13 @@ public class MenuRepresentante extends JPanel {
         if (!confirmar) {
             return;
         }
+            String miUsuario = Backend.SesionUsuario.getInstancia().getCedula();
+                if (miUsuario == null) miUsuario = "Sistema_Java";
 
         try {
-            ConexionPostgres.comandoDML(
-                "UPDATE representantes SET activo = false WHERE cedula = ?",
+            db.comandoDML(
+                "DO $$ BEGIN PERFORM set_config('app.usuario_actual', '" + miUsuario + "', true); END $$; "
+                                       + "UPDATE representantes SET activo = false WHERE cedula = ?",
                 new Object[]{cedula}
             );
             cargarRepresentantes();
@@ -546,9 +549,12 @@ public class MenuRepresentante extends JPanel {
             }
 
             try {
+                            String miUsuario = Backend.SesionUsuario.getInstancia().getCedula();
+                if (miUsuario == null) miUsuario = "Sistema_Java";
                 if (esEdicion) {
-                    ConexionPostgres.comandoDML(
-                        "UPDATE representantes SET id_vivienda = ?, nombre = ?, apellido = ?, cedula = ?, telefono = ? WHERE cedula = ?",
+                    db.comandoDML(
+                        "DO $$ BEGIN PERFORM set_config('app.usuario_actual', '" + miUsuario + "', true); END $$; "
+                                       + "UPDATE representantes SET id_vivienda = ?, nombre = ?, apellido = ?, cedula = ?, telefono = ? WHERE cedula = ?",
                         new Object[]{viviendaSeleccionada.id, nombre, apellido, cedula, telefono, dataInicial.cedula}
                     );
                 } else {
@@ -564,13 +570,15 @@ public class MenuRepresentante extends JPanel {
                             return;
                         }
 
-                        ConexionPostgres.comandoDML(
-                            "UPDATE representantes SET id_vivienda = ?, nombre = ?, apellido = ?, telefono = ?, activo = true WHERE cedula = ?",
+                        db.comandoDML(
+                            "DO $$ BEGIN PERFORM set_config('app.usuario_actual', '" + miUsuario + "', true); END $$; "
+                                       + "UPDATE representantes SET id_vivienda = ?, nombre = ?, apellido = ?, telefono = ?, activo = true WHERE cedula = ?",
                             new Object[]{viviendaSeleccionada.id, nombre, apellido, telefono, cedula}
                         );
                     } else {
-                        ConexionPostgres.comandoDML(
-                            "INSERT INTO representantes (id_vivienda, nombre, apellido, cedula, telefono, activo) VALUES (?, ?, ?, ?, ?, true)",
+                        db.comandoDML(
+                            "DO $$ BEGIN PERFORM set_config('app.usuario_actual', '" + miUsuario + "', true); END $$; "
+                                       + "INSERT INTO representantes (id_vivienda, nombre, apellido, cedula, telefono, activo) VALUES (?, ?, ?, ?, ?, true)",
                             new Object[]{viviendaSeleccionada.id, nombre, apellido, cedula, telefono}
                         );
                     }

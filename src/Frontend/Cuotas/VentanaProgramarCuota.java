@@ -18,8 +18,7 @@ public class VentanaProgramarCuota extends JDialog {
     private JTextField txtMonto;
     private final MenuCuotas menuPadre; 
 
-    String queryInsert = "INSERT INTO cuotas (descripcion, monto, fecha_emision, fecha_limite, activo) VALUES (?, ?, ?, ?, ?)";
-    
+
         private final JDateChooser jdcDesde = new JDateChooser();
     private final JSpinner jspHoraDesde = new JSpinner(new SpinnerDateModel());
 
@@ -173,7 +172,22 @@ public class VentanaProgramarCuota extends JDialog {
             calLimite.set(java.util.Calendar.SECOND, horaLimite.get(java.util.Calendar.SECOND));
             java.sql.Timestamp tsLimite = new java.sql.Timestamp(calLimite.getTimeInMillis());
 
+            if(tsLimite.before(tsEmision)){
+                JOptionPane.showMessageDialog(this, 
+                    "ERROR: La fecha límite de pago no puede ser anterior a la fecha de emisión.", 
+                    "Error de Fechas", 
+                    JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+
+            String miUsuario = Backend.SesionUsuario.getInstancia().getCedula();
+            if (miUsuario == null) miUsuario = "Sistema_Java";
+                String queryInsert = "DO $$ BEGIN PERFORM set_config('app.usuario_actual', '" + miUsuario + "', true); END $$; "
+                               + "INSERT INTO cuotas (descripcion, monto, fecha_emision, fecha_limite, activo) VALUES (?, ?, ?, ?, ?)";
+
             Object[] valores = new Object[] {
+                miUsuario,
                 strDesc,                        
                 Double.parseDouble(montoStr),   
                 tsEmision,                     

@@ -190,10 +190,32 @@ public class VentanaActualizarCuota extends JDialog {
         cal.set(java.util.Calendar.SECOND, calHora.get(java.util.Calendar.SECOND));
 
         String strFecha = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(cal.getTime());
+        java.sql.Timestamp tsNuevaLimite = java.sql.Timestamp.valueOf(strFecha);
 
         try {
-            String queryUpdate = "UPDATE cuotas SET descripcion = ?, monto = ?::numeric, fecha_limite = ?::timestamp, activo = ? WHERE id = ?::integer";
-            Object[] valores = {nuevaDesc, Double.parseDouble(nuevoMonto), java.sql.Timestamp.valueOf(strFecha), nuevoEstado,idCuota};
+
+        String queryCheck = "Select fecha_emision From cuotas WHERE id = ?::integer";
+        java.sql.ResultSet rs = DB.consultar(queryCheck, new Object[]{idCuota});
+
+        if (rs != null && rs.next()) {
+                        java.sql.Timestamp tsEmisionActual = rs.getTimestamp("fecha_emision");
+                        
+                        if (tsNuevaLimite.before(tsEmisionActual)) {
+                            JOptionPane.showMessageDialog(this, 
+                                "ERROR: La nueva fecha límite no puede ser anterior a la fecha de emisión original (" + tsEmisionActual + ").", 
+                                "Error de Fechas", 
+                                JOptionPane.ERROR_MESSAGE);
+                            return;
+                        }
+                    }
+
+                    String miUsuario = Backend.SesionUsuario.getInstancia().getCedula();
+                    if (miUsuario == null) miUsuario = "Sistema_Java";
+String queryUpdate = "DO $$ BEGIN PERFORM set_config('app.usuario_actual', '" + miUsuario + "', true); END $$; "
+                               + "UPDATE cuotas SET descripcion = ?, monto = ?::numeric, fecha_limite = ?::timestamp, activo = ? WHERE id = ?::integer";
+
+                               
+            Object[] valores = { nuevaDesc, Double.parseDouble(nuevoMonto), java.sql.Timestamp.valueOf(strFecha), nuevoEstado,idCuota};
             System.out.println(idCuota);
             ConexionPostgres.comandoDML(queryUpdate, valores);
             
