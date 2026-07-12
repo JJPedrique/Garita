@@ -6,9 +6,11 @@ import java.sql.*;
 import java.util.ArrayList;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.text.AbstractDocument;
 
 import Backend.ConexionPostgres;
 import Backend.ThemeManager;
+import Backend.ThemeManager.LimiteCaracteresFilter;
 
 public class FrameSolicitarAccesoVisitante extends JPanel {
 
@@ -21,10 +23,10 @@ public class FrameSolicitarAccesoVisitante extends JPanel {
 
     private final JPanel pInput = new JPanel();
     private final JLabel lNombreVisitante = ThemeManager.Label("Nombre del visitante");
-    private final JTextField tfNombreVisitante = ThemeManager.Textfield();
+    private final JTextField tfNombreVisitante = ThemeManager.Textfield("Juan Boscan");
     
     private final JLabel lNombreResidente = ThemeManager.Label("Nombre del residente");
-    private final JTextField tfNombreResidente = ThemeManager.Textfield();
+    private final JTextField tfNombreResidente = ThemeManager.Textfield("Carlos Mendoza");
     
     private final JPanel pPropietarios = new JPanel();
     ArrayList<JPanel> JPropietarios = new ArrayList<>();
@@ -38,6 +40,13 @@ public class FrameSolicitarAccesoVisitante extends JPanel {
 
     public FrameSolicitarAccesoVisitante(JDialog JDPadre) {
         this.JDPadre = JDPadre;
+
+        AbstractDocument AD;
+        AD = (AbstractDocument) tfNombreResidente.getDocument();
+        AD.setDocumentFilter(new LimiteCaracteresFilter(40));
+
+        AD = (AbstractDocument) tfNombreVisitante.getDocument();
+        AD.setDocumentFilter(new LimiteCaracteresFilter(40));
 
         // Layout Base
         setLayout(GBL);

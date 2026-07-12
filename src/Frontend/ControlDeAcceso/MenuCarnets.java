@@ -3,9 +3,11 @@ package Frontend.ControlDeAcceso;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
+import javax.swing.text.AbstractDocument;
 
 import Backend.ConexionPostgres;
 import Backend.ThemeManager;
+import Backend.ThemeManager.LimiteCaracteresFilter;
 
 import java.awt.*;
 import java.sql.*;
@@ -16,21 +18,18 @@ class JCarnet {
     JLabel Codigo;
     JLabel NumCasa;
     JLabel Calle;
-    JLabel Propietario;
     JButton Borrar;
 
-    public JCarnet(String Codigo, String NumCasa, String Calle, String Propietario, Runnable onRecordDeleted){
+    public JCarnet(String Codigo, String NumCasa, String Calle, Runnable onRecordDeleted){
         this.Codigo = ThemeManager.Label(Codigo);
         this.NumCasa = ThemeManager.Label(NumCasa);
         this.Calle = ThemeManager.Label(Calle);
-        this.Propietario = ThemeManager.Label(Propietario);
         this.Borrar = new JButton(ThemeManager.SetImgIcon("img\\delete.png", ThemeManager.ICON_WIDTH_PX, ThemeManager.ICON_HEIGHT_PX));
 
         Border margin = BorderFactory.createEmptyBorder(0, 10, 0, 0);
         this.Codigo.setBorder(margin);
         this.NumCasa.setBorder(margin);
         this.Calle.setBorder(margin);
-        this.Propietario.setBorder(margin);
 
         this.Borrar.setFocusPainted(false);
         this.Borrar.setContentAreaFilled(false);
@@ -86,8 +85,7 @@ class JCarnet {
         ROW.add(Codigo);
         ROW.add(NumCasa);
         ROW.add(Calle);
-        ROW.add(Propietario);
-        
+
         JPanel pBTN = new JPanel(new GridBagLayout());
         pBTN.setOpaque(false);
         pBTN.add(Borrar);
@@ -117,12 +115,12 @@ public class MenuCarnets extends JPanel {
     private JLabel lBusquedaFiltro = new JLabel("BÚSQUEDA Y FILTROS");
     private JPanel pInputCodigo = new JPanel();
     private JLabel lCodigo = new JLabel("Código");
-    private JTextField tfCodigo = ThemeManager.Textfield();
+    private JTextField tfCodigo = ThemeManager.Textfield("0000000000");
     
     private JButton bBuscar = ThemeManager.Button("Buscar");
 
     ArrayList<JCarnet> JCarnets = new ArrayList<>();
-    String[] headers = {"Código", "Número Casa", "Calle", "Propietario", "Opción"};
+    String[] headers = {"Código", "Número Casa", "Calle", "Opción"};
 
     //endregion
 
@@ -169,6 +167,10 @@ public class MenuCarnets extends JPanel {
         this.setBorder(new EmptyBorder(20, 20, 20, 20));
         
         SetTheme();
+
+        AbstractDocument AD;
+        AD = (AbstractDocument) tfCodigo.getDocument();
+        AD.setDocumentFilter(new LimiteCaracteresFilter(10));
 
         GBC.weightx = 1;
         GBC.fill = GridBagConstraints.HORIZONTAL;
@@ -232,15 +234,10 @@ public class MenuCarnets extends JPanel {
         JCarnets.clear();
         pTableBody.removeAll();
 
-        String Query = "SELECT codigo, numero_vivienda, calle, \n" + //
-                        "CASE\n" + //
-                        "WHEN nombre IS NOT NULL and apellido IS NOT NULL THEN CONCAT(nombre, ' ', apellido) \n" + //
-                        "ELSE 'SIN RESIDENTE'\n" + //
-                        "END AS nombre_completo\n" + //
+        String Query = "SELECT codigo, numero_vivienda, calle\n" + //
                         "FROM carnets AS C\n" + //
                         "JOIN viviendas AS V ON C.id_vivienda = V.id  \n" + //
-                        "LEFT JOIN representantes AS R ON R.id_vivienda = V.id \n" + //
-                        "WHERE C.activo = true ";
+                        "WHERE C.activo = true AND V.activo = true ";
 
         boolean tieneFiltro = (filtroCodigo != null && !filtroCodigo.trim().isEmpty());
         if (tieneFiltro) Query += "AND C.codigo LIKE ? ";
@@ -255,9 +252,8 @@ public class MenuCarnets extends JPanel {
                 String sCodigo = RS.getString("codigo");
                 String sNumeroVivienda = RS.getString("numero_vivienda");
                 String sCalle = RS.getString("calle");
-                String sNombreCompleto = RS.getString("nombre_completo");
                 
-                JCarnets.add(new JCarnet(sCodigo, sNumeroVivienda, sCalle, sNombreCompleto, () -> {
+                JCarnets.add(new JCarnet(sCodigo, sNumeroVivienda, sCalle, () -> {
                     // Aquí definimos que la función que disparará el JCarnet, es el de actualizar la tabla
                     ActualizarTabla(tfCodigo.getText().trim()); 
                 }));
