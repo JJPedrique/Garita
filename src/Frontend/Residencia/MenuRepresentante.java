@@ -11,13 +11,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.text.AbstractDocument;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DocumentFilter;
 
 public class MenuRepresentante extends JPanel {
-
 
     private final DefaultTableModel tableModel = new DefaultTableModel(
         new Object[]{"Nombre Completo", "Cédula", "Teléfono", "Opciones"}, 0
@@ -230,7 +225,7 @@ public class MenuRepresentante extends JPanel {
             }
             actualizarTablaRepresentantes();
         } catch (SQLException ex) {
-            mostrarDialogoError("No se pudieron cargar los representantes: " + ex.getMessage());
+            FrameMensaje.error(this, "No se pudieron cargar los representantes: " + ex.getMessage());
         }
     }
 
@@ -305,9 +300,9 @@ public class MenuRepresentante extends JPanel {
     }
 
     private void editarRepresentante(String cedula) {
-        RepresentanteData data = obtenerRepresentantePorCedula(cedula);
+        FrameFormularioRepresentante.RepresentanteData data = obtenerRepresentantePorCedula(cedula);
         if (data == null) {
-            mostrarDialogoError("No se encontró el representante seleccionado.");
+            FrameMensaje.error(this, "No se encontró el representante seleccionado.");
             return;
         }
 
@@ -315,7 +310,8 @@ public class MenuRepresentante extends JPanel {
     }
 
     private void cambiarEstadoRepresentante(String cedula) {
-        boolean confirmar = mostrarDialogoConfirmacion(
+        boolean confirmar = ThemeManager.MostrarConfirmacion(
+            this,
             "Sistema Garita - Eliminar Representante",
             "¿Desea eliminar el representante " + cedula + "? Se desactivará permanentemente.",
             ThemeManager.COLOR_ERROR,
@@ -326,8 +322,9 @@ public class MenuRepresentante extends JPanel {
         if (!confirmar) {
             return;
         }
-            String miUsuario = Backend.SesionUsuario.getInstancia().getCedula();
-                if (miUsuario == null) miUsuario = "Sistema_Java";
+
+        String miUsuario = Backend.SesionUsuario.getInstancia().getCedula();
+        if (miUsuario == null) miUsuario = "Sistema_Java";
 
         try {
             ConexionPostgres.comandoDML(
@@ -336,9 +333,9 @@ public class MenuRepresentante extends JPanel {
                 new Object[]{cedula}
             );
             cargarRepresentantes();
-            mostrarDialogoExitoEliminacion("El representante ha sido eliminado con éxito.");
+            FrameMensaje.exitoEliminacion(this, "El representante ha sido eliminado con éxito.");
         } catch (SQLException ex) {
-            mostrarDialogoError("No se pudo desactivar el representante: " + ex.getMessage());
+            FrameMensaje.error(this, "No se pudo desactivar el representante: " + ex.getMessage());
         }
     }
 
@@ -414,294 +411,23 @@ public class MenuRepresentante extends JPanel {
         return boton;
     }
 
-    private void abrirFormularioRepresentante(boolean esEdicion, RepresentanteData dataInicial) {
-        Window owner = SwingUtilities.getWindowAncestor(this);
-        final JDialog dialogo;
-        if (owner instanceof Frame) {
-            dialogo = new JDialog((Frame) owner, true);
-        } else if (owner instanceof Dialog) {
-            dialogo = new JDialog((Dialog) owner, true);
-        } else {
-            dialogo = new JDialog();
-            dialogo.setModal(true);
-        }
-
-        dialogo.setTitle("Sistema Garita - Agregar/Actualizar Representante");
-        dialogo.setUndecorated(true);
-        dialogo.setSize(470, 330);
-        dialogo.setLocationRelativeTo(this);
-        dialogo.setLayout(new BorderLayout());
-
-        JPanel encabezado = new JPanel(new BorderLayout());
-        encabezado.setBackground(ThemeManager.COLOR_PRIMARY);
-        encabezado.setBorder(BorderFactory.createEmptyBorder(10, 14, 10, 14));
-
-        JButton btnRegresar = new JButton("←");
-        btnRegresar.setFont(new Font("Dialog", Font.BOLD, 18));
-        btnRegresar.setForeground(ThemeManager.COLOR_TEXT);
-        btnRegresar.setBackground(ThemeManager.COLOR_PRIMARY);
-        btnRegresar.setBorderPainted(false);
-        btnRegresar.setFocusPainted(false);
-        btnRegresar.setContentAreaFilled(false);
-        btnRegresar.setMargin(new Insets(0, 0, 0, 0));
-        btnRegresar.addActionListener(e -> dialogo.dispose());
-
-        JLabel titulo = new JLabel("AGREGAR/ACTUALIZAR REPRESENTANTE", SwingConstants.CENTER);
-        titulo.setFont(ThemeManager.TEXT_SUBTITLE);
-        titulo.setForeground(ThemeManager.COLOR_TEXT);
-
-        encabezado.add(btnRegresar, BorderLayout.WEST);
-        encabezado.add(titulo, BorderLayout.CENTER);
-
-        JPanel contenido = new JPanel(new BorderLayout());
-        contenido.setBackground(ThemeManager.COLOR_BACKGROUND);
-        contenido.setBorder(BorderFactory.createEmptyBorder(16, 18, 14, 18));
-
-        JPanel formPanel = new JPanel(new GridBagLayout());
-        formPanel.setOpaque(false);
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(7, 8, 7, 8);
-
-        //Selector de vivienda
-        //Combobox creado con crearComboViviendas()
-        //Se llena con obtenerViviendasActivas() y comboVivienda.addItem()
-        //Al guardar se usa comboVivienda.getSelectedItem() para obtener la vivienda asociada
-        JLabel lblVivienda = etiquetaDialogo("Vivienda");
-        JComboBox<ViviendaItem> comboVivienda = crearComboViviendas();
-        comboVivienda.setPreferredSize(new Dimension(260, 30));
-
-        JLabel lblNombre = etiquetaDialogo("Nombre");
-        JTextField txtNombreLocal = campoDialogo(dataInicial == null ? "" : dataInicial.nombre);
-        txtNombreLocal.setPreferredSize(new Dimension(250, 30));
-
-        JLabel lblApellido = etiquetaDialogo("Apellido");
-        JTextField txtApellidoLocal = campoDialogo(dataInicial == null ? "" : dataInicial.apellido);
-        txtApellidoLocal.setPreferredSize(new Dimension(250, 30));
-
-        // La cédula se guarda completa con su prefijo (ej. "V-12345678"). Si venimos
-        // de una edición, separamos el prefijo (V/E) del número para poblar el combo
-        // y el campo de texto por separado.
-        String nacionalidadInicial = "V";
-        String cedulaSoloNumerosInicial = "";
-        if (dataInicial != null && dataInicial.cedula != null) {
-            String cedulaOriginal = dataInicial.cedula.trim();
-            if (!cedulaOriginal.isEmpty() && (Character.toUpperCase(cedulaOriginal.charAt(0)) == 'V'
-                    || Character.toUpperCase(cedulaOriginal.charAt(0)) == 'E')) {
-                nacionalidadInicial = String.valueOf(Character.toUpperCase(cedulaOriginal.charAt(0)));
-                cedulaSoloNumerosInicial = cedulaOriginal.replaceFirst("^[VEve][-\\s]?", "");
-            } else {
-                cedulaSoloNumerosInicial = cedulaOriginal;
-            }
-        }
-
-        JLabel lblCedula = etiquetaDialogo("Cédula");
-        JComboBox<String> comboNacionalidad = new JComboBox<>(new String[]{"V", "E"});
-        comboNacionalidad.setSelectedItem(nacionalidadInicial);
-        comboNacionalidad.setFont(ThemeManager.TEXT_NORMAL);
-        comboNacionalidad.setBackground(ThemeManager.COLOR_INPUT);
-        comboNacionalidad.setForeground(ThemeManager.COLOR_TEXT_DARK);
-        comboNacionalidad.setPreferredSize(new Dimension(58, 30));
-        comboNacionalidad.setMaximumSize(new Dimension(58, 30));
-
-        JTextField txtCedulaLocal = campoDialogo(cedulaSoloNumerosInicial);
-        txtCedulaLocal.setPreferredSize(new Dimension(180, 30));
-
-        JPanel panelCedula = new JPanel(new BorderLayout(6, 0));
-        panelCedula.setOpaque(false);
-        panelCedula.add(comboNacionalidad, BorderLayout.WEST);
-        panelCedula.add(txtCedulaLocal, BorderLayout.CENTER);
-
-        JLabel lblTelefono = etiquetaDialogo("Teléfono");
-        JTextField txtTelefonoLocal = campoDialogo(dataInicial == null ? "" : dataInicial.telefono);
-        txtTelefonoLocal.setPreferredSize(new Dimension(180, 30));
-
-        // Restricciones de escritura: solo se puede teclear lo que tiene sentido para cada campo
-        restringirSoloLetras(txtNombreLocal, 30);
-        restringirSoloLetras(txtApellidoLocal, 30);
-        restringirSoloNumeros(txtCedulaLocal, 8);
-        restringirSoloNumeros(txtTelefonoLocal, 11);
-
-        gbc.gridx = 0; gbc.gridy = 0; gbc.anchor = GridBagConstraints.EAST; gbc.fill = GridBagConstraints.NONE;
-        formPanel.add(lblVivienda, gbc);
-        gbc.gridx = 1; gbc.gridy = 0; gbc.anchor = GridBagConstraints.WEST; gbc.fill = GridBagConstraints.HORIZONTAL; gbc.weightx = 1.0;
-        formPanel.add(comboVivienda, gbc);
-
-        gbc.gridx = 0; gbc.gridy = 1; gbc.anchor = GridBagConstraints.EAST; gbc.fill = GridBagConstraints.NONE; gbc.weightx = 0.0;
-        formPanel.add(lblNombre, gbc);
-        gbc.gridx = 1; gbc.gridy = 1; gbc.anchor = GridBagConstraints.WEST; gbc.fill = GridBagConstraints.HORIZONTAL; gbc.weightx = 1.0;
-        formPanel.add(txtNombreLocal, gbc);
-
-        gbc.gridx = 0; gbc.gridy = 2; gbc.anchor = GridBagConstraints.EAST; gbc.fill = GridBagConstraints.NONE; gbc.weightx = 0.0;
-        formPanel.add(lblApellido, gbc);
-        gbc.gridx = 1; gbc.gridy = 2; gbc.anchor = GridBagConstraints.WEST; gbc.fill = GridBagConstraints.HORIZONTAL; gbc.weightx = 1.0;
-        formPanel.add(txtApellidoLocal, gbc);
-
-        gbc.gridx = 0; gbc.gridy = 3; gbc.anchor = GridBagConstraints.EAST; gbc.fill = GridBagConstraints.NONE; gbc.weightx = 0.0;
-        formPanel.add(lblCedula, gbc);
-        gbc.gridx = 1; gbc.gridy = 3; gbc.anchor = GridBagConstraints.WEST; gbc.fill = GridBagConstraints.HORIZONTAL; gbc.weightx = 1.0;
-        formPanel.add(panelCedula, gbc);
-
-        gbc.gridx = 0; gbc.gridy = 4; gbc.anchor = GridBagConstraints.EAST; gbc.fill = GridBagConstraints.NONE; gbc.weightx = 0.0;
-        formPanel.add(lblTelefono, gbc);
-        gbc.gridx = 1; gbc.gridy = 4; gbc.anchor = GridBagConstraints.WEST; gbc.fill = GridBagConstraints.HORIZONTAL; gbc.weightx = 1.0;
-        formPanel.add(txtTelefonoLocal, gbc);
-
-        List<ViviendaItem> viviendas = obtenerViviendasActivas();
+    private void abrirFormularioRepresentante(boolean esEdicion, FrameFormularioRepresentante.RepresentanteData dataInicial) {
+        List<FrameFormularioRepresentante.ViviendaComboItem> viviendas = FrameFormularioRepresentante.ViviendaComboItem.obtenerActivas();
         if (viviendas.isEmpty()) {
-            mostrarDialogoError("No hay viviendas activas disponibles para asociar el representante.");
-            dialogo.dispose();
+            FrameMensaje.error(this, "No hay viviendas activas disponibles para asociar el representante.");
             return;
         }
 
-        for (ViviendaItem vivienda : viviendas) {
-            comboVivienda.addItem(vivienda);
-        }
-
-        if (dataInicial != null) {
-            seleccionarVivienda(comboVivienda, dataInicial.idVivienda);
-        }
-
-        JButton btnGuardar = ThemeManager.Button(esEdicion ? "Actualizar Representante" : "Agregar Representante");
-        btnGuardar.setPreferredSize(new Dimension(260, 36));
-        btnGuardar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
-
-        btnGuardar.addActionListener(e -> {
-            ViviendaItem viviendaSeleccionada = (ViviendaItem) comboVivienda.getSelectedItem();
-            String nombre = txtNombreLocal.getText().trim();
-            String apellido = txtApellidoLocal.getText().trim();
-            String nacionalidad = String.valueOf(comboNacionalidad.getSelectedItem());
-            String cedulaNumeros = txtCedulaLocal.getText().trim();
-            String telefono = txtTelefonoLocal.getText().trim();
-
-            if (viviendaSeleccionada == null) {
-                mostrarDialogoError("Debe seleccionar una vivienda.");
-                return;
-            }
-
-            if (!validarNombre(nombre)) {
-                mostrarDialogoError("Nombre inválido.");
-                return;
-            }
-
-            if (!validarApellido(apellido)) {
-                mostrarDialogoError("Apellido inválido.");
-                return;
-            }
-
-            if (!validarCedula(cedulaNumeros)) {
-                mostrarDialogoError("Cédula inválida. Debe contener entre 6 y 8 dígitos.");
-                return;
-            }
-
-            if (!validarTelefono(telefono)) {
-                mostrarDialogoError("Teléfono inválido.");
-                return;
-            }
-
-            String cedula = nacionalidad + "-" + cedulaNumeros;
-
-            try {
-                            String miUsuario = Backend.SesionUsuario.getInstancia().getCedula();
-                if (miUsuario == null) miUsuario = "Sistema_Java";
-                if (esEdicion) {
-                    ConexionPostgres.comandoDML(
-                        "DO $$ BEGIN PERFORM set_config('app.usuario_actual', '" + miUsuario + "', true); END $$; "
-                                       + "UPDATE representantes SET id_vivienda = ?, nombre = ?, apellido = ?, cedula = ?, telefono = ? WHERE cedula = ?",
-                        new Object[]{viviendaSeleccionada.id, nombre, apellido, cedula, telefono, dataInicial.cedula}
-                    );
-                } else {
-                    ResultSet rsExiste = ConexionPostgres.consultar(
-                        "SELECT activo FROM representantes WHERE cedula = ?",
-                        new Object[]{cedula}
-                    );
-
-                    if (rsExiste != null && rsExiste.next()) {
-                        boolean estaActivo = rsExiste.getBoolean("activo");
-                        if (estaActivo) {
-                            mostrarDialogoError("Ya existe un representante con esa cédula.");
-                            return;
-                        }
-
-                        ConexionPostgres.comandoDML(
-                            "DO $$ BEGIN PERFORM set_config('app.usuario_actual', '" + miUsuario + "', true); END $$; "
-                                       + "UPDATE representantes SET id_vivienda = ?, nombre = ?, apellido = ?, telefono = ?, activo = true WHERE cedula = ?",
-                            new Object[]{viviendaSeleccionada.id, nombre, apellido, telefono, cedula}
-                        );
-                    } else {
-                        ConexionPostgres.comandoDML(
-                            "DO $$ BEGIN PERFORM set_config('app.usuario_actual', '" + miUsuario + "', true); END $$; "
-                                       + "INSERT INTO representantes (id_vivienda, nombre, apellido, cedula, telefono, activo) VALUES (?, ?, ?, ?, ?, true)",
-                            new Object[]{viviendaSeleccionada.id, nombre, apellido, cedula, telefono}
-                        );
-                    }
-                }
-
-                dialogo.dispose();
-                cargarRepresentantes();
-                mostrarDialogoExito("Representante creado/actualizado correctamente.");
-            } catch (SQLException ex) {
-                mostrarDialogoError("No se pudo guardar el representante: " + ex.getMessage());
-            }
-        });
-
-        contenido.add(formPanel, BorderLayout.CENTER);
-
-        JPanel bottom = new JPanel(new BorderLayout());
-        bottom.setOpaque(false);
-        bottom.setBorder(BorderFactory.createEmptyBorder(12, 0, 4, 0));
-        btnGuardar.setPreferredSize(new Dimension(230, 36));
-        btnGuardar.setMaximumSize(new Dimension(230, 36));
-        bottom.add(btnGuardar, BorderLayout.CENTER);
-
-        contenido.add(bottom, BorderLayout.SOUTH);
-
-        dialogo.add(encabezado, BorderLayout.NORTH);
-        dialogo.add(contenido, BorderLayout.CENTER);
+        Window owner = SwingUtilities.getWindowAncestor(this);
+        JDialog dialogo = new JDialog(owner, esEdicion ? "Sistema Garita - Actualizar Representante" : "Sistema Garita - Agregar Representante", Dialog.ModalityType.APPLICATION_MODAL);
+        dialogo.setSize(560, 420);
+        dialogo.setLocationRelativeTo(this);
+        dialogo.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        dialogo.add(new FrameFormularioRepresentante(dialogo, esEdicion, dataInicial, viviendas, this::cargarRepresentantes));
         dialogo.setVisible(true);
     }
 
-    private List<ViviendaItem> obtenerViviendasActivas() {
-        List<ViviendaItem> viviendas = new ArrayList<>();
-
-        try {
-            ResultSet rs = ConexionPostgres.consultar(
-                "SELECT id, calle, numero_vivienda FROM viviendas WHERE activo = true ORDER BY numero_vivienda",
-                null
-            );
-
-            while (rs != null && rs.next()) {
-                viviendas.add(new ViviendaItem(
-                    rs.getInt("id"),
-                    rs.getString("numero_vivienda") + " - " + rs.getString("calle")
-                ));
-            }
-        } catch (SQLException ex) {
-            mostrarDialogoError("No se pudieron cargar las viviendas activas: " + ex.getMessage());
-        }
-
-        return viviendas;
-    }
-
-    private JComboBox<ViviendaItem> crearComboViviendas() {
-        JComboBox<ViviendaItem> combo = new JComboBox<>();
-        combo.setFont(ThemeManager.TEXT_NORMAL);
-        combo.setForeground(ThemeManager.COLOR_TEXT_DARK);
-        combo.setBackground(ThemeManager.COLOR_INPUT);
-        combo.setBorder(BorderFactory.createLineBorder(ThemeManager.COLOR_INPUT, 1));
-        return combo;
-    }
-
-    private void seleccionarVivienda(JComboBox<ViviendaItem> combo, int idVivienda) {
-        for (int i = 0; i < combo.getItemCount(); i++) {
-            ViviendaItem item = combo.getItemAt(i);
-            if (item.id == idVivienda) {
-                combo.setSelectedIndex(i);
-                return;
-            }
-        }
-    }
-
-    private RepresentanteData obtenerRepresentantePorCedula(String cedula) {
+    private FrameFormularioRepresentante.RepresentanteData obtenerRepresentantePorCedula(String cedula) {
         try {
             ResultSet rs = ConexionPostgres.consultar(
                 "SELECT id_vivienda, nombre, apellido, cedula, telefono FROM representantes WHERE cedula = ? LIMIT 1",
@@ -709,7 +435,7 @@ public class MenuRepresentante extends JPanel {
             );
 
             if (rs != null && rs.next()) {
-                return new RepresentanteData(
+                return new FrameFormularioRepresentante.RepresentanteData(
                     rs.getInt("id_vivienda"),
                     rs.getString("nombre"),
                     rs.getString("apellido"),
@@ -718,418 +444,9 @@ public class MenuRepresentante extends JPanel {
                 );
             }
         } catch (SQLException ex) {
-            mostrarDialogoError("No se pudo cargar el representante: " + ex.getMessage());
+            FrameMensaje.error(this, "No se pudo cargar el representante: " + ex.getMessage());
         }
 
         return null;
-    }
-
-    private JLabel etiquetaDialogo(String texto) {
-        JLabel label = new JLabel(texto);
-        label.setForeground(ThemeManager.COLOR_TEXT);
-        label.setFont(ThemeManager.TEXT_NORMAL);
-        label.setAlignmentX(Component.LEFT_ALIGNMENT);
-        return label;
-    }
-
-    private JTextField campoDialogo(String valorInicial) {
-        JTextField field = new JTextField(valorInicial);
-        field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 28));
-        field.setPreferredSize(new Dimension(280, 28));
-        field.setBackground(ThemeManager.COLOR_INPUT);
-        field.setForeground(ThemeManager.COLOR_TEXT_DARK);
-        field.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
-        field.setAlignmentX(Component.LEFT_ALIGNMENT);
-        return field;
-    }
-
-    /**
-     * Valida nombres: solo letras (con tildes/ñ), espacios simples, apóstrofes y
-     * guiones para nombres compuestos. No permite números ni espacios dobles,
-     * ni que empiece/termine con espacio, apóstrofe o guion.
-     */
-    private boolean validarNombre(String nombre) {
-        if (nombre == null || nombre.isEmpty()) return false;
-        if (nombre.length() < 2 || nombre.length() > 30) return false;
-        if (nombre.contains("  ")) return false;
-        return nombre.matches("^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+(?:[ '\\-][A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+)*$");
-    }
-
-    private boolean validarApellido(String apellido) {
-        if (apellido == null || apellido.isEmpty()) return false;
-        if (apellido.length() < 2 || apellido.length() > 30) return false;
-        if (apellido.contains("  ")) return false;
-        return apellido.matches("^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+(?:[ '\\-][A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+)*$");
-    }
-
-    /**
-     * Valida la parte numérica de la cédula de identidad venezolana (sin el
-     * prefijo V/E, que se maneja en un combobox aparte). Legalmente no existe
-     * una cantidad de dígitos distinta entre V y E: ambas nacionalidades usan
-     * el mismo rango numérico (actualmente hasta ~32 millones, es decir, un
-     * máximo de 8 dígitos), por lo que se aplica la misma regla a ambas.
-     */
-    private boolean validarCedula(String cedula) {
-        if (cedula == null || cedula.isEmpty()) return false;
-        return cedula.matches("^[1-9][0-9]{4,7}$");
-    }
-
-    /**
-     * Valida teléfono venezolano: solo dígitos, 11 dígitos en total, comenzando
-     * con 0 y seguido de un prefijo válido de celular (0412, 0414, 0416, 0424,
-     * 0426) o de un código de área fijo (02XX).
-     */
-    private boolean validarTelefono(String telefono) {
-        if (telefono == null || telefono.isEmpty()) return false;
-        return telefono.matches("^0(2\\d{2}|4(12|14|16|24|26))\\d{7}$");
-    }
-
-    /**
-     * Restringe un JTextField para que, sin importar lo que se pegue o teclee,
-     * solo queden dígitos (0-9), respetando un largo máximo.
-     */
-    private void restringirSoloNumeros(JTextField campo, int maxLength) {
-        ((AbstractDocument) campo.getDocument()).setDocumentFilter(new DocumentFilter() {
-            @Override
-            public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
-                if (string == null) return;
-                String filtrado = string.replaceAll("[^0-9]", "");
-                if (filtrado.isEmpty()) return;
-                int espacioDisponible = maxLength - fb.getDocument().getLength();
-                if (espacioDisponible <= 0) return;
-                if (filtrado.length() > espacioDisponible) filtrado = filtrado.substring(0, espacioDisponible);
-                super.insertString(fb, offset, filtrado, attr);
-            }
-
-            @Override
-            public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
-                String filtrado = text == null ? "" : text.replaceAll("[^0-9]", "");
-                int largoActual = fb.getDocument().getLength() - length;
-                int espacioDisponible = maxLength - largoActual;
-                if (espacioDisponible < 0) espacioDisponible = 0;
-                if (filtrado.length() > espacioDisponible) filtrado = filtrado.substring(0, espacioDisponible);
-                super.replace(fb, offset, length, filtrado, attrs);
-            }
-        });
-    }
-
-    /**
-     * Restringe un JTextField para que solo acepte letras (con tildes/ñ),
-     * espacios, apóstrofes y guiones, respetando un largo máximo. Bloquea
-     * números y otros símbolos.
-     */
-    private void restringirSoloLetras(JTextField campo, int maxLength) {
-        ((AbstractDocument) campo.getDocument()).setDocumentFilter(new DocumentFilter() {
-            @Override
-            public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
-                if (string == null) return;
-                String filtrado = string.replaceAll("[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ '\\-]", "");
-                if (filtrado.isEmpty()) return;
-                int espacioDisponible = maxLength - fb.getDocument().getLength();
-                if (espacioDisponible <= 0) return;
-                if (filtrado.length() > espacioDisponible) filtrado = filtrado.substring(0, espacioDisponible);
-                super.insertString(fb, offset, filtrado, attr);
-            }
-
-            @Override
-            public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
-                String filtrado = text == null ? "" : text.replaceAll("[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ '\\-]", "");
-                int largoActual = fb.getDocument().getLength() - length;
-                int espacioDisponible = maxLength - largoActual;
-                if (espacioDisponible < 0) espacioDisponible = 0;
-                if (filtrado.length() > espacioDisponible) filtrado = filtrado.substring(0, espacioDisponible);
-                super.replace(fb, offset, length, filtrado, attrs);
-            }
-        });
-    }
-
-    private void mostrarDialogoError(String mensaje) {
-        mostrarDialogoEstado("Sistema Garita - ERROR X", mensaje, ThemeManager.COLOR_ERROR, "Aceptar", false);
-    }
-
-    private void mostrarDialogoExito(String mensaje) {
-        mostrarDialogoEstado("Sistema Garita", mensaje, ThemeManager.COLOR_PRIMARY, "Aceptar", true);
-    }
-
-    private void mostrarDialogoExitoEliminacion(String mensaje) {
-        Window owner = SwingUtilities.getWindowAncestor(this);
-        final JDialog dialogo;
-        if (owner instanceof Frame) {
-            dialogo = new JDialog((Frame) owner, true);
-        } else if (owner instanceof Dialog) {
-            dialogo = new JDialog((Dialog) owner, true);
-        } else {
-            dialogo = new JDialog();
-            dialogo.setModal(true);
-        }
-
-        dialogo.setUndecorated(true);
-        dialogo.setTitle("Sistema Garita - Eliminación Exitosa");
-        dialogo.setSize(390, 160);
-        dialogo.setLocationRelativeTo(this);
-        dialogo.setLayout(new BorderLayout());
-
-        JPanel contenedor = new JPanel(new BorderLayout());
-        contenedor.setBackground(ThemeManager.COLOR_BACKGROUND);
-        contenedor.setBorder(BorderFactory.createLineBorder(new Color(55, 55, 55), 1));
-
-        JPanel encabezado = new JPanel(new BorderLayout());
-        encabezado.setBackground(ThemeManager.COLOR_PRIMARY);
-        encabezado.setBorder(BorderFactory.createEmptyBorder(10, 14, 10, 14));
-
-        JLabel lblTitulo = new JLabel("ELIMINACIÓN EXITOSA");
-        lblTitulo.setForeground(ThemeManager.COLOR_TEXT);
-        lblTitulo.setFont(ThemeManager.TEXT_SUBTITLE);
-        encabezado.add(lblTitulo, BorderLayout.CENTER);
-
-        JPanel cuerpo = new JPanel(new BorderLayout(10, 0));
-        cuerpo.setBackground(ThemeManager.COLOR_BACKGROUND);
-        cuerpo.setBorder(BorderFactory.createEmptyBorder(18, 18, 16, 18));
-
-        JLabel icono = new JLabel("✓", SwingConstants.CENTER);
-        icono.setPreferredSize(new Dimension(34, 34));
-        icono.setOpaque(true);
-        icono.setBackground(ThemeManager.COLOR_PRIMARY);
-        icono.setForeground(ThemeManager.COLOR_TEXT);
-        icono.setFont(new Font("Dialog", Font.BOLD, 18));
-
-        JLabel texto = new JLabel(mensaje, SwingConstants.LEFT);
-        texto.setForeground(ThemeManager.COLOR_TEXT);
-        texto.setFont(ThemeManager.TEXT_NORMAL);
-
-        cuerpo.add(icono, BorderLayout.WEST);
-        cuerpo.add(texto, BorderLayout.CENTER);
-
-        JButton aceptar = ThemeManager.Button("Aceptar");
-        aceptar.setPreferredSize(new Dimension(110, 30));
-        aceptar.setMaximumSize(new Dimension(110, 30));
-        aceptar.addActionListener(e -> dialogo.dispose());
-
-        JPanel pie = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
-        pie.setOpaque(false);
-        pie.add(aceptar);
-
-        JPanel centro = new JPanel(new BorderLayout());
-        centro.setOpaque(false);
-        centro.add(cuerpo, BorderLayout.CENTER);
-        centro.add(pie, BorderLayout.SOUTH);
-
-        contenedor.add(encabezado, BorderLayout.NORTH);
-        contenedor.add(centro, BorderLayout.CENTER);
-
-        dialogo.add(contenedor, BorderLayout.CENTER);
-        dialogo.setVisible(true);
-    }
-
-    private boolean mostrarDialogoConfirmacion(String tituloVentana, String mensaje, Color acento, String textoAceptar, String textoCancelar) {
-        Window owner = SwingUtilities.getWindowAncestor(this);
-        final JDialog dialogo;
-        if (owner instanceof Frame) {
-            dialogo = new JDialog((Frame) owner, true);
-        } else if (owner instanceof Dialog) {
-            dialogo = new JDialog((Dialog) owner, true);
-        } else {
-            dialogo = new JDialog();
-            dialogo.setModal(true);
-        }
-
-        dialogo.setUndecorated(true);
-        dialogo.setTitle(tituloVentana);
-        dialogo.setSize(460, 180);
-        dialogo.setLocationRelativeTo(this);
-        dialogo.setLayout(new BorderLayout());
-
-        JPanel contenedor = new JPanel(new BorderLayout());
-        contenedor.setBackground(ThemeManager.COLOR_BACKGROUND);
-        contenedor.setBorder(BorderFactory.createLineBorder(new Color(55, 55, 55), 1));
-
-        JPanel barra = new JPanel(new BorderLayout());
-        barra.setBackground(acento);
-        barra.setBorder(BorderFactory.createEmptyBorder(10, 14, 10, 14));
-
-        JLabel lblTitulo = new JLabel(tituloVentana);
-        lblTitulo.setForeground(ThemeManager.COLOR_TEXT);
-        lblTitulo.setFont(ThemeManager.TEXT_SUBTITLE);
-        barra.add(lblTitulo, BorderLayout.WEST);
-
-        JButton cerrar = new JButton("←");
-        cerrar.setForeground(ThemeManager.COLOR_TEXT);
-        cerrar.setBackground(acento);
-        cerrar.setBorderPainted(false);
-        cerrar.setFocusPainted(false);
-        cerrar.setContentAreaFilled(false);
-        cerrar.setPreferredSize(new Dimension(28, 28));
-        cerrar.setMargin(new Insets(0, 0, 0, 0));
-        cerrar.addActionListener(e -> dialogo.dispose());
-        barra.add(cerrar, BorderLayout.EAST);
-
-        JPanel cuerpo = new JPanel(new BorderLayout());
-        cuerpo.setBackground(ThemeManager.COLOR_BACKGROUND);
-        cuerpo.setBorder(BorderFactory.createEmptyBorder(16, 18, 16, 18));
-
-        JPanel mensajePanel = new JPanel(new BorderLayout(10, 0));
-        mensajePanel.setOpaque(false);
-
-        JLabel icono = new JLabel("!", SwingConstants.CENTER);
-        icono.setPreferredSize(new Dimension(34, 34));
-        icono.setOpaque(true);
-        icono.setBackground(acento);
-        icono.setForeground(ThemeManager.COLOR_TEXT);
-        icono.setFont(new Font("Dialog", Font.BOLD, 18));
-
-        JLabel mensajeLabel = new JLabel("<html><div style='text-align:center;'>" + mensaje + "</div></html>", SwingConstants.CENTER);
-        mensajeLabel.setForeground(ThemeManager.COLOR_TEXT);
-        mensajeLabel.setFont(ThemeManager.TEXT_NORMAL);
-        mensajeLabel.setBorder(BorderFactory.createEmptyBorder(3, 0, 0, 0));
-
-        mensajePanel.add(icono, BorderLayout.WEST);
-        mensajePanel.add(mensajeLabel, BorderLayout.CENTER);
-
-        JButton cancelar = new JButton(textoCancelar);
-        cancelar.setFont(ThemeManager.TEXT_SMALL);
-        cancelar.setForeground(ThemeManager.COLOR_TEXT);
-        cancelar.setBackground(new Color(65, 65, 65));
-        cancelar.setFocusPainted(false);
-        cancelar.setBorder(BorderFactory.createEmptyBorder(6, 14, 6, 14));
-        cancelar.addActionListener(e -> dialogo.dispose());
-
-        JButton aceptar = ThemeManager.Button(textoAceptar);
-        aceptar.setBackground(ThemeManager.COLOR_ERROR);
-        aceptar.setMaximumSize(new Dimension(110, 30));
-        aceptar.setPreferredSize(new Dimension(110, 30));
-
-        final boolean[] resultado = {false};
-        aceptar.addActionListener(e -> {
-            resultado[0] = true;
-            dialogo.dispose();
-        });
-
-        JPanel pie = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
-        pie.setOpaque(false);
-        pie.add(cancelar);
-        pie.add(aceptar);
-
-        cuerpo.add(mensajePanel, BorderLayout.CENTER);
-        cuerpo.add(pie, BorderLayout.SOUTH);
-
-        contenedor.add(barra, BorderLayout.NORTH);
-        contenedor.add(cuerpo, BorderLayout.CENTER);
-
-        dialogo.add(contenedor, BorderLayout.CENTER);
-        dialogo.setVisible(true);
-        return resultado[0];
-    }
-
-    private void mostrarDialogoEstado(String tituloVentana, String mensaje, Color acento, String textoBoton, boolean exito) {
-        Window owner = SwingUtilities.getWindowAncestor(this);
-        final JDialog dialogo;
-        if (owner instanceof Frame) {
-            dialogo = new JDialog((Frame) owner, true);
-        } else if (owner instanceof Dialog) {
-            dialogo = new JDialog((Dialog) owner, true);
-        } else {
-            dialogo = new JDialog();
-            dialogo.setModal(true);
-        }
-
-        dialogo.setUndecorated(true);
-        dialogo.setTitle(tituloVentana);
-        dialogo.setSize(420, 180);
-        dialogo.setLocationRelativeTo(this);
-        dialogo.setLayout(new BorderLayout());
-
-        JPanel contenedor = new JPanel(new BorderLayout());
-        contenedor.setBackground(new Color(35, 35, 35));
-        contenedor.setBorder(BorderFactory.createLineBorder(new Color(55, 55, 55), 1));
-
-        JPanel barra = new JPanel(new BorderLayout());
-        barra.setBackground(new Color(25, 25, 25));
-        barra.setBorder(BorderFactory.createEmptyBorder(6, 10, 6, 10));
-
-        JLabel lblTitulo = new JLabel(tituloVentana);
-        lblTitulo.setForeground(Color.WHITE);
-        lblTitulo.setFont(ThemeManager.TEXT_SMALL);
-
-        JButton cerrar = new JButton("X");
-        cerrar.setForeground(Color.WHITE);
-        cerrar.setBackground(new Color(45, 45, 45));
-        cerrar.setBorderPainted(false);
-        cerrar.setFocusPainted(false);
-        cerrar.setPreferredSize(new Dimension(24, 24));
-        cerrar.addActionListener(e -> dialogo.dispose());
-
-        barra.add(lblTitulo, BorderLayout.WEST);
-        barra.add(cerrar, BorderLayout.EAST);
-
-        JPanel cuerpo = new JPanel(new BorderLayout());
-        cuerpo.setBackground(new Color(35, 35, 35));
-        cuerpo.setBorder(BorderFactory.createEmptyBorder(16, 16, 16, 16));
-
-        JPanel mensajePanel = new JPanel(new BorderLayout(10, 0));
-        mensajePanel.setBackground(new Color(35, 35, 35));
-
-        JLabel icono = new JLabel(exito ? "i" : "x", SwingConstants.CENTER);
-        icono.setPreferredSize(new Dimension(28, 28));
-        icono.setOpaque(true);
-        icono.setBackground(acento);
-        icono.setForeground(Color.WHITE);
-        icono.setFont(new Font("Dialog", Font.BOLD, 18));
-
-        JLabel texto = new JLabel(mensaje);
-        texto.setForeground(Color.WHITE);
-        texto.setFont(ThemeManager.TEXT_NORMAL);
-        texto.setBorder(BorderFactory.createEmptyBorder(3, 0, 0, 0));
-
-        mensajePanel.add(icono, BorderLayout.WEST);
-        mensajePanel.add(texto, BorderLayout.CENTER);
-
-        JButton aceptar = ThemeManager.Button(textoBoton);
-        aceptar.setMaximumSize(new Dimension(100, 30));
-        aceptar.setPreferredSize(new Dimension(100, 30));
-        aceptar.addActionListener(e -> dialogo.dispose());
-
-        JPanel pie = new JPanel();
-        pie.setOpaque(false);
-        pie.add(aceptar);
-
-        cuerpo.add(mensajePanel, BorderLayout.CENTER);
-        cuerpo.add(pie, BorderLayout.SOUTH);
-
-        contenedor.add(barra, BorderLayout.NORTH);
-        contenedor.add(cuerpo, BorderLayout.CENTER);
-
-        dialogo.add(contenedor, BorderLayout.CENTER);
-        dialogo.setVisible(true);
-    }
-
-    private static class ViviendaItem {
-        private final int id;
-        private final String descripcion;
-
-        private ViviendaItem(int id, String descripcion) {
-            this.id = id;
-            this.descripcion = descripcion;
-        }
-
-        @Override
-        public String toString() {
-            return descripcion;
-        }
-    }
-
-    private static class RepresentanteData {
-        private final int idVivienda;
-        private final String nombre;
-        private final String apellido;
-        private final String cedula;
-        private final String telefono;
-
-        private RepresentanteData(int idVivienda, String nombre, String apellido, String cedula, String telefono) {
-            this.idVivienda = idVivienda;
-            this.nombre = nombre;
-            this.apellido = apellido;
-            this.cedula = cedula;
-            this.telefono = telefono;
-        }
     }
 }

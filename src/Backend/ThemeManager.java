@@ -383,6 +383,101 @@ public class ThemeManager {
         dialog.setVisible(true);
     }
 
+    public static boolean MostrarConfirmacion(JPanel JP, String titulo, String msg, Color acento, String textoAceptar, String textoCancelar) {
+        JDialog customDialog = new JDialog((Window) SwingUtilities.getWindowAncestor(JP), titulo, Dialog.ModalityType.APPLICATION_MODAL);
+        return configurarDialogConfirmacion(JP, customDialog, msg, acento, textoAceptar, textoCancelar);
+    }
+
+    public static boolean MostrarConfirmacion(JDialog JP, String titulo, String msg, Color acento, String textoAceptar, String textoCancelar) {
+        JDialog customDialog = new JDialog((Window) SwingUtilities.getWindowAncestor(JP), titulo, Dialog.ModalityType.APPLICATION_MODAL);
+        return configurarDialogConfirmacion(new JPanel(), customDialog, msg, acento, textoAceptar, textoCancelar);
+    }
+
+    public static boolean configurarDialogConfirmacion(JPanel JP, JDialog dialog, String msg, Color acento, String textoAceptar, String textoCancelar) {
+        dialog.setSize(460, 190);
+        dialog.setLocationRelativeTo(JP);
+
+        boolean[] resultado = {false};
+
+        JPanel pRoot = new JPanel(new GridBagLayout());
+        pRoot.setBackground(ThemeManager.COLOR_BACKGROUND_DARK);
+        GridBagConstraints c = new GridBagConstraints();
+
+        JLabel lIcon = new JLabel("!", SwingConstants.CENTER) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(ThemeManager.COLOR_WARNING);
+                int w = getWidth();
+                int h = getHeight();
+                int[] xPoints = {w / 2, 0, w};
+                int[] yPoints = {0, h, h};
+                g2.fillPolygon(xPoints, yPoints, 3);
+                g2.dispose();
+                super.paintComponent(g);
+            }
+        };
+        lIcon.setPreferredSize(new Dimension(40, 40));
+        lIcon.setForeground(ThemeManager.COLOR_TEXT_DARK);
+        lIcon.setFont(ThemeManager.TEXT_SUBTITLE);
+        lIcon.setBorder(BorderFactory.createEmptyBorder(6, 0, 0, 0));
+
+        JLabel lMsg = new JLabel("<html><div style='width:280px;'>" + msg + "</div></html>");
+        lMsg.setForeground(Color.WHITE);
+        lMsg.setFont(ThemeManager.TEXT_NORMAL);
+
+        JButton btnCancelar = ThemeManager.Button(textoCancelar);
+        btnCancelar.setBackground(new Color(65, 65, 65));
+        btnCancelar.setPreferredSize(new Dimension(120, 35));
+        btnCancelar.addActionListener(e -> dialog.dispose());
+        btnCancelar.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                btnCancelar.setBackground(new Color(85, 85, 85));
+            }
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                btnCancelar.setBackground(new Color(65, 65, 65));
+            }
+        });
+
+        JButton btnAceptar = ThemeManager.Button(textoAceptar);
+        btnAceptar.setBackground(acento);
+        btnAceptar.setPreferredSize(new Dimension(120, 35));
+        btnAceptar.addActionListener(e -> {
+            resultado[0] = true;
+            dialog.dispose();
+        });
+        btnAceptar.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                btnAceptar.setBackground(acento.darker());
+            }
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                btnAceptar.setBackground(acento);
+            }
+        });
+
+        JPanel pButtons = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
+        pButtons.setOpaque(false);
+        pButtons.add(btnCancelar);
+        pButtons.add(btnAceptar);
+
+        c.insets = new Insets(10, 10, 5, 10);
+        c.weightx = 0.0;
+        c.gridx = 0; c.gridy = 0; pRoot.add(lIcon, c);
+        c.gridx = 1; c.weightx = 1.0; c.fill = GridBagConstraints.HORIZONTAL; pRoot.add(lMsg, c);
+        c.gridx = 0; c.gridy = 1; c.gridwidth = 2; c.fill = GridBagConstraints.NONE;
+        c.insets = new Insets(5, 5, 5, 5); pRoot.add(pButtons, c);
+
+        dialog.add(pRoot);
+        dialog.setVisible(true);
+
+        return resultado[0];
+    }
+
     public static class RoundIconLabel extends JLabel {
         private Icon customIcon = null;
 
