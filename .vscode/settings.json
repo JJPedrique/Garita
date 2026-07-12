@@ -6,6 +6,10 @@
         "e:\\Garita\\lib\\openpdf-3.0.5.jar",
         "e:\\Garita\\lib\\postgresql-42.7.11.jar",
         "e:\\Garita\\lib\\jcalendar-1.4.jar",
-        "e:\\Garita\\lib\\bcprov-jdk15on-1.70.jar"
+        "e:\\Garita\\lib\\bcprov-jdk15on-1.70.jar",
+        "lib/bcprov-jdk15on-1.70.jar",
+        "lib/jcalendar-1.4.jar",
+        "lib/openpdf-3.0.5.jar",
+        "lib/postgresql-42.7.11.jar"
     ]
 }

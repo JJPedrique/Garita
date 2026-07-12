@@ -3,13 +3,14 @@ package Frontend.Cuotas;
 import javax.swing.*;
 
 import com.toedter.calendar.JDateChooser;
+import com.toedter.calendar.JTextFieldDateEditor;
 
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-
+import java.sql.ResultSet;
 import Backend.ConexionPostgres;
 import Backend.ThemeManager;
 
@@ -24,6 +25,12 @@ public class VentanaProgramarCuota extends JDialog {
 
     private final JDateChooser jdcHasta = new JDateChooser();
     private final JSpinner jspHoraHasta = new JSpinner(new SpinnerDateModel());
+
+    
+    private final JTextFieldDateEditor DesdeEditor = (JTextFieldDateEditor) jdcDesde.getDateEditor();
+    
+
+    private final JTextFieldDateEditor HastaEditor = (JTextFieldDateEditor) jdcHasta.getDateEditor();
     
 
     public VentanaProgramarCuota(JFrame framePadre, MenuCuotas menuPadre) {
@@ -31,6 +38,8 @@ public class VentanaProgramarCuota extends JDialog {
         this.menuPadre = menuPadre;
         
         setResizable(false);
+
+
       
         
         JPanel panelPrincipal = new JPanel(new GridBagLayout());
@@ -153,6 +162,14 @@ public class VentanaProgramarCuota extends JDialog {
                 return;
             }
 
+
+            if (existeCuota(strDesc)) {
+                JOptionPane.showMessageDialog(this, 
+                    "ERROR: Ya existe una cuota programada con la descripción '" + strDesc + "'.", 
+                    "Cuota Duplicada", 
+                    JOptionPane.ERROR_MESSAGE);
+                return; 
+            }
             java.util.Calendar calEmision = java.util.Calendar.getInstance();
             calEmision.setTime(jdcDesde.getDate());
             java.util.Calendar horaEmision = java.util.Calendar.getInstance();
@@ -187,7 +204,6 @@ public class VentanaProgramarCuota extends JDialog {
                                + "INSERT INTO cuotas (descripcion, monto, fecha_emision, fecha_limite, activo) VALUES (?, ?, ?, ?, ?)";
 
             Object[] valores = new Object[] {
-                miUsuario,
                 strDesc,                        
                 Double.parseDouble(montoStr),   
                 tsEmision,                     
@@ -209,15 +225,39 @@ public class VentanaProgramarCuota extends JDialog {
             }
 
 
-
-            //region Debo el comprobante de las fehcas emision/limite
-         
+            
             dispose();
             this.menuPadre.Search(); 
         });
+        DesdeEditor.setEditable(false);
+        JSpinner.DefaultEditor editorHoraDesde = (JSpinner.DefaultEditor)  jspHoraDesde.getEditor();
+        editorHoraDesde.getTextField().setEnabled(true);
+        editorHoraDesde.getTextField().setEditable(false);
+
+        HastaEditor.setEditable(false);
+        JSpinner.DefaultEditor editorHoraHasta = (JSpinner.DefaultEditor)  jspHoraHasta.getEditor();
+        editorHoraHasta.getTextField().setEnabled(true);
+        editorHoraHasta.getTextField().setEditable(false);
 
         setContentPane(panelPrincipal);
         pack();
         setLocationRelativeTo(framePadre); 
+    }
+
+    private boolean existeCuota(String descripcion) {
+        String query = "SELECT COUNT(*) AS total FROM cuotas WHERE UPPER(TRIM(descripcion)) = UPPER(TRIM(?))";
+        Object[] params = new Object[] { descripcion };
+        
+        try {
+            // Usamos tu método estático para consultar
+            ResultSet rs = ConexionPostgres.consultar(query, params);
+            if (rs != null && rs.next()) {
+                return rs.getInt("total") > 0; 
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.err.println("Error al verificar la duplicidad de la cuota.");
+        }
+        return false;
     }
 }

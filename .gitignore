@@ -1,0 +1,50 @@
+# --- IDEs y Editores ---
+.vscode/
+.idea/
+*.iml
+*.iws
+.classpath
+.project
+.settings/
+.factorypath
+
+# --- Compilación y Salida de Java ---
+*.class
+*.log
+*.ctxt
+.mtj.tmp/
+bin/
+build/
+target/
+out/
+
+# --- Archivos de Empaquetado ---
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# --- Herramientas de Construcción (Maven / Gradle) ---
+# Descomenta si usas Maven o Gradle en el futuro
+#.mvn/
+#pom.xml.tag
+#pom.xml.releaseBackup
+#pom.xml.next
+#release.properties
+#.gradle/
+#build/
+
+# --- Sistema Operativo y Temporales ---
+Thumbs.db
+desktop.ini
+.DS_Store
+*.tmp
+*.bak
+
+# --- Seguridad y Configuración (¡Muy Importante!) ---
+# Si guardas credenciales de tu base de datos PostgreSQL aquí, no las subas
+.env
+config.properties

@@ -7,6 +7,8 @@ import java.text.SimpleDateFormat;
 import Backend.ConexionPostgres;
 import Backend.ThemeManager;
 import com.toedter.calendar.JDateChooser;
+import com.toedter.calendar.JTextFieldDateEditor;
+import java.sql.ResultSet;
 
 public class VentanaActualizarCuota extends JDialog {
 
@@ -20,14 +22,22 @@ public class VentanaActualizarCuota extends JDialog {
     private final JDateChooser jdcLimite = new JDateChooser();
     private final JSpinner jspHoraLimite = new JSpinner(new SpinnerDateModel());
 
+    private final JTextFieldDateEditor LimiteEditor = (JTextFieldDateEditor) jdcLimite.getDateEditor();
+
     JRadioButton radioActivo = new JRadioButton("Activo");
     JRadioButton radioInactivo = new JRadioButton("Inactivo");
 
     public VentanaActualizarCuota(JFrame padre, MenuCuotas menuPadre, String descripcion, String monto, String fechaLimite, String idCuota) {
+        
         super(padre, "Actualizar Cuota", true);
         this.menuPadre = menuPadre;
         this.descripcionOriginal = descripcion;
 
+        
+        LimiteEditor.setEditable(false);
+
+
+        
         setUndecorated(true); // Diseño plano sin bordes nativos de Windows
         setSize(400, 350);
         setLocationRelativeTo(padre);
@@ -143,8 +153,10 @@ public class VentanaActualizarCuota extends JDialog {
         } catch (Exception e) {
             jdcLimite.setDate(new java.util.Date());
         }
-    }
-
+            JSpinner.DefaultEditor editorHoraDesde = (JSpinner.DefaultEditor)  jspHoraLimite.getEditor();
+            editorHoraDesde.getTextField().setEnabled(true);
+            editorHoraDesde.getTextField().setEditable(false);
+        }
     private void actualizarCuota(String idCuota) {
         String nuevaDesc = inputDescripcion.getText().trim();
         String nuevoMonto = inputMonto.getText().trim();
@@ -178,6 +190,13 @@ public class VentanaActualizarCuota extends JDialog {
             nuevoEstado = false;
         }
 
+        if (existeCuotaDuplicada(nuevaDesc, idCuota)) {
+            JOptionPane.showMessageDialog(this, 
+                "ERROR: Ya existe otra cuota registrada con la descripción '" + nuevaDesc + "'.", 
+                "Cuota Duplicada", 
+                JOptionPane.ERROR_MESSAGE);
+            return; 
+        }
         // Construir la Fecha Completa con la Hora
         java.util.Date fecha = jdcLimite.getDate();
         java.util.Date hora = (java.util.Date) jspHoraLimite.getValue();
@@ -227,5 +246,21 @@ String queryUpdate = "DO $$ BEGIN PERFORM set_config('app.usuario_actual', '" + 
             JOptionPane.showMessageDialog(this, "Error al actualizar la base de datos: " + ex.getMessage(), "Error SQL", JOptionPane.ERROR_MESSAGE);
             ex.printStackTrace();
         }
+    }
+
+    private boolean existeCuotaDuplicada(String descripcion, String idCuota) {
+        String query = "SELECT COUNT(*) AS total FROM cuotas WHERE UPPER(TRIM(descripcion)) = UPPER(TRIM(?)) AND id != ?::integer";
+        Object[] params = new Object[] { descripcion, idCuota };
+        
+        try {
+            ResultSet rs = ConexionPostgres.consultar(query, params);
+            if (rs != null && rs.next()) {
+                return rs.getInt("total") > 0;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.err.println("Error al comprobar duplicados en actualización.");
+        }
+        return false;
     }
 }

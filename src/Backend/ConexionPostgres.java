@@ -30,8 +30,11 @@ public class ConexionPostgres {
         
         try {
             // Intentar establecer la conexión
+            Class.forName("org.postgresql.Driver");
             conexion = DriverManager.getConnection(URL, USER, PASSWORD);
             System.out.println("Conexión establecida con éxito a PostgreSQL.");
+        } catch (ClassNotFoundException e) {
+            System.err.println("Error al conectar: Driver JDBC de PostgreSQL no encontrado en el classpath.");
         } catch (SQLException e) {
             System.err.println("Error al conectar: " + e.getMessage());
         }
@@ -44,6 +47,10 @@ public class ConexionPostgres {
         
         if (ConexionPostgres.conexion == null || ConexionPostgres.conexion.isClosed()) {
             conectar();
+        }
+
+        if (ConexionPostgres.conexion == null) {
+            throw new SQLException("No se pudo establecer conexión a la base de datos. Verifique el driver JDBC, URL, usuario y contraseña.");
         }
         
         try (PreparedStatement PS = conexion.prepareStatement(QUERY)) {
@@ -90,6 +97,10 @@ public class ConexionPostgres {
         
         if (ConexionPostgres.conexion == null || ConexionPostgres.conexion.isClosed()) {
             conectar();
+        }
+
+        if (ConexionPostgres.conexion == null) {
+            throw new SQLException("No se pudo establecer conexión a la base de datos. Verifique el driver JDBC, URL, usuario y contraseña.");
         }
         
         try {

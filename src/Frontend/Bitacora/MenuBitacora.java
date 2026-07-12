@@ -4,6 +4,8 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import com.toedter.calendar.JDateChooser;
+import com.toedter.calendar.JTextFieldDateEditor;
+
 import Backend.ConexionPostgres;
 import Backend.ThemeManager;
 import java.awt.*;
@@ -66,6 +68,10 @@ public class MenuBitacora extends JPanel {
     
     private final JDateChooser jdcHasta = new JDateChooser();
     private final JSpinner jsHoraHasta = createTimeSpinner();
+        private final JTextFieldDateEditor DesdeEditor = (JTextFieldDateEditor) jdcDesde.getDateEditor();
+    
+
+    private final JTextFieldDateEditor HastaEditor = (JTextFieldDateEditor) jdcHasta.getDateEditor();
     
     JButton bBuscar = ThemeManager.Button("Buscar");
 
@@ -178,6 +184,16 @@ public class MenuBitacora extends JPanel {
 
         SetEvents();
         CargarBitacora();
+
+        DesdeEditor.setEditable(false);
+        JSpinner.DefaultEditor editorHoraDesde = (JSpinner.DefaultEditor)  jsHoraDesde.getEditor();
+        editorHoraDesde.getTextField().setEnabled(true);
+        editorHoraDesde.getTextField().setEditable(false);
+
+        HastaEditor.setEditable(false);
+        JSpinner.DefaultEditor editorHoraHasta = (JSpinner.DefaultEditor)  jsHoraHasta.getEditor();
+        editorHoraHasta.getTextField().setEnabled(true);
+        editorHoraHasta.getTextField().setEditable(false);
     }
 
     private JSpinner createTimeSpinner() {

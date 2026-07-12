@@ -1,0 +1,50 @@
+:root{
+    --Background:#2D2D2D;
+    --Primary:#6ab848;
+    --Text:#fff;
+}
+
+*{
+    padding: 0;
+    margin: 0;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    color: white;
+    text-decoration: none;
+}
+
+h1,h2,h3,h4,h5,h6{
+    padding-bottom: 1rem;
+}
+
+body{
+    display: flex;
+    flex-direction: column;
+    background-color: var(--Background);
+    min-height: 100dvh;
+}
+
+main{
+    display: flex; 
+    align-items: flex-start;
+    flex: 1;
+}
+
+aside{
+    position: sticky;
+    height: auto;
+    top: 0;
+    right: 0;
+    background-color: var(--Primary);
+
+    padding: 1rem;
+}
+
+aside li{
+    margin: 1rem;
+}
+
+section{padding: 1rem;}
+
+footer{
+    text-align: center;
+}

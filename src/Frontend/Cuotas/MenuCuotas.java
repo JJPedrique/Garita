@@ -5,9 +5,13 @@ import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.MatteBorder;
 import com.toedter.calendar.JDateChooser;
+import com.toedter.calendar.JTextFieldDateEditor;
+
 import Backend.ConexionPostgres;
 import Backend.ThemeManager;
 import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.sql.ResultSet;
@@ -190,7 +194,12 @@ public class MenuCuotas extends JPanel {
     
     private final JDateChooser jdcHasta = new JDateChooser();
     private final JSpinner jsHoraHasta = createTimeSpinner();
+
+    private final JTextFieldDateEditor DesdeEditor = (JTextFieldDateEditor) jdcDesde.getDateEditor();
     
+
+    private final JTextFieldDateEditor HastaEditor = (JTextFieldDateEditor) jdcHasta.getDateEditor();
+
     JRadioButton radioTodos = new JRadioButton("Todos");
     JRadioButton radioActivo = new JRadioButton("Activo");
     JRadioButton radioInactivo = new JRadioButton("Inactivo");
@@ -203,6 +212,20 @@ public class MenuCuotas extends JPanel {
     ArrayList<JTarjetaCuota> JTarjetas = new ArrayList<>();
 
     public MenuCuotas() {
+        //Evitar que las fechas sean editables
+        DesdeEditor.setEditable(false);
+        JSpinner.DefaultEditor editorHoraDesde = (JSpinner.DefaultEditor)  jsHoraDesde.getEditor();
+        editorHoraDesde.getTextField().setEnabled(true);
+        editorHoraDesde.getTextField().setEditable(false);
+
+        HastaEditor.setEditable(false);
+        JSpinner.DefaultEditor editorHoraHasta = (JSpinner.DefaultEditor)  jsHoraHasta.getEditor();
+        editorHoraHasta.getTextField().setEnabled(true);
+        editorHoraHasta.getTextField().setEditable(false);
+
+
+        
+
         this.setLayout(new BorderLayout(15, 0));
         this.setBackground(ThemeManager.COLOR_BACKGROUND_DARK);
         this.setBorder(new EmptyBorder(10, 10, 10, 10));

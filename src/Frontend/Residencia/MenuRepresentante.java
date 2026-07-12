@@ -303,7 +303,7 @@ public class MenuRepresentante extends JPanel {
 
     private void cambiarEstadoRepresentante(String cedula) {
         boolean confirmar = mostrarDialogoConfirmacion(
-            "Sistema Garita - Confirmar acción",
+            "Sistema Garita - Eliminar Representante",
             "¿Desea eliminar el representante " + cedula + "? Se desactivará permanentemente.",
             ThemeManager.COLOR_ERROR,
             "Eliminar",
@@ -323,6 +323,7 @@ public class MenuRepresentante extends JPanel {
                 new Object[]{cedula}
             );
             cargarRepresentantes();
+            mostrarDialogoExitoEliminacion("El representante ha sido eliminado con éxito.");
         } catch (SQLException ex) {
             mostrarDialogoError("No se pudo desactivar el representante: " + ex.getMessage());
         }
@@ -715,6 +716,76 @@ public class MenuRepresentante extends JPanel {
         mostrarDialogoEstado("Sistema Garita", mensaje, ThemeManager.COLOR_PRIMARY, "Aceptar", true);
     }
 
+    private void mostrarDialogoExitoEliminacion(String mensaje) {
+        Window owner = SwingUtilities.getWindowAncestor(this);
+        final JDialog dialogo;
+        if (owner instanceof Frame) {
+            dialogo = new JDialog((Frame) owner, true);
+        } else if (owner instanceof Dialog) {
+            dialogo = new JDialog((Dialog) owner, true);
+        } else {
+            dialogo = new JDialog();
+            dialogo.setModal(true);
+        }
+
+        dialogo.setUndecorated(true);
+        dialogo.setTitle("Sistema Garita - Eliminación Exitosa");
+        dialogo.setSize(390, 160);
+        dialogo.setLocationRelativeTo(this);
+        dialogo.setLayout(new BorderLayout());
+
+        JPanel contenedor = new JPanel(new BorderLayout());
+        contenedor.setBackground(ThemeManager.COLOR_BACKGROUND);
+        contenedor.setBorder(BorderFactory.createLineBorder(new Color(55, 55, 55), 1));
+
+        JPanel encabezado = new JPanel(new BorderLayout());
+        encabezado.setBackground(ThemeManager.COLOR_PRIMARY);
+        encabezado.setBorder(BorderFactory.createEmptyBorder(10, 14, 10, 14));
+
+        JLabel lblTitulo = new JLabel("ELIMINACIÓN EXITOSA");
+        lblTitulo.setForeground(ThemeManager.COLOR_TEXT);
+        lblTitulo.setFont(ThemeManager.TEXT_SUBTITLE);
+        encabezado.add(lblTitulo, BorderLayout.CENTER);
+
+        JPanel cuerpo = new JPanel(new BorderLayout(10, 0));
+        cuerpo.setBackground(ThemeManager.COLOR_BACKGROUND);
+        cuerpo.setBorder(BorderFactory.createEmptyBorder(18, 18, 16, 18));
+
+        JLabel icono = new JLabel("✓", SwingConstants.CENTER);
+        icono.setPreferredSize(new Dimension(34, 34));
+        icono.setOpaque(true);
+        icono.setBackground(ThemeManager.COLOR_PRIMARY);
+        icono.setForeground(ThemeManager.COLOR_TEXT);
+        icono.setFont(new Font("Dialog", Font.BOLD, 18));
+
+        JLabel texto = new JLabel(mensaje, SwingConstants.LEFT);
+        texto.setForeground(ThemeManager.COLOR_TEXT);
+        texto.setFont(ThemeManager.TEXT_NORMAL);
+
+        cuerpo.add(icono, BorderLayout.WEST);
+        cuerpo.add(texto, BorderLayout.CENTER);
+
+        JButton aceptar = ThemeManager.Button("Aceptar");
+        aceptar.setPreferredSize(new Dimension(110, 30));
+        aceptar.setMaximumSize(new Dimension(110, 30));
+        aceptar.addActionListener(e -> dialogo.dispose());
+
+        JPanel pie = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        pie.setOpaque(false);
+        pie.add(aceptar);
+
+        JPanel centro = new JPanel(new BorderLayout());
+        centro.setOpaque(false);
+        centro.add(cuerpo, BorderLayout.CENTER);
+        centro.add(pie, BorderLayout.SOUTH);
+
+        contenedor.add(encabezado, BorderLayout.NORTH);
+        contenedor.add(centro, BorderLayout.CENTER);
+
+        dialogo.add(contenedor, BorderLayout.CENTER);
+        dialogo.setVisible(true);
+    }
+
     private boolean mostrarDialogoConfirmacion(String tituloVentana, String mensaje, Color acento, String textoAceptar, String textoCancelar) {
         Window owner = SwingUtilities.getWindowAncestor(this);
         final JDialog dialogo;
@@ -729,66 +800,68 @@ public class MenuRepresentante extends JPanel {
 
         dialogo.setUndecorated(true);
         dialogo.setTitle(tituloVentana);
-        dialogo.setSize(420, 180);
+        dialogo.setSize(460, 180);
         dialogo.setLocationRelativeTo(this);
         dialogo.setLayout(new BorderLayout());
 
         JPanel contenedor = new JPanel(new BorderLayout());
-        contenedor.setBackground(new Color(35, 35, 35));
+        contenedor.setBackground(ThemeManager.COLOR_BACKGROUND);
         contenedor.setBorder(BorderFactory.createLineBorder(new Color(55, 55, 55), 1));
 
         JPanel barra = new JPanel(new BorderLayout());
-        barra.setBackground(new Color(25, 25, 25));
-        barra.setBorder(BorderFactory.createEmptyBorder(6, 10, 6, 10));
+        barra.setBackground(acento);
+        barra.setBorder(BorderFactory.createEmptyBorder(10, 14, 10, 14));
 
-        JLabel titulo = new JLabel(tituloVentana);
-        titulo.setForeground(Color.WHITE);
-        titulo.setFont(ThemeManager.TEXT_SMALL);
-        barra.add(titulo, BorderLayout.WEST);
+        JLabel lblTitulo = new JLabel(tituloVentana);
+        lblTitulo.setForeground(ThemeManager.COLOR_TEXT);
+        lblTitulo.setFont(ThemeManager.TEXT_SUBTITLE);
+        barra.add(lblTitulo, BorderLayout.WEST);
 
-        JButton cerrar = new JButton("X");
-        cerrar.setForeground(Color.WHITE);
-        cerrar.setBackground(new Color(45, 45, 45));
+        JButton cerrar = new JButton("←");
+        cerrar.setForeground(ThemeManager.COLOR_TEXT);
+        cerrar.setBackground(acento);
         cerrar.setBorderPainted(false);
         cerrar.setFocusPainted(false);
-        cerrar.setPreferredSize(new Dimension(24, 24));
         cerrar.setContentAreaFilled(false);
+        cerrar.setPreferredSize(new Dimension(28, 28));
+        cerrar.setMargin(new Insets(0, 0, 0, 0));
         cerrar.addActionListener(e -> dialogo.dispose());
         barra.add(cerrar, BorderLayout.EAST);
 
         JPanel cuerpo = new JPanel(new BorderLayout());
-        cuerpo.setBackground(new Color(35, 35, 35));
-        cuerpo.setBorder(BorderFactory.createEmptyBorder(16, 16, 16, 16));
+        cuerpo.setBackground(ThemeManager.COLOR_BACKGROUND);
+        cuerpo.setBorder(BorderFactory.createEmptyBorder(16, 18, 16, 18));
 
         JPanel mensajePanel = new JPanel(new BorderLayout(10, 0));
-        mensajePanel.setBackground(new Color(35, 35, 35));
+        mensajePanel.setOpaque(false);
 
-        JLabel icono = new JLabel("?", SwingConstants.CENTER);
-        icono.setPreferredSize(new Dimension(28, 28));
+        JLabel icono = new JLabel("!", SwingConstants.CENTER);
+        icono.setPreferredSize(new Dimension(34, 34));
         icono.setOpaque(true);
         icono.setBackground(acento);
-        icono.setForeground(Color.WHITE);
+        icono.setForeground(ThemeManager.COLOR_TEXT);
         icono.setFont(new Font("Dialog", Font.BOLD, 18));
 
         JLabel mensajeLabel = new JLabel("<html><div style='text-align:center;'>" + mensaje + "</div></html>", SwingConstants.CENTER);
-        mensajeLabel.setForeground(Color.WHITE);
+        mensajeLabel.setForeground(ThemeManager.COLOR_TEXT);
         mensajeLabel.setFont(ThemeManager.TEXT_NORMAL);
         mensajeLabel.setBorder(BorderFactory.createEmptyBorder(3, 0, 0, 0));
 
         mensajePanel.add(icono, BorderLayout.WEST);
         mensajePanel.add(mensajeLabel, BorderLayout.CENTER);
 
-        JButton aceptar = ThemeManager.Button(textoAceptar);
-        aceptar.setMaximumSize(new Dimension(110, 30));
-        aceptar.setPreferredSize(new Dimension(110, 30));
-
         JButton cancelar = new JButton(textoCancelar);
         cancelar.setFont(ThemeManager.TEXT_SMALL);
-        cancelar.setForeground(Color.WHITE);
+        cancelar.setForeground(ThemeManager.COLOR_TEXT);
         cancelar.setBackground(new Color(65, 65, 65));
         cancelar.setFocusPainted(false);
         cancelar.setBorder(BorderFactory.createEmptyBorder(6, 14, 6, 14));
         cancelar.addActionListener(e -> dialogo.dispose());
+
+        JButton aceptar = ThemeManager.Button(textoAceptar);
+        aceptar.setBackground(ThemeManager.COLOR_ERROR);
+        aceptar.setMaximumSize(new Dimension(110, 30));
+        aceptar.setPreferredSize(new Dimension(110, 30));
 
         final boolean[] resultado = {false};
         aceptar.addActionListener(e -> {
@@ -797,7 +870,7 @@ public class MenuRepresentante extends JPanel {
         });
 
         JPanel pie = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
-        pie.setBackground(new Color(35, 35, 35));
+        pie.setOpaque(false);
         pie.add(cancelar);
         pie.add(aceptar);
 

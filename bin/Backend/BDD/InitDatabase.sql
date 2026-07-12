@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS "usuarios" (
-  "id" integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  "id" int PRIMARY KEY,
   "clave" varchar(16) NOT NULL,
   "rol" varchar(20) NOT NULL,
   "nombre" varchar(20) NOT NULL,
@@ -7,27 +7,27 @@ CREATE TABLE IF NOT EXISTS "usuarios" (
   "cedula" varchar(13) UNIQUE NOT NULL,
   "telefono" varchar(13) NOT NULL,
   "activo" bool NOT NULL DEFAULT true,
-  "intentos_fallidos" integer DEFAULT 0
+  "intentos_fallidos" int NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS "bitacoras" (
-  "id" integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  "usuario" varchar(13) NOT NULL,
+  "id" int PRIMARY KEY,
+  "usuario" varchar(13) UNIQUE NOT NULL,
   "accion" varchar(6) NOT NULL,
   "tabla_modificada" varchar(16) NOT NULL,
   "fecha_modificacion" timestamp NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS "viviendas" (
-  "id" integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  "id" int PRIMARY KEY,
   "calle" varchar(20) NOT NULL,
   "numero_vivienda" varchar(10) UNIQUE NOT NULL,
-  "fecha_registro" timestamptz NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "fecha_registro" timestamp NOT NULL,
   "activo" bool NOT NULL DEFAULT true
 );
 
 CREATE TABLE IF NOT EXISTS "representantes" (
-  "id" integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  "id" int PRIMARY KEY,
   "id_vivienda" int NOT NULL,
   "nombre" varchar(20) NOT NULL,
   "apellido" varchar(20) NOT NULL,
@@ -37,14 +37,14 @@ CREATE TABLE IF NOT EXISTS "representantes" (
 );
 
 CREATE TABLE IF NOT EXISTS "carnets" (
-  "id" integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  "id" int PRIMARY KEY,
   "codigo" varchar(10) UNIQUE NOT NULL,
   "id_vivienda" int NOT NULL,
   "activo" bool NOT NULL DEFAULT true
 );
 
 CREATE TABLE IF NOT EXISTS "cuotas" (
-  "id" integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  "id" int PRIMARY KEY,
   "monto" numeric(6,2) NOT NULL,
   "descripcion" varchar(14) UNIQUE NOT NULL,
   "fecha_emision" timestamp NOT NULL,
@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS "cuotas" (
 );
 
 CREATE TABLE IF NOT EXISTS "pagos_realizados" (
-  "id" integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  "id" int PRIMARY KEY,
   "id_vivienda" int NOT NULL,
   "id_cuota" int NOT NULL,
   "tipo_pago" varchar(15) NOT NULL,
@@ -63,7 +63,7 @@ CREATE TABLE IF NOT EXISTS "pagos_realizados" (
 );
 
 CREATE TABLE IF NOT EXISTS "accesos" (
-  "id" integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  "id" int PRIMARY KEY,
   "fecha_hora" timestamp NOT NULL,
   "tipo" varchar(10) NOT NULL,
   "estado" varchar(10) NOT NULL,
