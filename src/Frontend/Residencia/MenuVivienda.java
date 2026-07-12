@@ -19,6 +19,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.List;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DocumentFilter;
 
 import org.openpdf.text.Document;
 import org.openpdf.text.DocumentException;
@@ -98,7 +102,7 @@ public class MenuVivienda extends JPanel {
     public MenuVivienda() {
         this.setLayout(new BorderLayout());
         this.setBackground(ThemeManager.COLOR_BACKGROUND_DARK);
-        this.setBorder(new EmptyBorder(20, 20, 20, 20));
+        this.setBorder(new EmptyBorder(10, 10, 10, 10));
 
         JPanel panelControles = new JPanel();
         panelControles.setLayout(new BoxLayout(panelControles, BoxLayout.Y_AXIS));
@@ -112,7 +116,7 @@ public class MenuVivienda extends JPanel {
         btnAgregar.addActionListener(e -> abrirFormularioVivienda(false, null, null, true));
 
         JLabel tituloAgregar = new JLabel("<html><div style='text-align:center;'>AGREGAR NUEVA VIVIENDA</div></html>", SwingConstants.CENTER);
-        tituloAgregar.setFont(ThemeManager.TEXT_SMALL);
+        tituloAgregar.setFont(ThemeManager.TEXT_SUBTITLE);
         tituloAgregar.setForeground(ThemeManager.COLOR_TEXT);
         tituloAgregar.setAlignmentX(Component.CENTER_ALIGNMENT);
         tituloAgregar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 28));
@@ -124,7 +128,7 @@ public class MenuVivienda extends JPanel {
         separador.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JLabel tituloBusqueda = new JLabel("BÚSQUEDA Y FILTROS", SwingConstants.CENTER);
-        tituloBusqueda.setFont(ThemeManager.TEXT_SMALL);
+        tituloBusqueda.setFont(ThemeManager.TEXT_SUBTITLE);
         tituloBusqueda.setForeground(ThemeManager.COLOR_TEXT);
         tituloBusqueda.setAlignmentX(Component.CENTER_ALIGNMENT);
         tituloBusqueda.setMaximumSize(new Dimension(Integer.MAX_VALUE, 16));
@@ -136,30 +140,34 @@ public class MenuVivienda extends JPanel {
         panelFiltros.setMaximumSize(new Dimension(Integer.MAX_VALUE, 130));
 
         JLabel lNum = new JLabel("Número de Vivienda");
-        lNum.setFont(ThemeManager.TEXT_SMALL);
+        lNum.setFont(ThemeManager.TEXT_NORMAL);
         lNum.setForeground(ThemeManager.COLOR_TEXT);
-        lNum.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         txtNum = ThemeManager.Textfield();
-        txtNum.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
-        txtNum.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JPanel pInputNum = new JPanel(new BorderLayout(10, 0));
+        pInputNum.setOpaque(false);
+        pInputNum.setAlignmentX(Component.LEFT_ALIGNMENT);
+        pInputNum.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
+        pInputNum.add(lNum, BorderLayout.WEST);
+        pInputNum.add(txtNum, BorderLayout.CENTER);
 
         JLabel lCalle = new JLabel("Calle");
-        lCalle.setFont(ThemeManager.TEXT_SMALL);
+        lCalle.setFont(ThemeManager.TEXT_NORMAL);
         lCalle.setForeground(ThemeManager.COLOR_TEXT);
-        lCalle.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         txtCalle = ThemeManager.Textfield();
-        txtCalle.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
-        txtCalle.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        panelFiltros.add(lNum);
-        panelFiltros.add(Box.createRigidArea(new Dimension(0, 6)));
-        panelFiltros.add(txtNum);
+        JPanel pInputCalle = new JPanel(new BorderLayout(10, 0));
+        pInputCalle.setOpaque(false);
+        pInputCalle.setAlignmentX(Component.LEFT_ALIGNMENT);
+        pInputCalle.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
+        pInputCalle.add(lCalle, BorderLayout.WEST);
+        pInputCalle.add(txtCalle, BorderLayout.CENTER);
+
+        panelFiltros.add(pInputNum);
         panelFiltros.add(Box.createRigidArea(new Dimension(0, 10)));
-        panelFiltros.add(lCalle);
-        panelFiltros.add(Box.createRigidArea(new Dimension(0, 6)));
-        panelFiltros.add(txtCalle);
+        panelFiltros.add(pInputCalle);
 
         JButton btnBuscar = ThemeManager.Button("Buscar");
         btnBuscar.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -216,6 +224,7 @@ public class MenuVivienda extends JPanel {
             "CASE WHEN EXISTS (" +
             "    SELECT 1 FROM cuotas c " +
             "    WHERE c.activo = true " +
+            "    AND c.fecha_limite < NOW() " +
             "    AND NOT EXISTS (" +
             "        SELECT 1 FROM pagos_realizados pr WHERE pr.id_cuota = c.id AND pr.id_vivienda = v.id" +
             "    )" +
@@ -423,6 +432,7 @@ public class MenuVivienda extends JPanel {
 
         JLabel lblReferencia = etiquetaDialogo("Referencia (últimos 4 dígitos)");
         JTextField txtReferencia = campoDialogo("");
+        restringirSoloNumeros(txtReferencia, 4);
 
         JButton btnPagar = ThemeManager.Button("Pagar Cuota");
         btnPagar.setPreferredSize(new Dimension(280, 38));
@@ -618,7 +628,7 @@ public class MenuVivienda extends JPanel {
         panelDatos.add(crearEtiquetaInfo("Vivienda", vivienda.numero + " - " + vivienda.calle));
         panelDatos.add(crearEtiquetaInfo("Representante", datos.nombreCompleto));
         panelDatos.add(crearEtiquetaInfo("Cédula", datos.cedula));
-        panelDatos.add(crearEtiquetaInfo("Estado", pendientes.isEmpty() ? "Solvente" : "Moroso"));
+        panelDatos.add(crearEtiquetaInfo("Estado", tieneCuotaVencida(pendientes) ? "Moroso" : "Solvente"));
 
         String[] columnas = {"Cuota", "Monto", "Fecha Emisión", "Fecha Límite"};
         DefaultTableModel modeloPendientes = new DefaultTableModel(columnas, 0) {
@@ -676,14 +686,42 @@ public class MenuVivienda extends JPanel {
         return label;
     }
 
+    /**
+     * Una vivienda es "Moroso" solo si tiene al menos una cuota pendiente cuya
+     * fecha límite ya pasó. Una cuota pendiente que todavía está dentro de su
+     * plazo (fecha límite futura) no cuenta como morosidad.
+     */
+    private boolean tieneCuotaVencida(List<CuotaPendiente> pendientes) {
+        java.util.Date ahora = new java.util.Date();
+        for (CuotaPendiente cuota : pendientes) {
+            if (cuota.fechaLimite != null && cuota.fechaLimite.before(ahora)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Entre las cuotas pendientes, devuelve la vencida más antigua (la que
+     * realmente origina la morosidad). Si no hay ninguna vencida, devuelve null.
+     */
+    private CuotaPendiente obtenerCuotaVencidaMasAntigua(List<CuotaPendiente> pendientes) {
+        java.util.Date ahora = new java.util.Date();
+        CuotaPendiente masAntigua = null;
+        for (CuotaPendiente cuota : pendientes) {
+            if (cuota.fechaLimite == null || !cuota.fechaLimite.before(ahora)) {
+                continue;
+            }
+            if (masAntigua == null || cuota.fechaLimite.before(masAntigua.fechaLimite)) {
+                masAntigua = cuota;
+            }
+        }
+        return masAntigua;
+    }
+
     private DatosConstancia obtenerDatosConstancia(int idVivienda) throws SQLException {
         ResultSet rs = ConexionPostgres.consultar(
-            "SELECT r.nombre, r.apellido, r.cedula, " +
-            "CASE WHEN EXISTS (" +
-            "    SELECT 1 FROM cuotas c WHERE c.activo = true AND NOT EXISTS (" +
-            "        SELECT 1 FROM pagos_realizados pr WHERE pr.id_cuota = c.id AND pr.id_vivienda = v.id" +
-            "    )" +
-            ") THEN 'Moroso' ELSE 'Solvente' END AS estado_vivienda " +
+            "SELECT r.nombre, r.apellido, r.cedula " +
             "FROM viviendas v " +
             "LEFT JOIN representantes r ON r.id_vivienda = v.id AND r.activo = true " +
             "WHERE v.id = ? " +
@@ -705,11 +743,6 @@ public class MenuVivienda extends JPanel {
                 cedula = "NO REGISTRADA";
             }
 
-            String estado = rs.getString("estado_vivienda");
-            if (estado == null || estado.trim().isEmpty()) {
-                estado = "Solvente";
-            }
-
             return new DatosConstancia(nombreCompleto, cedula);
         }
 
@@ -721,9 +754,20 @@ public class MenuVivienda extends JPanel {
         try {
             DatosConstancia datos = obtenerDatosConstancia(vivienda.id);
             String fechaActual = new SimpleDateFormat("dd/MM/yyyy").format(new java.util.Date());
-            String anioCuota = new SimpleDateFormat("yyyy").format(cuota.fechaLimite);
-            String mesCuota = new SimpleDateFormat("MMMM", new Locale("es", "VE")).format(cuota.fechaLimite).toUpperCase();
-            String estadoVivienda = obtenerCuotasPendientesVivienda(vivienda.id).isEmpty() ? "Solvente" : "Moroso";
+
+            ArrayList<CuotaPendiente> pendientesActuales = obtenerCuotasPendientesVivienda(vivienda.id);
+            boolean esMoroso = tieneCuotaVencida(pendientesActuales);
+            String estadoVivienda = esMoroso ? "Moroso" : "Solvente";
+
+            // Si está moroso, el mes/año de referencia debe ser el de la cuota vencida
+            // más antigua (la que realmente origina la morosidad), no el de la cuota
+            // que se acaba de pagar en esta transacción. Si está solvente, se usa la
+            // cuota recién pagada como referencia de "al día hasta".
+            CuotaPendiente cuotaVencidaMasAntigua = esMoroso ? obtenerCuotaVencidaMasAntigua(pendientesActuales) : null;
+            java.sql.Timestamp fechaReferencia = cuotaVencidaMasAntigua != null ? cuotaVencidaMasAntigua.fechaLimite : cuota.fechaLimite;
+
+            String anioCuota = new SimpleDateFormat("yyyy").format(fechaReferencia);
+            String mesCuota = new SimpleDateFormat("MMMM", new Locale("es", "VE")).format(fechaReferencia).toUpperCase();
 
             String nombreArchivo = "Constancia_Solvencia_" + vivienda.numero + "_" +
                 new SimpleDateFormat("yyyyMMdd_HHmmss").format(new java.util.Date()) + ".pdf";
@@ -752,11 +796,11 @@ public class MenuVivienda extends JPanel {
 
             Paragraph cuerpo = new Paragraph(
                 "Quienes Suscribimos miembros de la Junta Directiva de la Asociación de Propietarios y Vecinos de la \"Urb. Santa Fe III Etapa\", de la parroquia Raúl Leoni, Municipio Maracaibo, Estado Zulia, por medio de la presente\n\n" +
-                "Hacemos constar que el ciudadano(a): " + datos.nombreCompleto + ", de la cédula [" + datos.cedula + "] " +
-                "propietario en la calle [" + vivienda.calle + "] Casa N° [" + vivienda.numero + "] se encuentra [" + estadoVivienda + "] " +
+                "Hacemos constar que el ciudadano(a): " + datos.nombreCompleto + ", de la cédula " + datos.cedula + " " +
+                "propietario en la calle " + vivienda.calle + " Casa N° " + vivienda.numero + " se encuentra " + estadoVivienda + " " +
                 "con las Cuotas ordinaria y/o Extraordinaria de Mantenimiento de la Asociación y servicios Municipales (Aseo y Gas) " +
-                "SEDEMAT año [" + anioCuota + "] HASTA EL DE [" + mesCuota + "].\n\n" +
-                "Constancia que se expide a petición de la parte interesada en Maracaibo a los [" + fechaActual + "]\n\n" +
+                "SEDEMAT año " + anioCuota + " HASTA EL DE " + mesCuota + ".\n\n" +
+                "Constancia que se expide a petición de la parte interesada en Maracaibo a los " + fechaActual + "\n\n" +
                 "Atentamente\n" +
                 "Por la Junta Directiva"
             );
@@ -984,6 +1028,10 @@ public class MenuVivienda extends JPanel {
         JTextField txtNumeroLocal = campoDialogo(numeroOriginal == null ? "" : numeroOriginal);
         txtNumeroLocal.setPreferredSize(new Dimension(160, 30));
 
+        // Restricciones de escritura: solo se puede teclear lo que tiene sentido para cada campo
+        restringirCalle(txtCalleLocal, 30);
+        restringirNumeroVivienda(txtNumeroLocal, 10);
+
         gbc.gridx = 0; gbc.gridy = 0; gbc.anchor = GridBagConstraints.EAST; gbc.fill = GridBagConstraints.NONE;
         formPanel.add(lblCalle, gbc);
         gbc.gridx = 1; gbc.gridy = 0; gbc.anchor = GridBagConstraints.WEST; gbc.fill = GridBagConstraints.HORIZONTAL; gbc.weightx = 1.0;
@@ -1096,12 +1144,113 @@ public class MenuVivienda extends JPanel {
         return field;
     }
 
+    /**
+     * Valida "Calle y Avenida": letras (con tildes/ñ), números, espacios, '#'
+     * y '-'. Entre 3 y 30 caracteres, sin espacios dobles ni espacios al
+     * inicio/final.
+     */
     private boolean validarCalle(String calle) {
-        return !calle.isEmpty() && calle.matches("^[A-Za-z0-9 áéíóúÁÉÍÓÚ#\\-]{3,30}$");
+        if (calle == null || calle.isEmpty()) return false;
+        if (calle.length() < 3 || calle.length() > 30) return false;
+        if (calle.contains("  ")) return false;
+        if (calle.startsWith(" ") || calle.endsWith(" ")) return false;
+        return calle.matches("^[A-Za-z0-9áéíóúÁÉÍÓÚñÑ #\\-]{3,30}$");
     }
 
+    /**
+     * Valida "Número de Casa": letras, números y guion (ej. "12", "12-A").
+     * Entre 1 y 10 caracteres, sin espacios.
+     */
     private boolean validarNumero(String numero) {
-        return !numero.isEmpty() && numero.matches("^[A-Za-z0-9\\-]{1,10}$");
+        if (numero == null || numero.isEmpty()) return false;
+        return numero.matches("^[A-Za-z0-9\\-]{1,10}$");
+    }
+
+    /**
+     * Restringe un JTextField para que solo acepte letras (con tildes/ñ),
+     * números, espacios, '#' y '-', respetando un largo máximo.
+     */
+    private void restringirCalle(JTextField campo, int maxLength) {
+        ((AbstractDocument) campo.getDocument()).setDocumentFilter(new DocumentFilter() {
+            @Override
+            public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
+                if (string == null) return;
+                String filtrado = string.replaceAll("[^A-Za-z0-9áéíóúÁÉÍÓÚñÑ #\\-]", "");
+                if (filtrado.isEmpty()) return;
+                int espacioDisponible = maxLength - fb.getDocument().getLength();
+                if (espacioDisponible <= 0) return;
+                if (filtrado.length() > espacioDisponible) filtrado = filtrado.substring(0, espacioDisponible);
+                super.insertString(fb, offset, filtrado, attr);
+            }
+
+            @Override
+            public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
+                String filtrado = text == null ? "" : text.replaceAll("[^A-Za-z0-9áéíóúÁÉÍÓÚñÑ #\\-]", "");
+                int largoActual = fb.getDocument().getLength() - length;
+                int espacioDisponible = maxLength - largoActual;
+                if (espacioDisponible < 0) espacioDisponible = 0;
+                if (filtrado.length() > espacioDisponible) filtrado = filtrado.substring(0, espacioDisponible);
+                super.replace(fb, offset, length, filtrado, attrs);
+            }
+        });
+    }
+
+    /**
+     * Restringe un JTextField para que, sin importar lo que se pegue o teclee,
+     * solo queden dígitos (0-9), respetando un largo máximo.
+     */
+    private void restringirSoloNumeros(JTextField campo, int maxLength) {
+        ((AbstractDocument) campo.getDocument()).setDocumentFilter(new DocumentFilter() {
+            @Override
+            public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
+                if (string == null) return;
+                String filtrado = string.replaceAll("[^0-9]", "");
+                if (filtrado.isEmpty()) return;
+                int espacioDisponible = maxLength - fb.getDocument().getLength();
+                if (espacioDisponible <= 0) return;
+                if (filtrado.length() > espacioDisponible) filtrado = filtrado.substring(0, espacioDisponible);
+                super.insertString(fb, offset, filtrado, attr);
+            }
+
+            @Override
+            public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
+                String filtrado = text == null ? "" : text.replaceAll("[^0-9]", "");
+                int largoActual = fb.getDocument().getLength() - length;
+                int espacioDisponible = maxLength - largoActual;
+                if (espacioDisponible < 0) espacioDisponible = 0;
+                if (filtrado.length() > espacioDisponible) filtrado = filtrado.substring(0, espacioDisponible);
+                super.replace(fb, offset, length, filtrado, attrs);
+            }
+        });
+    }
+
+    /**
+     * Restringe un JTextField para que solo acepte letras, números y guion,
+     * sin espacios, respetando un largo máximo.
+     */
+    private void restringirNumeroVivienda(JTextField campo, int maxLength) {
+        ((AbstractDocument) campo.getDocument()).setDocumentFilter(new DocumentFilter() {
+            @Override
+            public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
+                if (string == null) return;
+                String filtrado = string.replaceAll("[^A-Za-z0-9\\-]", "");
+                if (filtrado.isEmpty()) return;
+                int espacioDisponible = maxLength - fb.getDocument().getLength();
+                if (espacioDisponible <= 0) return;
+                if (filtrado.length() > espacioDisponible) filtrado = filtrado.substring(0, espacioDisponible);
+                super.insertString(fb, offset, filtrado, attr);
+            }
+
+            @Override
+            public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
+                String filtrado = text == null ? "" : text.replaceAll("[^A-Za-z0-9\\-]", "");
+                int largoActual = fb.getDocument().getLength() - length;
+                int espacioDisponible = maxLength - largoActual;
+                if (espacioDisponible < 0) espacioDisponible = 0;
+                if (filtrado.length() > espacioDisponible) filtrado = filtrado.substring(0, espacioDisponible);
+                super.replace(fb, offset, length, filtrado, attrs);
+            }
+        });
     }
 
     private void mostrarDialogoError(String mensaje) {

@@ -11,6 +11,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DocumentFilter;
 
 public class MenuRepresentante extends JPanel {
 
@@ -54,7 +58,7 @@ public class MenuRepresentante extends JPanel {
     public MenuRepresentante() {
         this.setLayout(new BorderLayout());
         this.setBackground(ThemeManager.COLOR_BACKGROUND_DARK);
-        this.setBorder(new EmptyBorder(20, 20, 20, 20));
+        this.setBorder(new EmptyBorder(10, 10, 10, 10));
 
         JPanel panelControles = new JPanel();
         panelControles.setLayout(new BoxLayout(panelControles, BoxLayout.Y_AXIS));
@@ -68,7 +72,7 @@ public class MenuRepresentante extends JPanel {
         btnAgregar.addActionListener(e -> abrirFormularioRepresentante(false, null));
 
         JLabel tituloAgregar = new JLabel("<html><div style='text-align:center;'>AGREGAR NUEVO REPRESENTANTE</div></html>", SwingConstants.CENTER);
-        tituloAgregar.setFont(ThemeManager.TEXT_SMALL);
+        tituloAgregar.setFont(ThemeManager.TEXT_SUBTITLE);
         tituloAgregar.setForeground(ThemeManager.COLOR_TEXT);
         tituloAgregar.setAlignmentX(Component.CENTER_ALIGNMENT);
         tituloAgregar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 28));
@@ -80,7 +84,7 @@ public class MenuRepresentante extends JPanel {
         separador.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JLabel tituloBusqueda = new JLabel("BÚSQUEDA Y FILTROS", SwingConstants.CENTER);
-        tituloBusqueda.setFont(ThemeManager.TEXT_SMALL);
+        tituloBusqueda.setFont(ThemeManager.TEXT_SUBTITLE);
         tituloBusqueda.setForeground(ThemeManager.COLOR_TEXT);
         tituloBusqueda.setAlignmentX(Component.CENTER_ALIGNMENT);
         tituloBusqueda.setMaximumSize(new Dimension(Integer.MAX_VALUE, 16));
@@ -92,40 +96,49 @@ public class MenuRepresentante extends JPanel {
         panelFiltros.setMaximumSize(new Dimension(Integer.MAX_VALUE, 160));
 
         JLabel lCedula = new JLabel("Cédula");
-        lCedula.setFont(ThemeManager.TEXT_SMALL);
+        lCedula.setFont(ThemeManager.TEXT_NORMAL);
         lCedula.setForeground(ThemeManager.COLOR_TEXT);
-        lCedula.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         txtCedula = ThemeManager.Textfield();
-        txtCedula.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
+
+        JPanel pInputCedula = new JPanel(new BorderLayout(10, 0));
+        pInputCedula.setOpaque(false);
+        pInputCedula.setAlignmentX(Component.LEFT_ALIGNMENT);
+        pInputCedula.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
+        pInputCedula.add(lCedula, BorderLayout.WEST);
+        pInputCedula.add(txtCedula, BorderLayout.CENTER);
 
         JLabel lNombre = new JLabel("Nombre Completo");
-        lNombre.setFont(ThemeManager.TEXT_SMALL);
+        lNombre.setFont(ThemeManager.TEXT_NORMAL);
         lNombre.setForeground(ThemeManager.COLOR_TEXT);
-        lNombre.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         txtNombre = ThemeManager.Textfield();
-        txtNombre.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
+
+        JPanel pInputNombre = new JPanel(new BorderLayout(10, 0));
+        pInputNombre.setOpaque(false);
+        pInputNombre.setAlignmentX(Component.LEFT_ALIGNMENT);
+        pInputNombre.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
+        pInputNombre.add(lNombre, BorderLayout.WEST);
+        pInputNombre.add(txtNombre, BorderLayout.CENTER);
 
         JLabel lApellido = new JLabel("Apellido Completo");
-        lApellido.setFont(ThemeManager.TEXT_SMALL);
+        lApellido.setFont(ThemeManager.TEXT_NORMAL);
         lApellido.setForeground(ThemeManager.COLOR_TEXT);
-        lApellido.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         txtApellido = ThemeManager.Textfield();
-        txtApellido.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
 
-        panelFiltros.add(lCedula);
-        panelFiltros.add(Box.createRigidArea(new Dimension(0, 6)));
-        panelFiltros.add(txtCedula);
+        JPanel pInputApellido = new JPanel(new BorderLayout(10, 0));
+        pInputApellido.setOpaque(false);
+        pInputApellido.setAlignmentX(Component.LEFT_ALIGNMENT);
+        pInputApellido.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
+        pInputApellido.add(lApellido, BorderLayout.WEST);
+        pInputApellido.add(txtApellido, BorderLayout.CENTER);
+
+        panelFiltros.add(pInputCedula);
         panelFiltros.add(Box.createRigidArea(new Dimension(0, 10)));
-        panelFiltros.add(lNombre);
-        panelFiltros.add(Box.createRigidArea(new Dimension(0, 6)));
-        panelFiltros.add(txtNombre);
+        panelFiltros.add(pInputNombre);
         panelFiltros.add(Box.createRigidArea(new Dimension(0, 10)));
-        panelFiltros.add(lApellido);
-        panelFiltros.add(Box.createRigidArea(new Dimension(0, 6)));
-        panelFiltros.add(txtApellido);
+        panelFiltros.add(pInputApellido);
 
         JButton btnBuscar = ThemeManager.Button("Buscar");
         btnBuscar.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -465,13 +478,48 @@ public class MenuRepresentante extends JPanel {
         JTextField txtApellidoLocal = campoDialogo(dataInicial == null ? "" : dataInicial.apellido);
         txtApellidoLocal.setPreferredSize(new Dimension(250, 30));
 
+        // La cédula se guarda completa con su prefijo (ej. "V-12345678"). Si venimos
+        // de una edición, separamos el prefijo (V/E) del número para poblar el combo
+        // y el campo de texto por separado.
+        String nacionalidadInicial = "V";
+        String cedulaSoloNumerosInicial = "";
+        if (dataInicial != null && dataInicial.cedula != null) {
+            String cedulaOriginal = dataInicial.cedula.trim();
+            if (!cedulaOriginal.isEmpty() && (Character.toUpperCase(cedulaOriginal.charAt(0)) == 'V'
+                    || Character.toUpperCase(cedulaOriginal.charAt(0)) == 'E')) {
+                nacionalidadInicial = String.valueOf(Character.toUpperCase(cedulaOriginal.charAt(0)));
+                cedulaSoloNumerosInicial = cedulaOriginal.replaceFirst("^[VEve][-\\s]?", "");
+            } else {
+                cedulaSoloNumerosInicial = cedulaOriginal;
+            }
+        }
+
         JLabel lblCedula = etiquetaDialogo("Cédula");
-        JTextField txtCedulaLocal = campoDialogo(dataInicial == null ? "" : dataInicial.cedula);
+        JComboBox<String> comboNacionalidad = new JComboBox<>(new String[]{"V", "E"});
+        comboNacionalidad.setSelectedItem(nacionalidadInicial);
+        comboNacionalidad.setFont(ThemeManager.TEXT_NORMAL);
+        comboNacionalidad.setBackground(ThemeManager.COLOR_INPUT);
+        comboNacionalidad.setForeground(ThemeManager.COLOR_TEXT_DARK);
+        comboNacionalidad.setPreferredSize(new Dimension(58, 30));
+        comboNacionalidad.setMaximumSize(new Dimension(58, 30));
+
+        JTextField txtCedulaLocal = campoDialogo(cedulaSoloNumerosInicial);
         txtCedulaLocal.setPreferredSize(new Dimension(180, 30));
+
+        JPanel panelCedula = new JPanel(new BorderLayout(6, 0));
+        panelCedula.setOpaque(false);
+        panelCedula.add(comboNacionalidad, BorderLayout.WEST);
+        panelCedula.add(txtCedulaLocal, BorderLayout.CENTER);
 
         JLabel lblTelefono = etiquetaDialogo("Teléfono");
         JTextField txtTelefonoLocal = campoDialogo(dataInicial == null ? "" : dataInicial.telefono);
         txtTelefonoLocal.setPreferredSize(new Dimension(180, 30));
+
+        // Restricciones de escritura: solo se puede teclear lo que tiene sentido para cada campo
+        restringirSoloLetras(txtNombreLocal, 30);
+        restringirSoloLetras(txtApellidoLocal, 30);
+        restringirSoloNumeros(txtCedulaLocal, 8);
+        restringirSoloNumeros(txtTelefonoLocal, 11);
 
         gbc.gridx = 0; gbc.gridy = 0; gbc.anchor = GridBagConstraints.EAST; gbc.fill = GridBagConstraints.NONE;
         formPanel.add(lblVivienda, gbc);
@@ -491,7 +539,7 @@ public class MenuRepresentante extends JPanel {
         gbc.gridx = 0; gbc.gridy = 3; gbc.anchor = GridBagConstraints.EAST; gbc.fill = GridBagConstraints.NONE; gbc.weightx = 0.0;
         formPanel.add(lblCedula, gbc);
         gbc.gridx = 1; gbc.gridy = 3; gbc.anchor = GridBagConstraints.WEST; gbc.fill = GridBagConstraints.HORIZONTAL; gbc.weightx = 1.0;
-        formPanel.add(txtCedulaLocal, gbc);
+        formPanel.add(panelCedula, gbc);
 
         gbc.gridx = 0; gbc.gridy = 4; gbc.anchor = GridBagConstraints.EAST; gbc.fill = GridBagConstraints.NONE; gbc.weightx = 0.0;
         formPanel.add(lblTelefono, gbc);
@@ -521,7 +569,8 @@ public class MenuRepresentante extends JPanel {
             ViviendaItem viviendaSeleccionada = (ViviendaItem) comboVivienda.getSelectedItem();
             String nombre = txtNombreLocal.getText().trim();
             String apellido = txtApellidoLocal.getText().trim();
-            String cedula = txtCedulaLocal.getText().trim();
+            String nacionalidad = String.valueOf(comboNacionalidad.getSelectedItem());
+            String cedulaNumeros = txtCedulaLocal.getText().trim();
             String telefono = txtTelefonoLocal.getText().trim();
 
             if (viviendaSeleccionada == null) {
@@ -539,8 +588,8 @@ public class MenuRepresentante extends JPanel {
                 return;
             }
 
-            if (!validarCedula(cedula)) {
-                mostrarDialogoError("Cédula inválida.");
+            if (!validarCedula(cedulaNumeros)) {
+                mostrarDialogoError("Cédula inválida. Debe contener entre 6 y 8 dígitos.");
                 return;
             }
 
@@ -548,6 +597,8 @@ public class MenuRepresentante extends JPanel {
                 mostrarDialogoError("Teléfono inválido.");
                 return;
             }
+
+            String cedula = nacionalidad + "-" + cedulaNumeros;
 
             try {
                             String miUsuario = Backend.SesionUsuario.getInstancia().getCedula();
@@ -692,20 +743,104 @@ public class MenuRepresentante extends JPanel {
         return field;
     }
 
+    /**
+     * Valida nombres: solo letras (con tildes/ñ), espacios simples, apóstrofes y
+     * guiones para nombres compuestos. No permite números ni espacios dobles,
+     * ni que empiece/termine con espacio, apóstrofe o guion.
+     */
     private boolean validarNombre(String nombre) {
-        return !nombre.isEmpty() && nombre.matches("^[A-Za-zÁÉÍÓÚáéíóúÑñ'\\- ]{2,20}$");
+        if (nombre == null || nombre.isEmpty()) return false;
+        if (nombre.length() < 2 || nombre.length() > 30) return false;
+        if (nombre.contains("  ")) return false;
+        return nombre.matches("^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+(?:[ '\\-][A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+)*$");
     }
 
     private boolean validarApellido(String apellido) {
-        return !apellido.isEmpty() && apellido.matches("^[A-Za-zÁÉÍÓÚáéíóúÑñ'\\- ]{2,20}$");
+        if (apellido == null || apellido.isEmpty()) return false;
+        if (apellido.length() < 2 || apellido.length() > 30) return false;
+        if (apellido.contains("  ")) return false;
+        return apellido.matches("^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+(?:[ '\\-][A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+)*$");
     }
 
+    /**
+     * Valida la parte numérica de la cédula de identidad venezolana (sin el
+     * prefijo V/E, que se maneja en un combobox aparte). Legalmente no existe
+     * una cantidad de dígitos distinta entre V y E: ambas nacionalidades usan
+     * el mismo rango numérico (actualmente hasta ~32 millones, es decir, un
+     * máximo de 8 dígitos), por lo que se aplica la misma regla a ambas.
+     */
     private boolean validarCedula(String cedula) {
-        return !cedula.isEmpty() && cedula.matches("^[A-Za-z0-9-]{5,13}$");
+        if (cedula == null || cedula.isEmpty()) return false;
+        return cedula.matches("^[1-9][0-9]{4,7}$");
     }
 
+    /**
+     * Valida teléfono venezolano: solo dígitos, 11 dígitos en total, comenzando
+     * con 0 y seguido de un prefijo válido de celular (0412, 0414, 0416, 0424,
+     * 0426) o de un código de área fijo (02XX).
+     */
     private boolean validarTelefono(String telefono) {
-        return !telefono.isEmpty() && telefono.matches("^[A-Za-z0-9-]{7,13}$");
+        if (telefono == null || telefono.isEmpty()) return false;
+        return telefono.matches("^0(2\\d{2}|4(12|14|16|24|26))\\d{7}$");
+    }
+
+    /**
+     * Restringe un JTextField para que, sin importar lo que se pegue o teclee,
+     * solo queden dígitos (0-9), respetando un largo máximo.
+     */
+    private void restringirSoloNumeros(JTextField campo, int maxLength) {
+        ((AbstractDocument) campo.getDocument()).setDocumentFilter(new DocumentFilter() {
+            @Override
+            public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
+                if (string == null) return;
+                String filtrado = string.replaceAll("[^0-9]", "");
+                if (filtrado.isEmpty()) return;
+                int espacioDisponible = maxLength - fb.getDocument().getLength();
+                if (espacioDisponible <= 0) return;
+                if (filtrado.length() > espacioDisponible) filtrado = filtrado.substring(0, espacioDisponible);
+                super.insertString(fb, offset, filtrado, attr);
+            }
+
+            @Override
+            public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
+                String filtrado = text == null ? "" : text.replaceAll("[^0-9]", "");
+                int largoActual = fb.getDocument().getLength() - length;
+                int espacioDisponible = maxLength - largoActual;
+                if (espacioDisponible < 0) espacioDisponible = 0;
+                if (filtrado.length() > espacioDisponible) filtrado = filtrado.substring(0, espacioDisponible);
+                super.replace(fb, offset, length, filtrado, attrs);
+            }
+        });
+    }
+
+    /**
+     * Restringe un JTextField para que solo acepte letras (con tildes/ñ),
+     * espacios, apóstrofes y guiones, respetando un largo máximo. Bloquea
+     * números y otros símbolos.
+     */
+    private void restringirSoloLetras(JTextField campo, int maxLength) {
+        ((AbstractDocument) campo.getDocument()).setDocumentFilter(new DocumentFilter() {
+            @Override
+            public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
+                if (string == null) return;
+                String filtrado = string.replaceAll("[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ '\\-]", "");
+                if (filtrado.isEmpty()) return;
+                int espacioDisponible = maxLength - fb.getDocument().getLength();
+                if (espacioDisponible <= 0) return;
+                if (filtrado.length() > espacioDisponible) filtrado = filtrado.substring(0, espacioDisponible);
+                super.insertString(fb, offset, filtrado, attr);
+            }
+
+            @Override
+            public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
+                String filtrado = text == null ? "" : text.replaceAll("[^A-Za-zÁÉÍÓÚÜÑáéíóúüñ '\\-]", "");
+                int largoActual = fb.getDocument().getLength() - length;
+                int espacioDisponible = maxLength - largoActual;
+                if (espacioDisponible < 0) espacioDisponible = 0;
+                if (filtrado.length() > espacioDisponible) filtrado = filtrado.substring(0, espacioDisponible);
+                super.replace(fb, offset, length, filtrado, attrs);
+            }
+        });
     }
 
     private void mostrarDialogoError(String mensaje) {
