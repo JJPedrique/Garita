@@ -6,9 +6,11 @@ import java.sql.SQLException;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.text.AbstractDocument;
 
 import Backend.ConexionPostgres;
 import Backend.ThemeManager;
+import Backend.ThemeManager.LimiteCaracteresFilter;
 
 public class FrameAgregarCarnet extends JPanel {
 
@@ -36,8 +38,12 @@ public class FrameAgregarCarnet extends JPanel {
     public FrameAgregarCarnet(JDialog JDPadre, Runnable onActualizarTabla) {
         this.JDPadre = JDPadre;
         this.onActualizarTabla = onActualizarTabla;
-        this.tfCodigoCarnet = ThemeManager.Textfield();
+        this.tfCodigoCarnet = ThemeManager.Textfield("0000000000");
         this.bAgregarCarnet = ThemeManager.Button("Agregar Carnet");
+
+        AbstractDocument AD;
+        AD = (AbstractDocument) tfCodigoCarnet.getDocument();
+        AD.setDocumentFilter(new LimiteCaracteresFilter(10));
 
         // Layout Base
         setLayout(GBL);
@@ -111,10 +117,8 @@ public class FrameAgregarCarnet extends JPanel {
     private void CargarViviendas() {
         cbViviendas.removeAllItems();
         cbViviendas.addItem("Seleccione una vivienda...");
-        
-   
 
-        String query = "SELECT id, concat('Nro: ',numero_vivienda,' - Calle: ',calle) AS info FROM viviendas ORDER BY numero_vivienda,calle ASC;";
+        String query = "SELECT id, concat('Nro: ',numero_vivienda,' - Calle: ',calle) AS info FROM viviendas WHERE activo = true ORDER BY numero_vivienda,calle ASC;";
         try {
             ResultSet RS_Carnet = ConexionPostgres.consultar(query, null);
             while (RS_Carnet != null && RS_Carnet.next()) {
@@ -127,7 +131,29 @@ public class FrameAgregarCarnet extends JPanel {
 
     private void SetEvents() {
         bAgregarCarnet.addActionListener(e -> {
-            String sCodigo = tfCodigoCarnet.getText().trim().toUpperCase();
+
+            long nCodigo = -1;
+            try{
+                nCodigo = Long.parseLong(tfCodigoCarnet.getText().trim());
+            } catch(Exception ex){
+                ThemeManager.MostrarMensajeError(this,"El código de carnet debe ser un número entero.");
+                tfCodigoCarnet.requestFocusInWindow();
+                return;
+            }
+
+            if(nCodigo <= 0){
+                ThemeManager.MostrarMensajeError(this,"El código de carnet es un número inválido.");
+                tfCodigoCarnet.requestFocusInWindow();
+                return;
+            }
+
+            String sCodigo = String.format("%010d",nCodigo);
+            if(sCodigo.length() > 10){
+                ThemeManager.MostrarMensajeError(this,"El código de carnet excede de la longitud de 10 carácteres.");
+                tfCodigoCarnet.requestFocusInWindow();
+                return;
+            }
+
             int iVivienda = cbViviendas.getSelectedIndex();
 
             if (sCodigo.isEmpty()) {

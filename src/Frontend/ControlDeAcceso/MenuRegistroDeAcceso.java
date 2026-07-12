@@ -3,6 +3,7 @@ package Frontend.ControlDeAcceso;
 import javax.swing.*;
 import javax.swing.Timer;
 import javax.swing.border.*;
+import javax.swing.text.AbstractDocument;
 
 import com.toedter.calendar.JDateChooser;
 
@@ -14,6 +15,7 @@ import java.util.*;
 
 import Backend.ConexionPostgres;
 import Backend.ThemeManager;
+import Backend.ThemeManager.LimiteCaracteresFilter;
 
 //region JComponentes
 class JRegistroAcceso {
@@ -21,14 +23,14 @@ class JRegistroAcceso {
     JLabel Tipo;
     JLabel FechaUso;
     JLabel Estado;
-    JLabel Nombre;
+    JLabel Entidad;
 
-    public JRegistroAcceso(String Carnet, String Tipo, String FechaUso, String Estado, String Nombre) {
+    public JRegistroAcceso(String Carnet, String Tipo, String FechaUso, String Estado, String Entidad) {
         this.Carnet = ThemeManager.Label(Carnet);
         this.Tipo = ThemeManager.Label(Tipo);
         this.FechaUso = ThemeManager.Label(FechaUso);
         this.Estado = ThemeManager.Label(Estado);
-        this.Nombre = ThemeManager.Label(Nombre);
+        this.Entidad = ThemeManager.Label(Entidad);
 
         Border margin = BorderFactory.createEmptyBorder(0, 10, 0, 0);
         this.Carnet.setHorizontalAlignment(SwingConstants.LEFT);
@@ -40,12 +42,12 @@ class JRegistroAcceso {
         this.Estado.setHorizontalAlignment(SwingConstants.CENTER);
         this.Estado.setOpaque(true);
 
-        this.Estado.setBackground((Estado.equalsIgnoreCase("Permitido")) ? ThemeManager.COLOR_SECONDARY : ThemeManager.COLOR_ERROR);
-        this.Estado.setForeground(ThemeManager.COLOR_TEXT_DARK);
+        this.Estado.setBackground((Estado.equalsIgnoreCase("Permitido")) ? ThemeManager.COLOR_ESTADO_LABEL_TRUE : ThemeManager.COLOR_ESTADO_LABEL_FALSE);
+        this.Estado.setForeground((Estado.equalsIgnoreCase("Permitido")) ? ThemeManager.COLOR_ESTADO_TEXT_TRUE : ThemeManager.COLOR_ESTADO_TEXT_FALSE);
         this.Estado.setFont(ThemeManager.TEXT_SUBTITLE);
         
-        this.Nombre.setHorizontalAlignment(SwingConstants.LEFT);
-        this.Nombre.setBorder(margin);
+        this.Entidad.setHorizontalAlignment(SwingConstants.LEFT);
+        this.Entidad.setBorder(margin);
     }
 
     public JPanel toPanel() {
@@ -64,7 +66,7 @@ class JRegistroAcceso {
         Estado.setPreferredSize(new Dimension(90, 25));
         pEstado.add(Estado);
         ROW.add(pEstado);
-        ROW.add(Nombre);
+        ROW.add(Entidad);
         return ROW;
     }
 }
@@ -86,10 +88,10 @@ public class MenuRegistroDeAcceso extends JPanel {
     JLabel lFiltroIdentificacion = ThemeManager.Label("Filtro por identificación");
 
     JLabel lCodigoCarnet = ThemeManager.Label("Código de Carnet");
-    JLabel lNombreVisita = ThemeManager.Label("Nombre de Visita");
+    JLabel lNombreEntidad = ThemeManager.Label("Nombre de Entidad");
 
-    JTextField tfCodigoCarnet = ThemeManager.Textfield();
-    JTextField tfNombreVisita = ThemeManager.Textfield();
+    JTextField tfCodigoCarnet = ThemeManager.Textfield("0000000000");
+    JTextField tfEntidad = ThemeManager.Textfield("XXB-YY / Juan");
 
     JCheckBox cbTiempoReal = new JCheckBox("Tiempo Real (Últimas 24h)", true);
     Timer tTiempoReal;
@@ -119,7 +121,7 @@ public class MenuRegistroDeAcceso extends JPanel {
     JButton bSolicitarAccesoResidente = ThemeManager.Button("Solicitar Acceso al Residente");
 
     ArrayList<JRegistroAcceso> JRegistros = new ArrayList<>();
-    String[] headers = {"Carnet","Tipo de Acceso","Fecha de Uso", "Estado", "Nombre"};
+    String[] headers = {"Carnet","Tipo de Acceso","Fecha de Uso", "Estado", "Entidad"};
 
     //region Theme
     public void SetTheme() {
@@ -172,6 +174,13 @@ public class MenuRegistroDeAcceso extends JPanel {
         SetupRadioBtns();
         SetEnableButtons();
         
+        AbstractDocument AD;
+        AD = (AbstractDocument) tfCodigoCarnet.getDocument();
+        AD.setDocumentFilter(new LimiteCaracteresFilter(10));
+
+        AD = (AbstractDocument) tfEntidad.getDocument();
+        AD.setDocumentFilter(new LimiteCaracteresFilter(40));
+
         Calendar CAL = Calendar.getInstance();
         
         // Inicializar Hasta
@@ -192,7 +201,7 @@ public class MenuRegistroDeAcceso extends JPanel {
 
         GBC.insets = new Insets(5, 0, 5, 0);
         GBC.gridy = 1; pFunctions.add(FormRow(lCodigoCarnet, tfCodigoCarnet), GBC); 
-        GBC.gridy = 2; pFunctions.add(FormRow(lNombreVisita, tfNombreVisita), GBC);
+        GBC.gridy = 2; pFunctions.add(FormRow(lNombreEntidad, tfEntidad), GBC);
 
         GBC.insets = new Insets(10, 0, 2, 0);
         GBC.gridy = 3; pFunctions.add(lFiltroEstado, GBC);
@@ -271,8 +280,8 @@ public class MenuRegistroDeAcceso extends JPanel {
     //endregion
 
     //region Tabla
-    // Recibe un booleano para saber si la actualización es automática del Timer o manual (Buscar)
     public void ActualizarTabla(boolean esAutomatica) {
+        // Si no está en tiempo real, validamos que las fechas tengan sentido lógico
         if (!cbTiempoReal.isSelected() && dcDesde.getDate() != null && dcHasta.getDate() != null) {
             Calendar cDesde = Calendar.getInstance();
             cDesde.setTime(dcDesde.getDate());
@@ -300,36 +309,34 @@ public class MenuRegistroDeAcceso extends JPanel {
         pTablaBody.removeAll();
 
         StringBuilder Query = new StringBuilder(
-            "SELECT COALESCE(C.codigo, 'INVITADO') AS codigo_carnet,\n" + //
-            "A.tipo AS tipo,\n" + //
-            "A.fecha_hora AS fecha,\n" + //
-            "A.estado AS estado,\n" + //
-            "CASE\n" + //
-            "WHEN nombre IS NOT NULL and apellido IS NOT NULL THEN CONCAT(nombre, ' ', apellido) \n" + //
-            "ELSE 'SIN RESIDENTE'\n" + //
-            "END AS nombre_completo\n" + //
-            "FROM accesos AS A \n" + //
-            "LEFT JOIN carnets AS C ON C.id = A.id_carnet\n" + //
-            "LEFT JOIN representantes AS R ON C.id_vivienda = R.id_vivienda\n" + //
+            "SELECT \n" +
+            "COALESCE(C.codigo, 'INVITADO') AS codigo_carnet,\n" +
+            "A.tipo AS tipo,\n" +
+            "A.fecha_hora AS fecha,\n" +
+            "A.estado AS estado,\n" +
+            "CASE\n" +
+            "WHEN nombre_visita IS NULL THEN V.numero_vivienda\n" +
+            "ELSE nombre_visita\n" +
+            "END AS entidad\n" +
+            "FROM accesos AS A \n" +
+            "LEFT JOIN carnets AS C ON C.id = A.id_carnet\n" +
+            "LEFT JOIN viviendas AS V ON V.id = C.id_vivienda " +
             "WHERE 1=1 "
         );
 
         ArrayList<Object> Parametros = new ArrayList<>();
 
-        // REGLA: Si es actualización en tiempo real automática por segundo, ignoramos los TextFields
-        if (!esAutomatica) {
-            String sCodigo = tfCodigoCarnet.getText().trim().toUpperCase();
-            if (!sCodigo.isEmpty()) {
-                Query.append("AND C.codigo LIKE ? ");
-                Parametros.add("%" + sCodigo + "%");
-            }
+        String sCodigo = tfCodigoCarnet.getText().trim().toUpperCase();
+        if (!sCodigo.isEmpty()) {
+            Query.append("AND C.codigo LIKE ? ");
+            Parametros.add("%" + sCodigo + "%");
+        }
 
-            String sNombre = tfNombreVisita.getText().trim();
-            if (!sNombre.isEmpty()) {
-                Query.append("AND (A.nombre_visita ILIKE ? OR COALESCE(R.nombre, '') ILIKE ? OR COALESCE(R.apellido, '') ILIKE ?) ");
-                String match = "%" + sNombre + "%";
-                Parametros.add(match); Parametros.add(match); Parametros.add(match);
-            }
+        String sNombre = tfEntidad.getText().trim();
+        if (!sNombre.isEmpty()) {
+            Query.append("AND (A.nombre_visita ILIKE ? OR V.numero_vivienda ILIKE ?) ");
+            String match = "%" + sNombre + "%";
+            Parametros.add(match); Parametros.add(match);
         }
 
         if (rbEstadoPermitido.isSelected()) {
@@ -349,6 +356,9 @@ public class MenuRegistroDeAcceso extends JPanel {
             Ultimas24H.add(Calendar.DAY_OF_YEAR, -1);
             Query.append("AND A.fecha_hora >= ? ");
             Parametros.add(new Timestamp(Ultimas24H.getTimeInMillis()));
+            
+            Query.append("AND A.fecha_hora <= ? ");
+            Parametros.add(new Timestamp(System.currentTimeMillis()));
         } else {
             if (dcDesde.getDate() != null) {
                 Calendar Fecha = Calendar.getInstance();
@@ -388,8 +398,8 @@ public class MenuRegistroDeAcceso extends JPanel {
                 String sTipo = RS.getString("tipo");
                 String sFecha = RS.getString("fecha");
                 String sEstado = RS.getString("estado");
-                String sNombreCompleto = RS.getString("nombre_completo");
-                JRegistros.add(new JRegistroAcceso(sCarnet, sTipo, sFecha, sEstado, sNombreCompleto));
+                String sEntidad = RS.getString("entidad");
+                JRegistros.add(new JRegistroAcceso(sCarnet, sTipo, sFecha, sEstado, sEntidad));
             }
         } catch (java.sql.SQLException e) {
             e.printStackTrace();
@@ -420,7 +430,14 @@ public class MenuRegistroDeAcceso extends JPanel {
         bBuscar.addActionListener(e -> ActualizarTabla(false));
 
         cbTiempoReal.addActionListener(e -> {
-            SetEnableButtons();
+            SetEnableButtons(); 
+            if (cbTiempoReal.isSelected()) {
+                if (!tTiempoReal.isRunning()) {
+                    tTiempoReal.start(); 
+                }
+            } else {
+                tTiempoReal.stop(); 
+            }
             ActualizarTabla(false);
         });
 
@@ -447,22 +464,32 @@ public class MenuRegistroDeAcceso extends JPanel {
     private void SetupTiempoRealTimer() {
         tTiempoReal = new Timer(1000, e -> {
             if (cbTiempoReal.isSelected()) {
+
+                Calendar ahora = Calendar.getInstance();
+                dcHasta.setDate(ahora.getTime());
+                spHoraHasta.setValue(ahora.getTime());
+                
                 ActualizarTabla(true);
             }
         });
-        tTiempoReal.start();
+        
+        if (cbTiempoReal.isSelected()) {
+            tTiempoReal.start();
+        }
     }
     //endregion
 
     //region Helper Functions
     private void SetEnableButtons(){
         boolean enTiempoReal = cbTiempoReal.isSelected();
+
         dcDesde.setEnabled(!enTiempoReal);
         spHoraDesde.setEnabled(!enTiempoReal);
         dcHasta.setEnabled(!enTiempoReal);
         spHoraHasta.setEnabled(!enTiempoReal);
         dcDesde.getCalendarButton().setEnabled(!enTiempoReal);
         dcHasta.getCalendarButton().setEnabled(!enTiempoReal);
+        bBuscar.setEnabled(!enTiempoReal);
     }
 
     private void SetupDateChooser(JDateChooser JDC) {

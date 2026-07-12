@@ -5,9 +5,11 @@ import java.sql.*;
 import java.util.ArrayList;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.text.AbstractDocument;
 
 import Backend.ConexionPostgres;
 import Backend.ThemeManager;
+import Backend.ThemeManager.LimiteCaracteresFilter;
 
 public class FrameSolicitarAccesoResidente extends JPanel {
 
@@ -20,7 +22,7 @@ public class FrameSolicitarAccesoResidente extends JPanel {
 
     private final JPanel pInput = new JPanel();
     private final JLabel lCodigoCarnet = ThemeManager.Label("Código de carnet");
-    private final JTextField tfCodigoCarnet = ThemeManager.Textfield();
+    private final JTextField tfCodigoCarnet = ThemeManager.Textfield("0000000000");
     
     private final JPanel pTipoAcceso = new JPanel();
     private final JLabel lTipoAcceso = ThemeManager.Label("Tipo de Acceso");
@@ -35,6 +37,10 @@ public class FrameSolicitarAccesoResidente extends JPanel {
 
     public FrameSolicitarAccesoResidente(JDialog JDPadre) {
         this.JDPadre = JDPadre;
+
+        AbstractDocument AD;
+        AD = (AbstractDocument) tfCodigoCarnet.getDocument();
+        AD.setDocumentFilter(new LimiteCaracteresFilter(10));
 
         // Layout Base
         setLayout(GBL);

@@ -158,6 +158,48 @@ public class ThemeManager {
         return newTextField;
     }
 
+    public static JTextField Textfield(String placeholder){
+        JTextField newTextField = new JTextField("") {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(getBackground());
+                g2.fillRoundRect(0, 0, getWidth()-1, getHeight()-1, ThemeManager.BORDER_RADIUS_PX, ThemeManager.BORDER_RADIUS_PX); 
+                g2.dispose();
+                super.paintComponent(g);
+
+                if (getText().isEmpty()) {
+                    Graphics2D gPlaceholder = (Graphics2D) g.create();
+                    gPlaceholder.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                    gPlaceholder.setColor(ThemeManager.COLOR_PLACEHOLDER);
+                    gPlaceholder.setFont(getFont());
+                
+                    FontMetrics fm = gPlaceholder.getFontMetrics();
+                    int x = getInsets().left;
+                    int y = (getHeight() - fm.getHeight()) / 2 + fm.getAscent();
+                    gPlaceholder.drawString(placeholder, x, y);
+                    
+                    gPlaceholder.dispose();
+                }
+            }
+        };
+
+        newTextField.setPreferredSize(new Dimension(250, 30));
+        newTextField.setBorder(BorderFactory.createEmptyBorder(6, 12, 6, 12));
+        newTextField.setOpaque(false);
+        newTextField.setFont(TEXT_NORMAL);
+        newTextField.setBackground(COLOR_INPUT);
+        newTextField.setForeground(COLOR_TEXT_DARK);
+
+        newTextField.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override public void focusGained(java.awt.event.FocusEvent evt) { newTextField.repaint(); }
+            @Override public void focusLost(java.awt.event.FocusEvent evt) { newTextField.repaint(); }
+        });
+
+        return newTextField;
+    }
+
     public static JPasswordField PasswordField() {
         JPasswordField PF = new JPasswordField("") {
             @Override
