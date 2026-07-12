@@ -300,14 +300,17 @@ public class MenuRegistroDeAcceso extends JPanel {
         pTablaBody.removeAll();
 
         StringBuilder Query = new StringBuilder(
-            "SELECT COALESCE(C.codigo, 'INVITADO') AS codigo_carnet,\n" +
-            "  A.tipo AS tipo,\n" +
-            "  A.fecha_hora AS fecha,\n" +
-            "  A.estado AS estado,\n" +
-            "  COALESCE(A.nombre_visita, CONCAT(R.nombre, ' ', R.apellido)) AS nombre_completo\n" +
-            "FROM accesos AS A \n" +
-            "LEFT JOIN carnets AS C ON C.id = A.id_carnet\n" +
-            "LEFT JOIN representantes AS R ON C.id_vivienda = R.id_vivienda\n" +
+            "SELECT COALESCE(C.codigo, 'INVITADO') AS codigo_carnet,\n" + //
+            "A.tipo AS tipo,\n" + //
+            "A.fecha_hora AS fecha,\n" + //
+            "A.estado AS estado,\n" + //
+            "CASE\n" + //
+            "WHEN nombre IS NOT NULL and apellido IS NOT NULL THEN CONCAT(nombre, ' ', apellido) \n" + //
+            "ELSE 'SIN RESIDENTE'\n" + //
+            "END AS nombre_completo\n" + //
+            "FROM accesos AS A \n" + //
+            "LEFT JOIN carnets AS C ON C.id = A.id_carnet\n" + //
+            "LEFT JOIN representantes AS R ON C.id_vivienda = R.id_vivienda\n" + //
             "WHERE 1=1 "
         );
 

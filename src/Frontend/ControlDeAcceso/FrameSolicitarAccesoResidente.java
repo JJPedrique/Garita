@@ -197,13 +197,8 @@ public class FrameSolicitarAccesoResidente extends JPanel {
                     return;
                 }
 
-                String sMoroso = "<html>Acceso denegado. Debe los siguientes pagos: <br>";
-
-                for(Object T[]: TUPLAS){
-                    sMoroso += ""+T[0].toString()+": $ "+T[1].toString()+" | "+T[2].toString()+" días atrasado. <br>";
-                }
-
-                sMoroso += "</html>";
+                String sMoroso = "Acceso denegado. El residente no está solvente.";
+                
                 ThemeManager.MostrarMensajeError(this, sMoroso);
                 InsertBDD(miUsuario,idCarnet,sTipoAcceso,"Denegado");
                 this.JDPadre.dispose();

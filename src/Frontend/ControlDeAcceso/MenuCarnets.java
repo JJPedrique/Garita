@@ -232,11 +232,15 @@ public class MenuCarnets extends JPanel {
         JCarnets.clear();
         pTableBody.removeAll();
 
-        String Query = "SELECT codigo, numero_vivienda, calle, CONCAT(nombre, ' ', apellido) AS nombre_completo " +
-                       "FROM carnets AS C " +
-                       "JOIN viviendas AS V ON C.id_vivienda = V.id " + 
-                       "JOIN representantes AS R ON R.id_vivienda = V.id " +
-                       "WHERE C.activo = true ";
+        String Query = "SELECT codigo, numero_vivienda, calle, \n" + //
+                        "CASE\n" + //
+                        "WHEN nombre IS NOT NULL and apellido IS NOT NULL THEN CONCAT(nombre, ' ', apellido) \n" + //
+                        "ELSE 'SIN RESIDENTE'\n" + //
+                        "END AS nombre_completo\n" + //
+                        "FROM carnets AS C\n" + //
+                        "JOIN viviendas AS V ON C.id_vivienda = V.id  \n" + //
+                        "LEFT JOIN representantes AS R ON R.id_vivienda = V.id \n" + //
+                        "WHERE C.activo = true ";
 
         boolean tieneFiltro = (filtroCodigo != null && !filtroCodigo.trim().isEmpty());
         if (tieneFiltro) Query += "AND C.codigo LIKE ? ";
