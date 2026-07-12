@@ -989,7 +989,7 @@ public class MenuVivienda extends JPanel {
         JTextField txtNumeroLocal = campoDialogo(numeroOriginal == null ? "" : numeroOriginal);
         txtNumeroLocal.setPreferredSize(new Dimension(160, 30));
 
-        // Restricciones de escritura: solo se puede teclear lo que tiene sentido para cada campo
+        // Restricciones de escritura
         restringirCalle(txtCalleLocal, 30);
         restringirNumeroVivienda(txtNumeroLocal, 10);
 
