@@ -190,11 +190,14 @@ public class MenuCuotas extends JPanel {
     JTextField inputMonto = ThemeManager.Textfield();
     
     private final JDateChooser jdcDesde = new JDateChooser();
+    
     private final JSpinner jsHoraDesde = createTimeSpinner();
     
     private final JDateChooser jdcHasta = new JDateChooser();
     private final JSpinner jsHoraHasta = createTimeSpinner();
-
+    
+    private final Calendar calendario = Calendar.getInstance();
+    
     private final JTextFieldDateEditor DesdeEditor = (JTextFieldDateEditor) jdcDesde.getDateEditor();
     
 
@@ -223,6 +226,11 @@ public class MenuCuotas extends JPanel {
         editorHoraHasta.getTextField().setEnabled(true);
         editorHoraHasta.getTextField().setEditable(false);
 
+        calendario.add(Calendar.MONTH, -1);
+        jdcDesde.getDateEditor().setDate(calendario.getTime());
+        
+        calendario.add(Calendar.MONTH, 4);
+        jdcHasta.getDateEditor().setDate(calendario.getTime());
 
         
 
@@ -272,7 +280,7 @@ public class MenuCuotas extends JPanel {
         gbc.gridy = 6; gbc.insets = new Insets(0, 5, 10, 15);
         pFiltros.add(inputMonto, gbc);
         
-        JLabel lDesde = ThemeManager.Label("Desde (Fecha Límite):");
+        JLabel lDesde = ThemeManager.Label("Desde (Fecha Inicial):");
         gbc.gridy = 7; gbc.insets = new Insets(4, 5, 2, 15);
         pFiltros.add(lDesde, gbc);
         jdcDesde.setPreferredSize(new Dimension(0, 32));
@@ -443,10 +451,12 @@ public class MenuCuotas extends JPanel {
             calFecha.set(Calendar.MINUTE, calHora.get(Calendar.MINUTE));
             calFecha.set(Calendar.SECOND, 0);
             
-            MAIN_QUERY += "AND fecha_limite >= ? ";
+            MAIN_QUERY += "AND fecha_emision >= ? ";
             params.add(new java.sql.Timestamp(calFecha.getTimeInMillis()));
+            java.sql.Timestamp test = new java.sql.Timestamp(calFecha.getTimeInMillis());
+            System.out.println("Fecha hora desde: "+test);
         }
-
+        
         if (jdcHasta.getDate() != null) {
             Calendar calFecha = Calendar.getInstance();
             calFecha.setTime(jdcHasta.getDate());
@@ -455,6 +465,7 @@ public class MenuCuotas extends JPanel {
             calFecha.set(Calendar.HOUR_OF_DAY, calHora.get(Calendar.HOUR_OF_DAY));
             calFecha.set(Calendar.MINUTE, calHora.get(Calendar.MINUTE));
             calFecha.set(Calendar.SECOND, 59);
+            System.out.println("Fecha hora hasta: "+calFecha.getTimeInMillis());
             
             MAIN_QUERY += "AND fecha_limite <= ? ";
             params.add(new java.sql.Timestamp(calFecha.getTimeInMillis()));
@@ -468,6 +479,7 @@ public class MenuCuotas extends JPanel {
 
         MAIN_QUERY += "ORDER BY id DESC;";
 
+        System.out.println(MAIN_QUERY);
         try {
             ResultSet rs = ConexionPostgres.consultar(MAIN_QUERY, params.isEmpty() ? null : params.toArray());
             while (rs != null && rs.next()) {

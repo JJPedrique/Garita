@@ -9,6 +9,8 @@ import Backend.ThemeManager;
 import com.toedter.calendar.JDateChooser;
 import com.toedter.calendar.JTextFieldDateEditor;
 import java.sql.ResultSet;
+import java.util.Calendar;
+import java.util.Date;
 
 public class VentanaActualizarCuota extends JDialog {
 
@@ -23,6 +25,8 @@ public class VentanaActualizarCuota extends JDialog {
     private final JSpinner jspHoraLimite = new JSpinner(new SpinnerDateModel());
 
     private final JTextFieldDateEditor LimiteEditor = (JTextFieldDateEditor) jdcLimite.getDateEditor();
+
+
 
     JRadioButton radioActivo = new JRadioButton("Activo");
     JRadioButton radioInactivo = new JRadioButton("Inactivo");
@@ -156,6 +160,11 @@ public class VentanaActualizarCuota extends JDialog {
             JSpinner.DefaultEditor editorHoraDesde = (JSpinner.DefaultEditor)  jspHoraLimite.getEditor();
             editorHoraDesde.getTextField().setEnabled(true);
             editorHoraDesde.getTextField().setEditable(false);
+            
+            ThemeManager.SetupDateChooser(jdcLimite);
+
+
+        
         }
     private void actualizarCuota(String idCuota) {
         String nuevaDesc = inputDescripcion.getText().trim();
@@ -235,7 +244,9 @@ String queryUpdate = "DO $$ BEGIN PERFORM set_config('app.usuario_actual', '" + 
 
                                
             Object[] valores = { nuevaDesc, Double.parseDouble(nuevoMonto), java.sql.Timestamp.valueOf(strFecha), nuevoEstado,idCuota};
-            System.out.println(idCuota);
+            //System.out.println(idCuota);
+
+
             ConexionPostgres.comandoDML(queryUpdate, valores);
             
             JOptionPane.showMessageDialog(this, "Cuota actualizada correctamente.", "Sistema Garita", JOptionPane.INFORMATION_MESSAGE);
@@ -263,4 +274,7 @@ String queryUpdate = "DO $$ BEGIN PERFORM set_config('app.usuario_actual', '" + 
         }
         return false;
     }
+
+
+
 }

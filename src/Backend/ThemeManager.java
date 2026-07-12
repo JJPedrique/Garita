@@ -8,6 +8,8 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.DocumentFilter;
 import javax.swing.text.AttributeSet;
 
+import com.toedter.calendar.JDateChooser;
+
 public class ThemeManager {
 
     public static final Color COLOR_BACKGROUND_DARK     = Color.decode("#121212");
@@ -395,5 +397,13 @@ public class ThemeManager {
                 super.replace(fb, offset, length, text, attrs);
             }
         }
+    }
+    public static void SetupDateChooser(JDateChooser jdc) {
+        jdc.setDateFormatString("yyyy-MM-dd");
+        jdc.getJCalendar().getYearChooser().setFont(ThemeManager.TEXT_NORMAL);
+        jdc.getJCalendar().getMonthChooser().getComboBox().setFont(ThemeManager.TEXT_NORMAL);
+        jdc.getJCalendar().getDayChooser().getDayPanel().setFont(ThemeManager.TEXT_NORMAL);
+        jdc.setPreferredSize(new java.awt.Dimension(0, 32));
+
     }
 }

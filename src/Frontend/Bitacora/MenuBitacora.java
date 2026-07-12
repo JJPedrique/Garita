@@ -68,7 +68,11 @@ public class MenuBitacora extends JPanel {
     
     private final JDateChooser jdcHasta = new JDateChooser();
     private final JSpinner jsHoraHasta = createTimeSpinner();
-        private final JTextFieldDateEditor DesdeEditor = (JTextFieldDateEditor) jdcDesde.getDateEditor();
+
+    
+    private final Calendar calendario = Calendar.getInstance();
+    
+    private final JTextFieldDateEditor DesdeEditor = (JTextFieldDateEditor) jdcDesde.getDateEditor();
     
 
     private final JTextFieldDateEditor HastaEditor = (JTextFieldDateEditor) jdcHasta.getDateEditor();
@@ -194,6 +198,12 @@ public class MenuBitacora extends JPanel {
         JSpinner.DefaultEditor editorHoraHasta = (JSpinner.DefaultEditor)  jsHoraHasta.getEditor();
         editorHoraHasta.getTextField().setEnabled(true);
         editorHoraHasta.getTextField().setEditable(false);
+
+        calendario.add(Calendar.MONTH, -1);
+        jdcDesde.getDateEditor().setDate(calendario.getTime());
+        
+        calendario.add(Calendar.MONTH, 4);
+        jdcHasta.getDateEditor().setDate(calendario.getTime());
     }
 
     private JSpinner createTimeSpinner() {

@@ -1,168 +1,158 @@
 package Frontend.Cuotas;
 
 import javax.swing.*;
-
 import com.toedter.calendar.JDateChooser;
 import com.toedter.calendar.JTextFieldDateEditor;
-
 import java.awt.*;
-import java.awt.event.ActionListener;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.ResultSet;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import Backend.ConexionPostgres;
 import Backend.ThemeManager;
 
 public class VentanaProgramarCuota extends JDialog {
-    private JTextField inputDescription;
-    private JTextField txtMonto;
+    private final JTextField inputDescription = new JTextField();
+    private final JTextField txtMonto = new JTextField();
     private final MenuCuotas menuPadre; 
 
-
-        private final JDateChooser jdcDesde = new JDateChooser();
+    private final JDateChooser jdcDesde = new JDateChooser();
     private final JSpinner jspHoraDesde = new JSpinner(new SpinnerDateModel());
 
     private final JDateChooser jdcHasta = new JDateChooser();
     private final JSpinner jspHoraHasta = new JSpinner(new SpinnerDateModel());
-
     
     private final JTextFieldDateEditor DesdeEditor = (JTextFieldDateEditor) jdcDesde.getDateEditor();
-    
-
     private final JTextFieldDateEditor HastaEditor = (JTextFieldDateEditor) jdcHasta.getDateEditor();
-    
+
+    private final Calendar calendario = Calendar.getInstance();
+    private final Date currentDate = new Date(); 
 
     public VentanaProgramarCuota(JFrame framePadre, MenuCuotas menuPadre) {
-        super(framePadre, "Sistema Garita - Agregar Cuota", true); 
+        super(framePadre, "Programar Cuota", true); 
         this.menuPadre = menuPadre;
         
-        setResizable(false);
+        DesdeEditor.setEditable(false);
+        HastaEditor.setEditable(false);
 
+        setUndecorated(true);
+        setSize(400, 380); 
+        setLocationRelativeTo(framePadre); 
+        setLayout(new BorderLayout());
 
-      
+        JPanel cabecera = new JPanel(new BorderLayout());
+        cabecera.setBackground(ThemeManager.COLOR_PRIMARY);
+        cabecera.setPreferredSize(new Dimension(400, 40));
         
-        JPanel panelPrincipal = new JPanel(new GridBagLayout());
-        panelPrincipal.setBackground(ThemeManager.COLOR_BACKGROUND_LIGHT);
-        panelPrincipal.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        JButton btnAtras = new JButton("←");
+        btnAtras.setFont(new Font("Dialog", Font.BOLD, 16));
+        btnAtras.setForeground(Color.WHITE);
+        btnAtras.setBackground(ThemeManager.COLOR_PRIMARY);
+        btnAtras.setFocusPainted(false);
+        btnAtras.setBorder(BorderFactory.createEmptyBorder(0, 15, 0, 15));
+        btnAtras.addActionListener(e -> dispose());
+        cabecera.add(btnAtras, BorderLayout.WEST);
 
+        JLabel titulo = new JLabel("Agregar Cuota", SwingConstants.CENTER);
+        titulo.setForeground(Color.WHITE);
+        titulo.setFont(ThemeManager.TEXT_SUBTITLE);
+        cabecera.add(titulo, BorderLayout.CENTER);
+        add(cabecera, BorderLayout.NORTH);
+
+        JPanel cuerpo = new JPanel(new GridBagLayout());
+        cuerpo.setBackground(ThemeManager.COLOR_BACKGROUND_LIGHT);
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(8, 8, 8, 8);
+        gbc.insets = new Insets(8, 12, 8, 12);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // --- FILA 0: TÍTULO EN BARRA VERDE ---
-        JPanel panelTitulo = new JPanel(new BorderLayout());
-        panelTitulo.setBackground(ThemeManager.COLOR_BACKGROUND);
-        JLabel lblTitulo = new JLabel("  AGREGAR CUOTA", SwingConstants.LEFT);
-        lblTitulo.setFont(ThemeManager.TEXT_SUBTITLE);
-        lblTitulo.setForeground(ThemeManager.COLOR_TEXT);
-        lblTitulo.setPreferredSize(new Dimension(400, 40));
-        panelTitulo.add(lblTitulo, BorderLayout.CENTER);
-
-        gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 3;
-        panelPrincipal.add(panelTitulo, gbc);
-
-        // --- FILA 1: DESCRIPCIÓN  ---
-        gbc.gridwidth = 1; gbc.gridy = 1; gbc.gridx = 0;
-        JLabel lblDesc = new JLabel("Descripción");
-        lblDesc.setFont(ThemeManager.TEXT_NORMAL);
+        
+        gbc.gridx = 0; gbc.gridy = 0; gbc.weightx = 0;
+        JLabel lblDesc = new JLabel("Descripción:");
         lblDesc.setForeground(ThemeManager.COLOR_TEXT);
-        panelPrincipal.add(lblDesc, gbc);
+        cuerpo.add(lblDesc, gbc);
 
-
-        gbc.gridx=1; gbc.gridwidth=2;
-        inputDescription = new JTextField(14);
-        inputDescription.setFont(ThemeManager.TEXT_NORMAL);
+        gbc.gridx = 1; gbc.weightx = 1;
         inputDescription.setBackground(ThemeManager.COLOR_BACKGROUND);
         inputDescription.setForeground(ThemeManager.COLOR_TEXT);
-        panelPrincipal.add(inputDescription, gbc);
-
+        inputDescription.setCaretColor(Color.WHITE);
+        cuerpo.add(inputDescription, gbc);
 
         
-        
-
-        // --- FILA 2: MONTO ---
-        gbc.gridy = 2; gbc.gridx = 0;
-        JLabel lblMonto = new JLabel("Monto ($)");
-        lblMonto.setFont(ThemeManager.TEXT_NORMAL);
+        gbc.gridx = 0; gbc.gridy = 1; gbc.weightx = 0;
+        JLabel lblMonto = new JLabel("Monto ($):");
         lblMonto.setForeground(ThemeManager.COLOR_TEXT);
-        panelPrincipal.add(lblMonto, gbc);
+        cuerpo.add(lblMonto, gbc);
 
-        gbc.gridx = 1; gbc.gridwidth = 2;
-        txtMonto = new JTextField(15);
-        txtMonto.setFont(ThemeManager.TEXT_NORMAL);
+        gbc.gridx = 1; gbc.weightx = 1;
         txtMonto.setBackground(ThemeManager.COLOR_BACKGROUND);
         txtMonto.setForeground(ThemeManager.COLOR_TEXT);
-        panelPrincipal.add(txtMonto, gbc);
+        txtMonto.setCaretColor(Color.WHITE);
+        cuerpo.add(txtMonto, gbc);
 
-        // --- FILA 3: FECHAS
-        gbc.gridy = 3; gbc.gridx = 0;gbc.weightx = 0.0;
-        JLabel lblFechaEmision = new JLabel("Emisión");
-        lblFechaEmision.setFont(ThemeManager.TEXT_NORMAL);
+        
+        gbc.gridx = 0; gbc.gridy = 2; gbc.weightx = 0;
+        JLabel lblFechaEmision = new JLabel("Emisión:");
         lblFechaEmision.setForeground(ThemeManager.COLOR_TEXT);
-        panelPrincipal.add(lblFechaEmision, gbc);
-        gbc.weightx = 0.5;
+        cuerpo.add(lblFechaEmision, gbc);
 
-        gbc.gridx = 1; gbc.gridwidth = 1;
-        panelPrincipal.add(jdcDesde,gbc);
-        gbc.gridx=2; gbc.gridwidth = 1;
-        panelPrincipal.add(jspHoraDesde,gbc);
-
+        gbc.gridx = 1; gbc.weightx = 1;
         JSpinner.DateEditor editorDesde = new JSpinner.DateEditor(jspHoraDesde, "HH:mm:ss");
         jspHoraDesde.setEditor(editorDesde);
-        panelPrincipal.add(jspHoraDesde, gbc);
         
-        gbc.gridy = 4; gbc.gridx = 0; 
-        JLabel lblFechaFinal = new JLabel("Limite");
-        lblFechaFinal.setFont(ThemeManager.TEXT_NORMAL);
+        JPanel panelFechaDesde = new JPanel(new GridLayout(1, 2, 5, 0));
+        panelFechaDesde.setOpaque(false);
+        panelFechaDesde.add(jdcDesde);
+        panelFechaDesde.add(jspHoraDesde);
+        cuerpo.add(panelFechaDesde, gbc);
+        
+        
+        gbc.gridx = 0; gbc.gridy = 3; gbc.weightx = 0;
+        JLabel lblFechaFinal = new JLabel("Límite:");
         lblFechaFinal.setForeground(ThemeManager.COLOR_TEXT);
-        panelPrincipal.add(lblFechaFinal, gbc);
-        
-        gbc.gridx = 1; gbc.gridwidth = 1;
-        panelPrincipal.add(jdcHasta,gbc);
-        gbc.gridx=2; gbc.gridwidth = 1;
-        panelPrincipal.add(jspHoraHasta,gbc);
+        cuerpo.add(lblFechaFinal, gbc);
 
+        gbc.gridx = 1; gbc.weightx = 1;
         JSpinner.DateEditor editorHasta = new JSpinner.DateEditor(jspHoraHasta, "HH:mm:ss");
         jspHoraHasta.setEditor(editorHasta);
-        panelPrincipal.add(jspHoraHasta, gbc);
-
-
-
-        // --- FILA 5: BOTÓN DE ACCIÓN ---
-        gbc.gridy = 5; gbc.gridx = 0; gbc.gridwidth = 3;
-        gbc.insets = new Insets(20, 8, 8, 8);
         
+        JPanel panelFechaHasta = new JPanel(new GridLayout(1, 2, 5, 0));
+        panelFechaHasta.setOpaque(false);
+        panelFechaHasta.add(jdcHasta);
+        panelFechaHasta.add(jspHoraHasta);
+        cuerpo.add(panelFechaHasta, gbc);
+
+        add(cuerpo, BorderLayout.CENTER);
+
+
         JButton btnGuardar = new JButton("Agregar Cuota");
         btnGuardar.setFont(ThemeManager.TEXT_SUBTITLE);
         btnGuardar.setForeground(ThemeManager.COLOR_TEXT);
         btnGuardar.setBackground(ThemeManager.COLOR_PRIMARY);
-        btnGuardar.setPreferredSize(new Dimension(350, 40));
-        panelPrincipal.add(btnGuardar, gbc);
+        btnGuardar.setFocusPainted(false);
+        btnGuardar.setPreferredSize(new Dimension(400, 45));
+        add(btnGuardar, BorderLayout.SOUTH);
 
-        // Evento Guardar / Validar
+
         btnGuardar.addActionListener(e -> {
-
             String strDesc = inputDescription.getText().trim();
             String montoStr = txtMonto.getText().trim();
 
-                if(strDesc.isEmpty()){
-                    JOptionPane.showMessageDialog(this,"LA DESCRIPCIÓN NO PUEDE ESTAR VACIA");
-                    return;
-                }
-
-                if(!strDesc.matches("^[a-zA-Z0-9ñÑ ]+$")){
-                    JOptionPane.showMessageDialog(this,"LA DESCRIPCIÓN DEBE SER ALFA-NUMERICO");
-                    return;
-                }   
-                
-            
-            if (!montoStr.matches("^[0-9]+(\\.[0-9]{1,2})?$")) {
-                JOptionPane.showMessageDialog(this, "Monto inválido.", "Sistema Garita - ERROR X", JOptionPane.ERROR_MESSAGE);
+            if(strDesc.isEmpty()){
+                JOptionPane.showMessageDialog(this,"LA DESCRIPCIÓN NO PUEDE ESTAR VACÍA");
                 return;
             }
-
-
+            if(strDesc.length() > 14){
+                JOptionPane.showMessageDialog(this,"LA DESCRIPCIÓN NO PUEDE TENER MÁS DE 14 CARACTERES");
+                return;
+            }
+            if(!strDesc.matches("^[a-zA-Z0-9ñÑ ]+$")){
+                JOptionPane.showMessageDialog(this,"LA DESCRIPCIÓN DEBE SER ALFA-NUMÉRICA");
+                return;
+            }   
+            if (!montoStr.matches("^[0-9]{1,4}+(\\.[0-9]{1,2})?$")) {
+                JOptionPane.showMessageDialog(this, "Monto inválido, tiene que seguir el siguiente formato 'xxxx.xx'.", "Sistema Garita - ERROR X", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
             if (existeCuota(strDesc)) {
                 JOptionPane.showMessageDialog(this, 
                     "ERROR: Ya existe una cuota programada con la descripción '" + strDesc + "'.", 
@@ -170,6 +160,8 @@ public class VentanaProgramarCuota extends JDialog {
                     JOptionPane.ERROR_MESSAGE);
                 return; 
             }
+
+            // Procesar la fecha y hora de emisión
             java.util.Calendar calEmision = java.util.Calendar.getInstance();
             calEmision.setTime(jdcDesde.getDate());
             java.util.Calendar horaEmision = java.util.Calendar.getInstance();
@@ -179,7 +171,7 @@ public class VentanaProgramarCuota extends JDialog {
             calEmision.set(java.util.Calendar.SECOND, horaEmision.get(java.util.Calendar.SECOND));
             java.sql.Timestamp tsEmision = new java.sql.Timestamp(calEmision.getTimeInMillis());
 
-
+            // Procesar la fecha y hora límite
             java.util.Calendar calLimite = java.util.Calendar.getInstance();
             calLimite.setTime(jdcHasta.getDate());
             java.util.Calendar horaLimite = java.util.Calendar.getInstance();
@@ -197,10 +189,9 @@ public class VentanaProgramarCuota extends JDialog {
                 return;
             }
 
-
             String miUsuario = Backend.SesionUsuario.getInstancia().getCedula();
             if (miUsuario == null) miUsuario = "Sistema_Java";
-                String queryInsert = "DO $$ BEGIN PERFORM set_config('app.usuario_actual', '" + miUsuario + "', true); END $$; "
+            String queryInsert = "DO $$ BEGIN PERFORM set_config('app.usuario_actual', '" + miUsuario + "', true); END $$; "
                                + "INSERT INTO cuotas (descripcion, monto, fecha_emision, fecha_limite, activo) VALUES (?, ?, ?, ?, ?)";
 
             Object[] valores = new Object[] {
@@ -211,46 +202,40 @@ public class VentanaProgramarCuota extends JDialog {
                 false                            
             };
 
-        try {
+            try {
                 ConexionPostgres.comandoDML(queryInsert, valores);
-                
                 JOptionPane.showMessageDialog(this, "Cuota creada correctamente.", "Sistema Garita", JOptionPane.INFORMATION_MESSAGE);
                 dispose();
                 this.menuPadre.Search(); 
-                
             } catch (SQLException ex) {
                 ex.printStackTrace();
                 System.err.println("La inserción falló, reteniendo la ventana.");
-                
             }
-
-
-            
-            dispose();
-            this.menuPadre.Search(); 
         });
-        DesdeEditor.setEditable(false);
-        JSpinner.DefaultEditor editorHoraDesde = (JSpinner.DefaultEditor)  jspHoraDesde.getEditor();
+
+        // Configuración de Spinners (solo lectura en teclado pero interactivos)
+        JSpinner.DefaultEditor editorHoraDesde = (JSpinner.DefaultEditor) jspHoraDesde.getEditor();
         editorHoraDesde.getTextField().setEnabled(true);
         editorHoraDesde.getTextField().setEditable(false);
 
-        HastaEditor.setEditable(false);
-        JSpinner.DefaultEditor editorHoraHasta = (JSpinner.DefaultEditor)  jspHoraHasta.getEditor();
+        JSpinner.DefaultEditor editorHoraHasta = (JSpinner.DefaultEditor) jspHoraHasta.getEditor();
         editorHoraHasta.getTextField().setEnabled(true);
         editorHoraHasta.getTextField().setEditable(false);
 
-        setContentPane(panelPrincipal);
-        pack();
-        setLocationRelativeTo(framePadre); 
+        // Inicialización y renderizado de DateChoosers según el ThemeManager
+        ThemeManager.SetupDateChooser(jdcDesde);
+        ThemeManager.SetupDateChooser(jdcHasta);
+
+        jdcDesde.getDateEditor().setDate(currentDate);
+        calendario.add(Calendar.MONTH, 2);
+        jdcHasta.getDateEditor().setDate(calendario.getTime());
     }
 
     private boolean existeCuota(String descripcion) {
         String query = "SELECT COUNT(*) AS total FROM cuotas WHERE UPPER(TRIM(descripcion)) = UPPER(TRIM(?))";
         Object[] params = new Object[] { descripcion };
-        
         try {
-            // Usamos tu método estático para consultar
-            ResultSet rs = ConexionPostgres.consultar(query, params);
+            java.sql.ResultSet rs = ConexionPostgres.consultar(query, params);
             if (rs != null && rs.next()) {
                 return rs.getInt("total") > 0; 
             }
