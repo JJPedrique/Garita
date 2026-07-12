@@ -4,23 +4,30 @@ import java.io.File;
 
 import javax.swing.*;
 import javax.swing.table.TableModel;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DocumentFilter;
+import javax.swing.text.AttributeSet;
 
 public class ThemeManager {
 
-    public static final Color COLOR_BACKGROUND_DARK  = Color.decode("#121212");
-    public static final Color COLOR_BACKGROUND       = Color.decode("#1E1E1E");
-    public static final Color COLOR_BACKGROUND_LIGHT = Color.decode("#2D2D2D");
-    public static final Color COLOR_PRIMARY          = Color.decode("#428b13");
-    public static final Color COLOR_SECONDARY        = Color.decode("#6ab848");
-    public static final Color COLOR_ERROR            = Color.decode("#FF3131");
-    public static final Color COLOR_ERROR_HOVER      = Color.decode("#bd0f0f");
-    public static final Color COLOR_WARNING          = Color.decode("#FFC107");
-    public static final Color COLOR_INFO             = Color.decode("#4B0082");
-    public static final Color COLOR_TEXT             = Color.decode("#FFFFFF");
-    public static final Color COLOR_TEXT_DARK        = Color.decode("#000000");
-    public static final Color COLOR_PLACEHOLDER      = Color.decode("#676767");
-    public static final Color COLOR_INPUT            = Color.decode("#E9E9E9");
-    public static final Color COLOR_LABEL            = Color.decode("#B8B8B8");
+    public static final Color COLOR_BACKGROUND_DARK     = Color.decode("#121212");
+    public static final Color COLOR_BACKGROUND          = Color.decode("#1E1E1E");
+    public static final Color COLOR_BACKGROUND_LIGHT    = Color.decode("#2D2D2D");
+    public static final Color COLOR_PRIMARY             = Color.decode("#428b13");
+    public static final Color COLOR_SECONDARY           = Color.decode("#6ab848");
+    public static final Color COLOR_ERROR               = Color.decode("#FF3131");
+    public static final Color COLOR_ERROR_HOVER         = Color.decode("#bd0f0f");
+    public static final Color COLOR_WARNING             = Color.decode("#FFC107");
+    public static final Color COLOR_INFO                = Color.decode("#4B0082");
+    public static final Color COLOR_TEXT                = Color.decode("#FFFFFF");
+    public static final Color COLOR_TEXT_DARK           = Color.decode("#000000");
+    public static final Color COLOR_PLACEHOLDER         = Color.decode("#676767");
+    public static final Color COLOR_INPUT               = Color.decode("#E9E9E9");
+    public static final Color COLOR_LABEL               = Color.decode("#B8B8B8");
+    public static final Color COLOR_ESTADO_LABEL_TRUE   = Color.decode("#1f5320");
+    public static final Color COLOR_ESTADO_LABEL_FALSE  = Color.decode("#511c1c");
+    public static final Color COLOR_ESTADO_TEXT_TRUE    = Color.decode("#71ff78");
+    public static final Color COLOR_ESTADO_TEXT_FALSE   = Color.decode("#ff6767");
 
     public static final Font TEXT_TITLE              = new Font("Verdana", Font.BOLD, 20);
     public static final Font TEXT_SUBTITLE           = new Font("Verdana", Font.BOLD, 16);
@@ -271,25 +278,25 @@ public class ThemeManager {
 
     public static void MostrarMensajeError(JPanel JP, String msg) {
         JDialog customDialog = new JDialog((Window) SwingUtilities.getWindowAncestor(JP), "Sistema Garita - ERROR", Dialog.ModalityType.APPLICATION_MODAL);
-        configurarDialogMensaje(JP, customDialog, msg, COLOR_ERROR, "X");
+        configurarDialogMensaje(JP, customDialog, msg, COLOR_PRIMARY, COLOR_ERROR, "X");
     }
 
     public static void MostrarMensajeError(JDialog JP, String msg) {
         JP = new JDialog((Window) SwingUtilities.getWindowAncestor(JP), "Sistema Garita - ERROR", Dialog.ModalityType.APPLICATION_MODAL);
-        configurarDialogMensaje(new JPanel(), JP, msg, COLOR_ERROR, "X");
+        configurarDialogMensaje(new JPanel(), JP, msg, COLOR_PRIMARY, COLOR_ERROR, "X");
     }
 
     public static void MostrarMensajeExito(JPanel JP, String msg) {
         JDialog customDialog = new JDialog((Window) SwingUtilities.getWindowAncestor(JP), "Sistema Garita - EXITO", Dialog.ModalityType.APPLICATION_MODAL);
-        configurarDialogMensaje(JP, customDialog, msg, COLOR_PRIMARY, "i");
+        configurarDialogMensaje(JP, customDialog, msg, COLOR_PRIMARY, COLOR_PRIMARY, "i");
     }
 
     public static void MostrarMensajeExito(JDialog JP, String msg) {
         JP = new JDialog((Window) SwingUtilities.getWindowAncestor(JP), "Sistema Garita - EXITO", Dialog.ModalityType.APPLICATION_MODAL);
-        configurarDialogMensaje(new JPanel(), JP, msg, COLOR_PRIMARY, "i");
+        configurarDialogMensaje(new JPanel(), JP, msg, COLOR_PRIMARY, COLOR_PRIMARY, "i");
     }
 
-    public static void configurarDialogMensaje(JPanel JP, JDialog dialog, String msg, Color bgButton, String iconChar) {
+    public static void configurarDialogMensaje(JPanel JP, JDialog dialog, String msg, Color bgButton, Color cIcon, String iconChar) {
         dialog.setSize(550, 180);
         dialog.setLocationRelativeTo(JP);
         
@@ -302,7 +309,7 @@ public class ThemeManager {
             protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(bgButton);
+                g2.setColor(cIcon);
                 g2.fillOval(0, 0, getWidth()-1, getHeight()-1);
                 g2.dispose();
                 super.paintComponent(g);
@@ -365,6 +372,28 @@ public class ThemeManager {
             }
             
             g2.dispose();
+        }
+    }
+
+    public static class LimiteCaracteresFilter extends DocumentFilter {
+        private final int max;
+
+        public LimiteCaracteresFilter(int max) {
+            this.max = max;
+        }
+
+        @Override
+        public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
+            if (string != null && (fb.getDocument().getLength() + string.length()) <= max) {
+                super.insertString(fb, offset, string, attr);
+            }
+        }
+
+        @Override
+        public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
+            if (text != null && (fb.getDocument().getLength() - length + text.length()) <= max) {
+                super.replace(fb, offset, length, text, attrs);
+            }
         }
     }
 }
