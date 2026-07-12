@@ -102,7 +102,7 @@ public class MenuVivienda extends JPanel {
     public MenuVivienda() {
         this.setLayout(new BorderLayout());
         this.setBackground(ThemeManager.COLOR_BACKGROUND_DARK);
-        this.setBorder(new EmptyBorder(20, 20, 20, 20));
+        this.setBorder(new EmptyBorder(10, 10, 10, 10));
 
         JPanel panelControles = new JPanel();
         panelControles.setLayout(new BoxLayout(panelControles, BoxLayout.Y_AXIS));
@@ -116,7 +116,7 @@ public class MenuVivienda extends JPanel {
         btnAgregar.addActionListener(e -> abrirFormularioVivienda(false, null, null, true));
 
         JLabel tituloAgregar = new JLabel("<html><div style='text-align:center;'>AGREGAR NUEVA VIVIENDA</div></html>", SwingConstants.CENTER);
-        tituloAgregar.setFont(ThemeManager.TEXT_SMALL);
+        tituloAgregar.setFont(ThemeManager.TEXT_SUBTITLE);
         tituloAgregar.setForeground(ThemeManager.COLOR_TEXT);
         tituloAgregar.setAlignmentX(Component.CENTER_ALIGNMENT);
         tituloAgregar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 28));
@@ -128,7 +128,7 @@ public class MenuVivienda extends JPanel {
         separador.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JLabel tituloBusqueda = new JLabel("BÚSQUEDA Y FILTROS", SwingConstants.CENTER);
-        tituloBusqueda.setFont(ThemeManager.TEXT_SMALL);
+        tituloBusqueda.setFont(ThemeManager.TEXT_SUBTITLE);
         tituloBusqueda.setForeground(ThemeManager.COLOR_TEXT);
         tituloBusqueda.setAlignmentX(Component.CENTER_ALIGNMENT);
         tituloBusqueda.setMaximumSize(new Dimension(Integer.MAX_VALUE, 16));
@@ -140,30 +140,34 @@ public class MenuVivienda extends JPanel {
         panelFiltros.setMaximumSize(new Dimension(Integer.MAX_VALUE, 130));
 
         JLabel lNum = new JLabel("Número de Vivienda");
-        lNum.setFont(ThemeManager.TEXT_SMALL);
+        lNum.setFont(ThemeManager.TEXT_NORMAL);
         lNum.setForeground(ThemeManager.COLOR_TEXT);
-        lNum.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         txtNum = ThemeManager.Textfield();
-        txtNum.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
-        txtNum.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JPanel pInputNum = new JPanel(new BorderLayout(10, 0));
+        pInputNum.setOpaque(false);
+        pInputNum.setAlignmentX(Component.LEFT_ALIGNMENT);
+        pInputNum.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
+        pInputNum.add(lNum, BorderLayout.WEST);
+        pInputNum.add(txtNum, BorderLayout.CENTER);
 
         JLabel lCalle = new JLabel("Calle");
-        lCalle.setFont(ThemeManager.TEXT_SMALL);
+        lCalle.setFont(ThemeManager.TEXT_NORMAL);
         lCalle.setForeground(ThemeManager.COLOR_TEXT);
-        lCalle.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         txtCalle = ThemeManager.Textfield();
-        txtCalle.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
-        txtCalle.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        panelFiltros.add(lNum);
-        panelFiltros.add(Box.createRigidArea(new Dimension(0, 6)));
-        panelFiltros.add(txtNum);
+        JPanel pInputCalle = new JPanel(new BorderLayout(10, 0));
+        pInputCalle.setOpaque(false);
+        pInputCalle.setAlignmentX(Component.LEFT_ALIGNMENT);
+        pInputCalle.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
+        pInputCalle.add(lCalle, BorderLayout.WEST);
+        pInputCalle.add(txtCalle, BorderLayout.CENTER);
+
+        panelFiltros.add(pInputNum);
         panelFiltros.add(Box.createRigidArea(new Dimension(0, 10)));
-        panelFiltros.add(lCalle);
-        panelFiltros.add(Box.createRigidArea(new Dimension(0, 6)));
-        panelFiltros.add(txtCalle);
+        panelFiltros.add(pInputCalle);
 
         JButton btnBuscar = ThemeManager.Button("Buscar");
         btnBuscar.setAlignmentX(Component.CENTER_ALIGNMENT);

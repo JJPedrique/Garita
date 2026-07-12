@@ -58,7 +58,7 @@ public class MenuRepresentante extends JPanel {
     public MenuRepresentante() {
         this.setLayout(new BorderLayout());
         this.setBackground(ThemeManager.COLOR_BACKGROUND_DARK);
-        this.setBorder(new EmptyBorder(20, 20, 20, 20));
+        this.setBorder(new EmptyBorder(10, 10, 10, 10));
 
         JPanel panelControles = new JPanel();
         panelControles.setLayout(new BoxLayout(panelControles, BoxLayout.Y_AXIS));
@@ -72,7 +72,7 @@ public class MenuRepresentante extends JPanel {
         btnAgregar.addActionListener(e -> abrirFormularioRepresentante(false, null));
 
         JLabel tituloAgregar = new JLabel("<html><div style='text-align:center;'>AGREGAR NUEVO REPRESENTANTE</div></html>", SwingConstants.CENTER);
-        tituloAgregar.setFont(ThemeManager.TEXT_SMALL);
+        tituloAgregar.setFont(ThemeManager.TEXT_SUBTITLE);
         tituloAgregar.setForeground(ThemeManager.COLOR_TEXT);
         tituloAgregar.setAlignmentX(Component.CENTER_ALIGNMENT);
         tituloAgregar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 28));
@@ -84,7 +84,7 @@ public class MenuRepresentante extends JPanel {
         separador.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JLabel tituloBusqueda = new JLabel("BÚSQUEDA Y FILTROS", SwingConstants.CENTER);
-        tituloBusqueda.setFont(ThemeManager.TEXT_SMALL);
+        tituloBusqueda.setFont(ThemeManager.TEXT_SUBTITLE);
         tituloBusqueda.setForeground(ThemeManager.COLOR_TEXT);
         tituloBusqueda.setAlignmentX(Component.CENTER_ALIGNMENT);
         tituloBusqueda.setMaximumSize(new Dimension(Integer.MAX_VALUE, 16));
@@ -96,40 +96,49 @@ public class MenuRepresentante extends JPanel {
         panelFiltros.setMaximumSize(new Dimension(Integer.MAX_VALUE, 160));
 
         JLabel lCedula = new JLabel("Cédula");
-        lCedula.setFont(ThemeManager.TEXT_SMALL);
+        lCedula.setFont(ThemeManager.TEXT_NORMAL);
         lCedula.setForeground(ThemeManager.COLOR_TEXT);
-        lCedula.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         txtCedula = ThemeManager.Textfield();
-        txtCedula.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
+
+        JPanel pInputCedula = new JPanel(new BorderLayout(10, 0));
+        pInputCedula.setOpaque(false);
+        pInputCedula.setAlignmentX(Component.LEFT_ALIGNMENT);
+        pInputCedula.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
+        pInputCedula.add(lCedula, BorderLayout.WEST);
+        pInputCedula.add(txtCedula, BorderLayout.CENTER);
 
         JLabel lNombre = new JLabel("Nombre Completo");
-        lNombre.setFont(ThemeManager.TEXT_SMALL);
+        lNombre.setFont(ThemeManager.TEXT_NORMAL);
         lNombre.setForeground(ThemeManager.COLOR_TEXT);
-        lNombre.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         txtNombre = ThemeManager.Textfield();
-        txtNombre.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
+
+        JPanel pInputNombre = new JPanel(new BorderLayout(10, 0));
+        pInputNombre.setOpaque(false);
+        pInputNombre.setAlignmentX(Component.LEFT_ALIGNMENT);
+        pInputNombre.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
+        pInputNombre.add(lNombre, BorderLayout.WEST);
+        pInputNombre.add(txtNombre, BorderLayout.CENTER);
 
         JLabel lApellido = new JLabel("Apellido Completo");
-        lApellido.setFont(ThemeManager.TEXT_SMALL);
+        lApellido.setFont(ThemeManager.TEXT_NORMAL);
         lApellido.setForeground(ThemeManager.COLOR_TEXT);
-        lApellido.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         txtApellido = ThemeManager.Textfield();
-        txtApellido.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
 
-        panelFiltros.add(lCedula);
-        panelFiltros.add(Box.createRigidArea(new Dimension(0, 6)));
-        panelFiltros.add(txtCedula);
+        JPanel pInputApellido = new JPanel(new BorderLayout(10, 0));
+        pInputApellido.setOpaque(false);
+        pInputApellido.setAlignmentX(Component.LEFT_ALIGNMENT);
+        pInputApellido.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
+        pInputApellido.add(lApellido, BorderLayout.WEST);
+        pInputApellido.add(txtApellido, BorderLayout.CENTER);
+
+        panelFiltros.add(pInputCedula);
         panelFiltros.add(Box.createRigidArea(new Dimension(0, 10)));
-        panelFiltros.add(lNombre);
-        panelFiltros.add(Box.createRigidArea(new Dimension(0, 6)));
-        panelFiltros.add(txtNombre);
+        panelFiltros.add(pInputNombre);
         panelFiltros.add(Box.createRigidArea(new Dimension(0, 10)));
-        panelFiltros.add(lApellido);
-        panelFiltros.add(Box.createRigidArea(new Dimension(0, 6)));
-        panelFiltros.add(txtApellido);
+        panelFiltros.add(pInputApellido);
 
         JButton btnBuscar = ThemeManager.Button("Buscar");
         btnBuscar.setAlignmentX(Component.CENTER_ALIGNMENT);
