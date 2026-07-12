@@ -19,6 +19,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.List;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DocumentFilter;
 
 import org.openpdf.text.Document;
 import org.openpdf.text.DocumentException;
@@ -423,6 +427,7 @@ public class MenuVivienda extends JPanel {
 
         JLabel lblReferencia = etiquetaDialogo("Referencia (últimos 4 dígitos)");
         JTextField txtReferencia = campoDialogo("");
+        restringirSoloNumeros(txtReferencia, 4);
 
         JButton btnPagar = ThemeManager.Button("Pagar Cuota");
         btnPagar.setPreferredSize(new Dimension(280, 38));
@@ -984,6 +989,10 @@ public class MenuVivienda extends JPanel {
         JTextField txtNumeroLocal = campoDialogo(numeroOriginal == null ? "" : numeroOriginal);
         txtNumeroLocal.setPreferredSize(new Dimension(160, 30));
 
+        // Restricciones de escritura: solo se puede teclear lo que tiene sentido para cada campo
+        restringirCalle(txtCalleLocal, 30);
+        restringirNumeroVivienda(txtNumeroLocal, 10);
+
         gbc.gridx = 0; gbc.gridy = 0; gbc.anchor = GridBagConstraints.EAST; gbc.fill = GridBagConstraints.NONE;
         formPanel.add(lblCalle, gbc);
         gbc.gridx = 1; gbc.gridy = 0; gbc.anchor = GridBagConstraints.WEST; gbc.fill = GridBagConstraints.HORIZONTAL; gbc.weightx = 1.0;
@@ -1096,12 +1105,113 @@ public class MenuVivienda extends JPanel {
         return field;
     }
 
+    /**
+     * Valida "Calle y Avenida": letras (con tildes/ñ), números, espacios, '#'
+     * y '-'. Entre 3 y 30 caracteres, sin espacios dobles ni espacios al
+     * inicio/final.
+     */
     private boolean validarCalle(String calle) {
-        return !calle.isEmpty() && calle.matches("^[A-Za-z0-9 áéíóúÁÉÍÓÚ#\\-]{3,30}$");
+        if (calle == null || calle.isEmpty()) return false;
+        if (calle.length() < 3 || calle.length() > 30) return false;
+        if (calle.contains("  ")) return false;
+        if (calle.startsWith(" ") || calle.endsWith(" ")) return false;
+        return calle.matches("^[A-Za-z0-9áéíóúÁÉÍÓÚñÑ #\\-]{3,30}$");
     }
 
+    /**
+     * Valida "Número de Casa": letras, números y guion (ej. "12", "12-A").
+     * Entre 1 y 10 caracteres, sin espacios.
+     */
     private boolean validarNumero(String numero) {
-        return !numero.isEmpty() && numero.matches("^[A-Za-z0-9\\-]{1,10}$");
+        if (numero == null || numero.isEmpty()) return false;
+        return numero.matches("^[A-Za-z0-9\\-]{1,10}$");
+    }
+
+    /**
+     * Restringe un JTextField para que solo acepte letras (con tildes/ñ),
+     * números, espacios, '#' y '-', respetando un largo máximo.
+     */
+    private void restringirCalle(JTextField campo, int maxLength) {
+        ((AbstractDocument) campo.getDocument()).setDocumentFilter(new DocumentFilter() {
+            @Override
+            public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
+                if (string == null) return;
+                String filtrado = string.replaceAll("[^A-Za-z0-9áéíóúÁÉÍÓÚñÑ #\\-]", "");
+                if (filtrado.isEmpty()) return;
+                int espacioDisponible = maxLength - fb.getDocument().getLength();
+                if (espacioDisponible <= 0) return;
+                if (filtrado.length() > espacioDisponible) filtrado = filtrado.substring(0, espacioDisponible);
+                super.insertString(fb, offset, filtrado, attr);
+            }
+
+            @Override
+            public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
+                String filtrado = text == null ? "" : text.replaceAll("[^A-Za-z0-9áéíóúÁÉÍÓÚñÑ #\\-]", "");
+                int largoActual = fb.getDocument().getLength() - length;
+                int espacioDisponible = maxLength - largoActual;
+                if (espacioDisponible < 0) espacioDisponible = 0;
+                if (filtrado.length() > espacioDisponible) filtrado = filtrado.substring(0, espacioDisponible);
+                super.replace(fb, offset, length, filtrado, attrs);
+            }
+        });
+    }
+
+    /**
+     * Restringe un JTextField para que, sin importar lo que se pegue o teclee,
+     * solo queden dígitos (0-9), respetando un largo máximo.
+     */
+    private void restringirSoloNumeros(JTextField campo, int maxLength) {
+        ((AbstractDocument) campo.getDocument()).setDocumentFilter(new DocumentFilter() {
+            @Override
+            public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
+                if (string == null) return;
+                String filtrado = string.replaceAll("[^0-9]", "");
+                if (filtrado.isEmpty()) return;
+                int espacioDisponible = maxLength - fb.getDocument().getLength();
+                if (espacioDisponible <= 0) return;
+                if (filtrado.length() > espacioDisponible) filtrado = filtrado.substring(0, espacioDisponible);
+                super.insertString(fb, offset, filtrado, attr);
+            }
+
+            @Override
+            public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
+                String filtrado = text == null ? "" : text.replaceAll("[^0-9]", "");
+                int largoActual = fb.getDocument().getLength() - length;
+                int espacioDisponible = maxLength - largoActual;
+                if (espacioDisponible < 0) espacioDisponible = 0;
+                if (filtrado.length() > espacioDisponible) filtrado = filtrado.substring(0, espacioDisponible);
+                super.replace(fb, offset, length, filtrado, attrs);
+            }
+        });
+    }
+
+    /**
+     * Restringe un JTextField para que solo acepte letras, números y guion,
+     * sin espacios, respetando un largo máximo.
+     */
+    private void restringirNumeroVivienda(JTextField campo, int maxLength) {
+        ((AbstractDocument) campo.getDocument()).setDocumentFilter(new DocumentFilter() {
+            @Override
+            public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
+                if (string == null) return;
+                String filtrado = string.replaceAll("[^A-Za-z0-9\\-]", "");
+                if (filtrado.isEmpty()) return;
+                int espacioDisponible = maxLength - fb.getDocument().getLength();
+                if (espacioDisponible <= 0) return;
+                if (filtrado.length() > espacioDisponible) filtrado = filtrado.substring(0, espacioDisponible);
+                super.insertString(fb, offset, filtrado, attr);
+            }
+
+            @Override
+            public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
+                String filtrado = text == null ? "" : text.replaceAll("[^A-Za-z0-9\\-]", "");
+                int largoActual = fb.getDocument().getLength() - length;
+                int espacioDisponible = maxLength - largoActual;
+                if (espacioDisponible < 0) espacioDisponible = 0;
+                if (filtrado.length() > espacioDisponible) filtrado = filtrado.substring(0, espacioDisponible);
+                super.replace(fb, offset, length, filtrado, attrs);
+            }
+        });
     }
 
     private void mostrarDialogoError(String mensaje) {
