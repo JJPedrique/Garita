@@ -68,7 +68,7 @@ public class FramePagarCuota extends JPanel {
         comboTipoPago.setForeground(ThemeManager.COLOR_TEXT_DARK);
 
         JLabel lblReferencia = etiquetaDialogo("Referencia (últimos 4 dígitos)");
-        JTextField txtReferencia = campoDialogo("");
+        JTextField txtReferencia = campoDialogo("", "Ej: 1234");
         restringirSoloNumeros(txtReferencia, 4);
 
         JButton btnPagar = ThemeManager.Button("Pagar Cuota");
@@ -151,13 +151,29 @@ public class FramePagarCuota extends JPanel {
     private JLabel etiquetaDialogo(String texto) {
         JLabel label = new JLabel(texto);
         label.setForeground(ThemeManager.COLOR_TEXT);
-        label.setFont(ThemeManager.TEXT_NORMAL);
+        label.setFont(ThemeManager.TEXT_SUBTITLE);
         label.setAlignmentX(Component.LEFT_ALIGNMENT);
         return label;
     }
 
-    private JTextField campoDialogo(String valorInicial) {
-        JTextField field = new JTextField(valorInicial);
+    private JTextField campoDialogo(String valorInicial, String placeholder) {
+        JTextField field = new JTextField(valorInicial) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                if (getText().isEmpty() && placeholder != null) {
+                    Graphics2D g2 = (Graphics2D) g.create();
+                    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                    g2.setColor(ThemeManager.COLOR_PLACEHOLDER);
+                    g2.setFont(getFont());
+                    FontMetrics fm = g2.getFontMetrics();
+                    int x = getInsets().left;
+                    int y = (getHeight() - fm.getHeight()) / 2 + fm.getAscent();
+                    g2.drawString(placeholder, x, y);
+                    g2.dispose();
+                }
+            }
+        };
         field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 28));
         field.setPreferredSize(new Dimension(280, 28));
         field.setBackground(ThemeManager.COLOR_INPUT);

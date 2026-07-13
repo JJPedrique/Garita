@@ -110,11 +110,11 @@ public class FrameFormularioRepresentante extends JPanel {
         if (dataInicial != null) seleccionarVivienda(comboVivienda, dataInicial.idVivienda);
 
         JLabel lblNombre = etiquetaDialogo("Nombre");
-        JTextField txtNombreLocal = campoDialogo(dataInicial == null ? "" : dataInicial.nombre);
+        JTextField txtNombreLocal = campoDialogo(dataInicial == null ? "" : dataInicial.nombre, "Ej: Carlos");
         txtNombreLocal.setPreferredSize(new Dimension(280, 30));
 
         JLabel lblApellido = etiquetaDialogo("Apellido");
-        JTextField txtApellidoLocal = campoDialogo(dataInicial == null ? "" : dataInicial.apellido);
+        JTextField txtApellidoLocal = campoDialogo(dataInicial == null ? "" : dataInicial.apellido, "Ej: Mendoza");
         txtApellidoLocal.setPreferredSize(new Dimension(280, 30));
 
         // La cédula se guarda completa con su prefijo (ej. "V-12345678"). Si venimos
@@ -142,7 +142,7 @@ public class FrameFormularioRepresentante extends JPanel {
         comboNacionalidad.setPreferredSize(new Dimension(58, 30));
         comboNacionalidad.setMaximumSize(new Dimension(58, 30));
 
-        JTextField txtCedulaLocal = campoDialogo(cedulaSoloNumerosInicial);
+        JTextField txtCedulaLocal = campoDialogo(cedulaSoloNumerosInicial, "Ej: 12345678");
         txtCedulaLocal.setPreferredSize(new Dimension(200, 30));
 
         JPanel panelCedula = new JPanel(new BorderLayout(6, 0));
@@ -151,7 +151,7 @@ public class FrameFormularioRepresentante extends JPanel {
         panelCedula.add(txtCedulaLocal, BorderLayout.CENTER);
 
         JLabel lblTelefono = etiquetaDialogo("Teléfono");
-        JTextField txtTelefonoLocal = campoDialogo(dataInicial == null ? "" : dataInicial.telefono);
+        JTextField txtTelefonoLocal = campoDialogo(dataInicial == null ? "" : dataInicial.telefono, "Ej: 04121234567");
         txtTelefonoLocal.setPreferredSize(new Dimension(200, 30));
 
         restringirSoloLetras(txtNombreLocal, 30);
@@ -308,13 +308,29 @@ public class FrameFormularioRepresentante extends JPanel {
     private JLabel etiquetaDialogo(String texto) {
         JLabel label = new JLabel(texto);
         label.setForeground(ThemeManager.COLOR_TEXT);
-        label.setFont(ThemeManager.TEXT_NORMAL);
+        label.setFont(ThemeManager.TEXT_SUBTITLE);
         label.setAlignmentX(Component.LEFT_ALIGNMENT);
         return label;
     }
 
-    private JTextField campoDialogo(String valorInicial) {
-        JTextField field = new JTextField(valorInicial);
+    private JTextField campoDialogo(String valorInicial, String placeholder) {
+        JTextField field = new JTextField(valorInicial) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                if (getText().isEmpty() && placeholder != null) {
+                    Graphics2D g2 = (Graphics2D) g.create();
+                    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                    g2.setColor(ThemeManager.COLOR_PLACEHOLDER);
+                    g2.setFont(getFont());
+                    FontMetrics fm = g2.getFontMetrics();
+                    int x = getInsets().left;
+                    int y = (getHeight() - fm.getHeight()) / 2 + fm.getAscent();
+                    g2.drawString(placeholder, x, y);
+                    g2.dispose();
+                }
+            }
+        };
         field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 28));
         field.setPreferredSize(new Dimension(280, 28));
         field.setBackground(ThemeManager.COLOR_INPUT);

@@ -52,7 +52,7 @@ public class MenuRepresentante extends JPanel {
 
     public MenuRepresentante() {
         this.setLayout(new BorderLayout());
-        this.setBackground(ThemeManager.COLOR_BACKGROUND_DARK);
+        this.setBackground(ThemeManager.COLOR_BACKGROUND);
         this.setBorder(new EmptyBorder(10, 10, 10, 10));
 
         JPanel panelControles = new JPanel();
@@ -94,7 +94,7 @@ public class MenuRepresentante extends JPanel {
         lCedula.setFont(ThemeManager.TEXT_NORMAL);
         lCedula.setForeground(ThemeManager.COLOR_TEXT);
 
-        txtCedula = ThemeManager.Textfield();
+        txtCedula = ThemeManager.Textfield("Ej: V-12345678");
 
         JPanel pInputCedula = new JPanel(new BorderLayout(10, 0));
         pInputCedula.setOpaque(false);
@@ -107,7 +107,7 @@ public class MenuRepresentante extends JPanel {
         lNombre.setFont(ThemeManager.TEXT_NORMAL);
         lNombre.setForeground(ThemeManager.COLOR_TEXT);
 
-        txtNombre = ThemeManager.Textfield();
+        txtNombre = ThemeManager.Textfield("Ej: Carlos");
 
         JPanel pInputNombre = new JPanel(new BorderLayout(10, 0));
         pInputNombre.setOpaque(false);
@@ -120,7 +120,7 @@ public class MenuRepresentante extends JPanel {
         lApellido.setFont(ThemeManager.TEXT_NORMAL);
         lApellido.setForeground(ThemeManager.COLOR_TEXT);
 
-        txtApellido = ThemeManager.Textfield();
+        txtApellido = ThemeManager.Textfield("Ej: Mendoza");
 
         JPanel pInputApellido = new JPanel(new BorderLayout(10, 0));
         pInputApellido.setOpaque(false);

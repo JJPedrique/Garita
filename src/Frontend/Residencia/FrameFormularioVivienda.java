@@ -50,24 +50,24 @@ public class FrameFormularioVivienda extends JPanel {
         gbc.insets = new Insets(8, 8, 8, 8);
 
         JLabel lblCalle = etiquetaDialogo("Calle");
-        JTextField txtCalleLocal = campoDialogo(calleInicial == null ? "" : calleInicial);
+        JTextField txtCalleLocal = campoDialogo(calleInicial == null ? "" : calleInicial, "Ej: Calle Los Jabillos");
         txtCalleLocal.setPreferredSize(new Dimension(260, 32));
 
         JLabel lblNumero = etiquetaDialogo("Número de Casa");
-        JTextField txtNumeroLocal = campoDialogo(numeroOriginal == null ? "" : numeroOriginal);
+        JTextField txtNumeroLocal = campoDialogo(numeroOriginal == null ? "" : numeroOriginal, "Ej: A-11");
         txtNumeroLocal.setPreferredSize(new Dimension(260, 32));
 
         restringirCalle(txtCalleLocal, 30);
         restringirNumeroVivienda(txtNumeroLocal, 10);
 
-        gbc.gridx = 0; gbc.gridy = 0; gbc.anchor = GridBagConstraints.WEST; gbc.fill = GridBagConstraints.HORIZONTAL; gbc.weightx = 1.0;
+        gbc.gridx = 0; gbc.gridy = 0; gbc.anchor = GridBagConstraints.WEST; gbc.fill = GridBagConstraints.NONE; gbc.weightx = 0.0;
         formPanel.add(lblCalle, gbc);
-        gbc.gridy = 1;
+        gbc.gridx = 1; gbc.fill = GridBagConstraints.HORIZONTAL; gbc.weightx = 1.0;
         formPanel.add(txtCalleLocal, gbc);
 
-        gbc.gridy = 2; gbc.insets = new Insets(16, 8, 8, 8);
+        gbc.gridx = 0; gbc.gridy = 1; gbc.fill = GridBagConstraints.NONE; gbc.weightx = 0.0; gbc.insets = new Insets(16, 8, 8, 8);
         formPanel.add(lblNumero, gbc);
-        gbc.gridy = 3; gbc.insets = new Insets(8, 8, 8, 8);
+        gbc.gridx = 1; gbc.fill = GridBagConstraints.HORIZONTAL; gbc.weightx = 1.0;
         formPanel.add(txtNumeroLocal, gbc);
 
         JButton btnGuardar = ThemeManager.Button(esEdicion ? "Actualizar Vivienda" : "Agregar Vivienda");
@@ -150,12 +150,28 @@ public class FrameFormularioVivienda extends JPanel {
     private JLabel etiquetaDialogo(String texto) {
         JLabel label = new JLabel(texto);
         label.setForeground(ThemeManager.COLOR_TEXT);
-        label.setFont(ThemeManager.TEXT_NORMAL);
+        label.setFont(ThemeManager.TEXT_SUBTITLE);
         return label;
     }
 
-    private JTextField campoDialogo(String valorInicial) {
-        JTextField field = new JTextField(valorInicial);
+    private JTextField campoDialogo(String valorInicial, String placeholder) {
+        JTextField field = new JTextField(valorInicial) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                if (getText().isEmpty() && placeholder != null) {
+                    Graphics2D g2 = (Graphics2D) g.create();
+                    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                    g2.setColor(ThemeManager.COLOR_PLACEHOLDER);
+                    g2.setFont(getFont());
+                    FontMetrics fm = g2.getFontMetrics();
+                    int x = getInsets().left;
+                    int y = (getHeight() - fm.getHeight()) / 2 + fm.getAscent();
+                    g2.drawString(placeholder, x, y);
+                    g2.dispose();
+                }
+            }
+        };
         field.setBackground(ThemeManager.COLOR_INPUT);
         field.setForeground(ThemeManager.COLOR_TEXT_DARK);
         field.setBorder(new EmptyBorder(5, 10, 5, 10));

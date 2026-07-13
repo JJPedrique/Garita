@@ -54,7 +54,7 @@ public class MenuVivienda extends JPanel {
 
     public MenuVivienda() {
         this.setLayout(new BorderLayout());
-        this.setBackground(ThemeManager.COLOR_BACKGROUND_DARK);
+        this.setBackground(ThemeManager.COLOR_BACKGROUND);
         this.setBorder(new EmptyBorder(10, 10, 10, 10));
 
         JPanel panelControles = new JPanel();
@@ -96,7 +96,7 @@ public class MenuVivienda extends JPanel {
         lNum.setFont(ThemeManager.TEXT_NORMAL);
         lNum.setForeground(ThemeManager.COLOR_TEXT);
 
-        txtNum = ThemeManager.Textfield();
+        txtNum = ThemeManager.Textfield("Ej: A-11");
 
         JPanel pInputNum = new JPanel(new BorderLayout(10, 0));
         pInputNum.setOpaque(false);
@@ -109,7 +109,7 @@ public class MenuVivienda extends JPanel {
         lCalle.setFont(ThemeManager.TEXT_NORMAL);
         lCalle.setForeground(ThemeManager.COLOR_TEXT);
 
-        txtCalle = ThemeManager.Textfield();
+        txtCalle = ThemeManager.Textfield("Ej: Calle Los Jabillos");
 
         JPanel pInputCalle = new JPanel(new BorderLayout(10, 0));
         pInputCalle.setOpaque(false);
@@ -272,26 +272,29 @@ public class MenuVivienda extends JPanel {
         return label;
     }
 
-    private JLabel crearEstado(String texto, boolean activo) {
+    private JPanel crearEstado(String texto, boolean activo) {
         JLabel label = ThemeManager.Label(texto);
         label.setHorizontalAlignment(SwingConstants.CENTER);
         label.setOpaque(true);
-        label.setFont(ThemeManager.TEXT_NORMAL);
+        label.setFont(ThemeManager.TEXT_SUBTITLE);
+
+        boolean esPositivo;
         if ("Solvente".equalsIgnoreCase(texto)) {
-            label.setForeground(new Color(129, 199, 132));
-            label.setBackground(new Color(46, 125, 50, 40));
+            esPositivo = true;
         } else if ("Moroso".equalsIgnoreCase(texto)) {
-            label.setForeground(new Color(240, 128, 128));
-            label.setBackground(new Color(198, 40, 40, 40));
+            esPositivo = false;
         } else {
-            label.setForeground(ThemeManager.COLOR_TEXT_DARK);
-            label.setBackground(activo ? ThemeManager.COLOR_SECONDARY : ThemeManager.COLOR_ERROR);
+            esPositivo = activo;
         }
-        label.setFont(ThemeManager.TEXT_NORMAL);
-        label.setPreferredSize(new Dimension(82, 22));
-        label.setMinimumSize(new Dimension(82, 22));
-        label.setMaximumSize(new Dimension(82, 22));
-        return label;
+        label.setBackground(esPositivo ? ThemeManager.COLOR_ESTADO_LABEL_TRUE : ThemeManager.COLOR_ESTADO_LABEL_FALSE);
+        label.setForeground(esPositivo ? ThemeManager.COLOR_ESTADO_TEXT_TRUE : ThemeManager.COLOR_ESTADO_TEXT_FALSE);
+
+        label.setPreferredSize(new Dimension(90, 25));
+
+        JPanel contenedor = new JPanel(new GridBagLayout());
+        contenedor.setOpaque(false);
+        contenedor.add(label);
+        return contenedor;
     }
 
     private JPanel crearAccionesVivienda(ViviendaItem vivienda) {
@@ -332,7 +335,7 @@ public class MenuVivienda extends JPanel {
 
         Window owner = SwingUtilities.getWindowAncestor(this);
         JDialog dialogo = new JDialog(owner, "Sistema Garita - Pagar Cuota", Dialog.ModalityType.APPLICATION_MODAL);
-        dialogo.setSize(460, 480);
+        dialogo.setSize(460, 420);
         dialogo.setLocationRelativeTo(this);
         dialogo.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         dialogo.add(new FramePagarCuota(dialogo, idVivienda, numeroVivienda, calle, cuota, this::cargarViviendas));
