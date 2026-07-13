@@ -167,12 +167,12 @@ public class FrameSolicitarAccesoVisitante extends JPanel {
             return;
         }
 
-        String Query = "SELECT CONCAT(R.nombre,' ',R.apellido) AS nombre_completo, numero_vivienda, calle FROM representantes as R\n" +
-                        "JOIN viviendas AS V ON R.id_vivienda = V.id \n" +
-                        "WHERE nombre ILIKE ? OR apellido ILIKE ? \n" +
+        String Query = "SELECT CONCAT(R.nombre,' ',R.apellido) AS nombre_completo, numero_vivienda, calle FROM representantes as R\n" + //
+                        "JOIN viviendas AS V ON R.id_vivienda = V.id \n" + //
+                        "WHERE CONCAT(R.nombre,' ',R.apellido) ILIKE ?\n" + //
                         "ORDER BY nombre_completo,numero_vivienda,calle ASC;";
         try {
-            ResultSet RS = ConexionPostgres.consultar(Query, new Object[]{"%" + filtro + "%", "%" + filtro + "%"});
+            ResultSet RS = ConexionPostgres.consultar(Query, new Object[]{"%"+filtro+"%"});
             
             while (RS != null && RS.next()) {
                 String sNombre = RS.getString("nombre_completo");
