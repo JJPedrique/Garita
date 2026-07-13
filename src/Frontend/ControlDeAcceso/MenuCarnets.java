@@ -39,15 +39,17 @@ class JCarnet {
 
         // Evento de Borrado
         this.Borrar.addActionListener(e -> {
-            Object OPC[] = {"SÍ","NO"};  
-            int seleccion = JOptionPane.showOptionDialog(null,
-                "¿Seguro que desea eliminar el carnet "+Codigo+"?", 
-                "CONFIRMAR ELIMINACIÓN", 
-                JOptionPane.YES_NO_OPTION, 
-                JOptionPane.WARNING_MESSAGE, 
-                null, OPC, OPC[1]);  
+
+            boolean confirmarBorrado = ThemeManager.MostrarConfirmacion(
+                this.Borrar, 
+                "Sistema Garita - CONFIRMAR",
+                "¿Seguro que desea eliminar el carnet " + Codigo + "?",
+                ThemeManager.COLOR_ERROR,
+                "Eliminar",
+                "Cancelar"
+            );
             
-            if (seleccion == JOptionPane.YES_OPTION) {
+            if (confirmarBorrado) {
                 try {
                                 String miUsuario = Backend.SesionUsuario.getInstancia().getCedula();
                 if (miUsuario == null) miUsuario = "Sistema_Java";
@@ -58,7 +60,7 @@ class JCarnet {
                     Object Parametros[] = {Codigo};
                     ConexionPostgres.comandoDML(Query, Parametros);
                     
-                    JOptionPane.showMessageDialog(null, "El carnet ha sido removido del sistema.");
+                    ThemeManager.MostrarMensajeExito(this.Borrar, "El carnet ha sido removido del sistema.");
 
                     // Como JCarnet es una parte aislada del Front, al borrar no puedo actualizar la tabla directamente
                     // El Runnable hace que el evento diaparará una función que desconoce, que podemos decirlo más adelante 
