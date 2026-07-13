@@ -71,7 +71,9 @@ public class SubMenuUsuarios extends JPanel {
         JPanel RowsPanel = ThemeManager.Panel(new GridBagLayout());
 
         public MyTable(String[] Headers){
-            this.setLayout(new BorderLayout());
+            this.setLayout(new BorderLayout());        
+            this.setBackground(ThemeManager.COLOR_BACKGROUND);
+            this.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
             this.add(HeadersPanel(Headers),BorderLayout.NORTH);
             this.add(new JScrollPane(RowsPanel),BorderLayout.CENTER);   
             RowsPanel.setBackground(ThemeManager.COLOR_BACKGROUND);
@@ -158,6 +160,8 @@ public class SubMenuUsuarios extends JPanel {
 
     JPanel Filtros(){
         JPanel newPanel = ThemeManager.Panel(new GridBagLayout());
+        newPanel.setBackground(ThemeManager.COLOR_BACKGROUND);
+        newPanel.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridy=0;gbc.gridx=0;gbc.weightx=1;
@@ -165,11 +169,16 @@ public class SubMenuUsuarios extends JPanel {
         gbc.insets = new Insets(10,10,10,10);
         gbc.gridwidth=2;
 
-        JButton AddUser = ThemeManager.Button("Agregar Nuevo Usuario");
+        JLabel AddUser = ThemeManager.Label("AGREGAR NUEVO USUARIO");
         AddUser.setFont(ThemeManager.TEXT_SUBTITLE);
-
+        AddUser.setHorizontalAlignment(SwingConstants.CENTER);
         newPanel.add(AddUser,gbc);
-        AddUser.addActionListener(new ActionListener() {
+
+        gbc.gridy=1;
+        JButton BtnAddUser = ThemeManager.Button("Agregar Nuevo Usuario");
+        BtnAddUser.setFont(ThemeManager.TEXT_SUBTITLE);
+        newPanel.add(BtnAddUser,gbc);
+        BtnAddUser.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 new FrameAgregarUsuario();
@@ -177,38 +186,43 @@ public class SubMenuUsuarios extends JPanel {
             }
         });
 
-        gbc.gridy=1;
-        JLabel Filtros = ThemeManager.Label("Busqueda y Filtros"); 
+        gbc.gridy=2;
+        JSeparator hr = new JSeparator(JSeparator.HORIZONTAL);
+        newPanel.add(hr,gbc);
+
+        gbc.gridy=3;
+        JLabel Filtros = ThemeManager.Label("BÚSQUEDA Y FILTROS"); 
         Filtros.setFont(ThemeManager.TEXT_SUBTITLE);
+        Filtros.setHorizontalAlignment(SwingConstants.CENTER);
         newPanel.add(Filtros,gbc);
 
         gbc.gridwidth=1;gbc.weightx=0;
         
-        gbc.gridy=2;gbc.gridx=0;
+        gbc.gridy=4;gbc.gridx=0;
         JLabel Nombre = ThemeManager.Label("Nombre");   
         newPanel.add(Nombre,gbc);
      
-        gbc.gridy=3;
+        gbc.gridy=5;
         JLabel Apellido = ThemeManager.Label("Apellido");   
         newPanel.add(Apellido,gbc);        
         
-        gbc.gridy=4;
+        gbc.gridy=6;
         JLabel Cedula = ThemeManager.Label("Cedula");  
         newPanel.add(Cedula,gbc);
 
-        gbc.gridy=2;gbc.gridx=1;gbc.weightx=1;
+        gbc.gridy=4;gbc.gridx=1;gbc.weightx=1;
         inputNombre =  ThemeManager.Textfield();
         newPanel.add(inputNombre,gbc);
 
-        gbc.gridy=3;
+        gbc.gridy=5;
         inputApellido =  ThemeManager.Textfield();
         newPanel.add(inputApellido,gbc);
     
-        gbc.gridy=4;
+        gbc.gridy=6;
         inputCedula =  ThemeManager.Textfield();
         newPanel.add(inputCedula,gbc);
 
-        gbc.gridwidth=2;gbc.gridy=5;gbc.gridx=0;  
+        gbc.gridwidth=2;gbc.gridy=7;gbc.gridx=0;  
         JButton Buscar = ThemeManager.Button("Buscar");
         newPanel.add(Buscar,gbc);
         Buscar.addActionListener(new ActionListener() {
@@ -219,7 +233,7 @@ public class SubMenuUsuarios extends JPanel {
             }
         });
 
-        gbc.gridy=6;gbc.fill=GridBagConstraints.BOTH;gbc.weighty=1;
+        gbc.gridy=8;gbc.fill=GridBagConstraints.BOTH;gbc.weighty=1;
         JLabel empty = new JLabel();
         newPanel.add(empty,gbc);
         return newPanel;

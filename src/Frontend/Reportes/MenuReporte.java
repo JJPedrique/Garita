@@ -45,6 +45,8 @@ public class MenuReporte extends JPanel {
 
         public MyTable(){
             this.setLayout(new BorderLayout());
+            this.setBackground(ThemeManager.COLOR_BACKGROUND);
+            this.setBorder(BorderFactory.createEmptyBorder(20,20,20,20));
             this.add(HeaderPanel,BorderLayout.NORTH);
             this.add(new JScrollPane(RowsPanel),BorderLayout.CENTER);   
             RowsPanel.setBackground(ThemeManager.COLOR_BACKGROUND);
@@ -201,19 +203,24 @@ public class MenuReporte extends JPanel {
 
     public MenuReporte() throws SQLException{
         this.setLayout(new BorderLayout());
+        this.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
         this.setBackground(ThemeManager.COLOR_BACKGROUND_DARK);
 
         JTabbedPane Menu = new JTabbedPane();
         Menu.addTab("Modulo",Modulo());
         Menu.addTab( "Filtros",Filtros());
         Menu.addTab("Imprimir",Imprimir());
-        UIManager.put("TabbedPane.tabAreaBackground", ThemeManager.COLOR_BACKGROUND_DARK);
-        UIManager.put("TabbedPane.background", ThemeManager.COLOR_BACKGROUND_DARK);
+        UIManager.put("TabbedPane.tabAreaBackground", ThemeManager.COLOR_BACKGROUND);
+        UIManager.put("TabbedPane.background", ThemeManager.COLOR_BACKGROUND);
         Menu.setForeground(ThemeManager.COLOR_TEXT);
-        Menu.setBackground(ThemeManager.COLOR_BACKGROUND_DARK);
+        Menu.setBackground(ThemeManager.COLOR_BACKGROUND);
         Menu.setFont(ThemeManager.TEXT_NORMAL);
-        this.add(Menu,BorderLayout.WEST);
-        this.add(Table,BorderLayout.CENTER);
+
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, Menu, Table);
+        splitPane.setContinuousLayout(true);
+        splitPane.setBackground(ThemeManager.COLOR_BACKGROUND);
+        splitPane.setOneTouchExpandable(true); 
+        this.add(splitPane,BorderLayout.CENTER);    
 
         //UPDATES
         KeyStroke enterKey = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
@@ -229,7 +236,7 @@ public class MenuReporte extends JPanel {
 
     JPanel Modulo(){
         JPanel newPanel = ThemeManager.Panel(new GridBagLayout());
-
+        newPanel.setBackground(ThemeManager.COLOR_BACKGROUND);
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridy=0;gbc.gridx=0;
         gbc.fill=GridBagConstraints.BOTH;
@@ -262,7 +269,8 @@ public class MenuReporte extends JPanel {
 
     JPanel Filtros(){
         JPanel newPanel = ThemeManager.Panel(new GridBagLayout());
-
+        newPanel.setBackground(ThemeManager.COLOR_BACKGROUND);
+        
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridy=0;gbc.gridx=0;
         gbc.fill=GridBagConstraints.HORIZONTAL;
@@ -296,6 +304,7 @@ public class MenuReporte extends JPanel {
 
     JPanel Imprimir(){
         JPanel newPanel = ThemeManager.Panel(new GridBagLayout());
+        newPanel.setBackground(ThemeManager.COLOR_BACKGROUND);
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridy=0;gbc.gridx=0; gbc.weightx=1;

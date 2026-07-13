@@ -9,6 +9,8 @@ import java.awt.*;
 public class MenuMantenimiento extends JPanel {
     public MenuMantenimiento(){
         this.setLayout(new BorderLayout());
+        this.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
+
         this.setBackground(ThemeManager.COLOR_BACKGROUND_DARK);
         JTabbedPane TabMenu = new JTabbedPane();
         TabMenu.add("Gestion de Respaldos",new SubMenuGestionDeRespaldos());
