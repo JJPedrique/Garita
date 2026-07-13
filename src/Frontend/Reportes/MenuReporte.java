@@ -23,71 +23,84 @@ public class MenuReporte extends JPanel {
 
 //#region TABLE
     class MyTable extends JPanel {
-        class MyRow extends JPanel{
-            public MyRow(ArrayList<String> Data){
-                this.setLayout(new GridBagLayout());
-                this.setBackground(ThemeManager.COLOR_BACKGROUND_LIGHT);
-                GridBagConstraints gbc = new GridBagConstraints(); 
-                gbc.fill = GridBagConstraints.HORIZONTAL;
-                gbc.weightx=1;gbc.gridx=0;gbc.gridy=0;
-                gbc.insets = new Insets(10,10,10,10);
-                for(String h : Data){
-                    this.add(ThemeManager.Label(h),gbc);gbc.gridx+=1;}
-            }
-        }
+    ArrayList<String> headers = new ArrayList<>();
+    ArrayList<ArrayList<String>> rows = new ArrayList<>();
 
-        ArrayList<String> headers = new ArrayList<>();
-        ArrayList<ArrayList<String>> rows = new ArrayList<>();
+    JPanel TablePanel = ThemeManager.Panel(new GridBagLayout());
 
-        JPanel HeaderPanel = ThemeManager.Panel(new GridBagLayout());
-        JPanel RowsPanel = ThemeManager.Panel(new GridBagLayout());
-        ArrayList<MyRow> MyRows = new ArrayList<>();       
-
-        public MyTable(){
-            this.setLayout(new BorderLayout());
-            this.setBackground(ThemeManager.COLOR_BACKGROUND);
-            this.setBorder(BorderFactory.createEmptyBorder(20,20,20,20));
-            this.add(HeaderPanel,BorderLayout.NORTH);
-            this.add(new JScrollPane(RowsPanel),BorderLayout.CENTER);   
-            RowsPanel.setBackground(ThemeManager.COLOR_BACKGROUND);
-            HeaderPanel.setBackground(ThemeManager.COLOR_PRIMARY);
-        }
-
-        void UpdateTable(ArrayList<String> newColumns, ArrayList<ArrayList<String>> newRows){
-            headers = newColumns; rows = newRows;
-            for (Component C : HeaderPanel.getComponents()) {HeaderPanel.remove(C);}
-            for (Component C : RowsPanel.getComponents()) {RowsPanel.remove(C);} MyRows.clear();
-
-            GridBagConstraints gbc = new GridBagConstraints();
-            gbc.fill = GridBagConstraints.HORIZONTAL;
-            gbc.weightx=1;gbc.gridx=0;gbc.gridy=0;
-            gbc.insets = new Insets(5,5,5,5);
-
-            for(String h : newColumns){
-                JLabel newLabel = ThemeManager.Label(h);
-                newLabel.setFont(ThemeManager.TEXT_SUBTITLE);
-                HeaderPanel.add(newLabel,gbc);gbc.gridx+=1;
-            }
-
-            gbc.fill = GridBagConstraints.HORIZONTAL;
-            gbc.weightx=1;gbc.gridx=0;gbc.gridy=0;
-            gbc.insets = new Insets(10,10,5,10);
-            
-            for (ArrayList<String> R: newRows) {
-                MyRow newRow = new MyRow(R);
-                RowsPanel.add(newRow,gbc);
-                MyRows.add(newRow);
-                gbc.gridy+=1;
-            }
-
-            gbc.fill = GridBagConstraints.BOTH;
-            gbc.weighty=1;
-            RowsPanel.add(new JLabel(""),gbc);
-
-            this.repaint();
-            this.revalidate();
-        }
+    public MyTable() {
+        this.setLayout(new BorderLayout());
+        this.setBackground(ThemeManager.COLOR_BACKGROUND);
+        this.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        
+        TablePanel.setBackground(ThemeManager.COLOR_BACKGROUND);
+        this.add(new JScrollPane(TablePanel), BorderLayout.CENTER);   
     }
+
+    void UpdateTable(ArrayList<String> newColumns, ArrayList<ArrayList<String>> newRows) {
+        headers = newColumns; 
+        rows = newRows;
+        
+        // Limpiamos el panel principal
+        TablePanel.removeAll();
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.weightx = 1;
+
+        // 1. DIBUJAR CABECERAS
+        gbc.gridy = 0;
+        gbc.gridx = 0;
+        gbc.ipady=20;gbc.ipadx=20;
+        for (String h : newColumns) {
+            JLabel newLabel = ThemeManager.Label(h);
+            newLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            newLabel.setFont(ThemeManager.TEXT_SUBTITLE);
+            // Opcional: poner fondo al label para simular el HeaderPanel original
+            newLabel.setOpaque(true);
+            newLabel.setBackground(ThemeManager.COLOR_PRIMARY); 
+            TablePanel.add(newLabel, gbc);
+            gbc.gridx++;
+        }
+
+        // 2. DIBUJAR FILAS
+        gbc.gridy = 1;
+        gbc.ipady=20;gbc.ipadx=20;
+        for (ArrayList<String> R : newRows) {
+            gbc.gridx = 0;
+            
+            // Iteramos basándonos en el tamaño de las COLUMNAS, no de la fila.
+            // Esto evita que falten celdas si la lista de datos viene incompleta.
+            for (int i = 0; i < newColumns.size(); i++) {
+                gbc.insets=new Insets(10,0,10,0);
+                if(i==0){gbc.insets=new Insets(10,10,10,0);}
+                if(i==newColumns.size()-1){gbc.insets=new Insets(10,0,10,10);}
+                // Si la fila tiene el dato, lo usamos. Si no, o si está vacío, ponemos un espacio " "
+                String cellText = " ";
+                if (i < R.size() && R.get(i) != null && !R.get(i).trim().isEmpty()) {
+                    cellText = R.get(i);
+                }
+                
+                JLabel cellLabel = ThemeManager.Label(cellText);
+                cellLabel.setHorizontalAlignment(SwingConstants.CENTER);
+                cellLabel.setOpaque(true);
+                cellLabel.setBackground(ThemeManager.COLOR_BACKGROUND_LIGHT);
+                
+                TablePanel.add(cellLabel, gbc);
+                gbc.gridx++;
+            }
+            gbc.gridy++;
+        }
+
+        // Fila extra al final para empujar todo hacia arriba (weighty)
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.weighty = 1;gbc.gridx=1;gbc.gridwidth=newColumns.size();
+        TablePanel.add(new JLabel(""), gbc);
+
+        this.repaint();
+        this.revalidate();
+    }
+}
 //#endregion
 
 //#region SQL QUERY
@@ -543,7 +556,16 @@ public class MenuReporte extends JPanel {
             PdfWriter.getInstance(documento, new FileOutputStream(rutaDescargas));
             documento.open();
 
-            Paragraph titulo = new Paragraph("Reporte Garita -"+ Modulos.getSelectedItem().toString());
+            Paragraph encabezado = new Paragraph(
+                "REPUBLICA BOLIVARIANA DE VENEZUELA\n" +
+                "MUNICIPIO MARACAIBO - PARROQUIA RAUL LEONI\n" +
+                "ASOCIACION DE PROPIETARIOS Y VECINOS DE LA \"URB. SANTA FE III ETAPA\"\n" +
+                "Rif: J29613737-4"
+            );
+            encabezado.setSpacingAfter(12);
+            documento.add(encabezado);
+
+            Paragraph titulo = new Paragraph("Reporte Garita - Listado de "+ Modulos.getSelectedItem().toString());
             titulo.setAlignment(Element.ALIGN_CENTER);
             titulo.setSpacingAfter(20);
             documento.add(titulo);
@@ -583,6 +605,11 @@ public class MenuReporte extends JPanel {
             }
                
             documento.add(tabla);
+
+            Paragraph piePagina = new Paragraph("Av. 84 URB. SANTA FE III ETAPA, PARROQUIA RAÚL LEONI, MUNICIPIO MARACAIBO - EDO. ZULIA Teléfono: 0412-7512230 / 0412-0794503");
+            piePagina.setSpacingBefore(16);
+            documento.add(piePagina);
+
             ThemeManager.MostrarMensajeExito(this, "Se genero el reporte en la carpeta descarga");
 
         } catch (DocumentException | FileNotFoundException e) {

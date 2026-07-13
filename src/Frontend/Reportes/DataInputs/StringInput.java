@@ -31,7 +31,7 @@ public class StringInput extends Input{
         this.add(input,gbc);
 
         gbc.gridx=2;gbc.gridy=0;gbc.gridwidth=1;gbc.gridheight=2; gbc.weightx=0;
-        this.add(BtnRemover,gbc);     
+        this.add(BtnRemover,gbc);   
     }
     
     @Override

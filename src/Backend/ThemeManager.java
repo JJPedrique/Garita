@@ -77,6 +77,43 @@ public class ThemeManager {
         return newButton;
     }
 
+    public static JButton RedButton(String text){
+        JButton newButton = new JButton(text) {
+            @Override
+            //JButton - Border Radius
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(getBackground());
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), ThemeManager.BORDER_RADIUS_PX, ThemeManager.BORDER_RADIUS_PX);
+                g2.dispose();
+                super.paintComponent(g);
+            }
+        };
+        
+        newButton.setMaximumSize(new Dimension(175, 50));
+        newButton.setForeground(COLOR_TEXT);
+        newButton.setBackground(COLOR_ERROR);
+        newButton.setFont(TEXT_SUBTITLE);
+        newButton.setFocusPainted(false);
+        newButton.setBorderPainted(false);
+        newButton.setContentAreaFilled(false);
+        newButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        newButton.setHorizontalAlignment(SwingConstants.CENTER);
+
+        newButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                newButton.setBackground(COLOR_ERROR_HOVER);
+            }
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                newButton.setBackground(COLOR_ERROR);
+            }
+        });
+        return newButton;
+    }
+
     public static JButton SideBarButton(String texto){
         JButton btn = ThemeManager.Button(texto);
         btn.setMaximumSize(new Dimension(205, 40));

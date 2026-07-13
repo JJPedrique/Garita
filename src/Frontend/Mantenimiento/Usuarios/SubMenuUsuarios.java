@@ -11,119 +11,144 @@ import Backend.ThemeManager;
 public class SubMenuUsuarios extends JPanel {
 
     class MyTable extends JPanel {
-        class MyRow extends JPanel{
-            ArrayList<String> DATA;
-            public MyRow(ArrayList<String> Data){
-                DATA = Data;
-                this.setLayout(new GridBagLayout());
-                this.setBackground(ThemeManager.COLOR_BACKGROUND_LIGHT);
-                GridBagConstraints gbc = new GridBagConstraints(); 
-                gbc.fill = GridBagConstraints.HORIZONTAL;
-                gbc.weightx=1;gbc.gridx=0;gbc.gridy=0;
-                gbc.insets = new Insets(5,5,5,5);
-                for(int i = 0; i<DATA.size(); i++){
-                    if(i==0){continue;}
-                    this.add(ThemeManager.Label(DATA.get(i)),gbc);gbc.gridx+=1;
-                }
-
-                gbc.weightx=0;
-                JPanel PanelControl = ThemeManager.Panel(new GridBagLayout());
-                this.add(PanelControl,gbc);
-
-                gbc.gridx=0;
-                JButton Editar = new JButton(ThemeManager.SetImgIcon("img\\edit.png", ThemeManager.ICON_WIDTH_PX, ThemeManager.ICON_HEIGHT_PX));
-                PanelControl.add(Editar,gbc);
-                Editar.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        new FrameModificarUsuario(Integer.parseInt(DATA.get(0)));
-                         try {Search();} catch (SQLException e1) {e1.printStackTrace();}
-                    }
-                });
-                
-                Editar.setFocusPainted(false);
-                Editar.setContentAreaFilled(false);
-                Editar.setBorderPainted(false);
-                Editar.setForeground(ThemeManager.COLOR_TEXT);
-                Editar.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-
-                
-                gbc.gridx=1;
-                JButton Eliminar = new JButton(ThemeManager.SetImgIcon("img\\delete.png", ThemeManager.ICON_WIDTH_PX, ThemeManager.ICON_HEIGHT_PX));
-                PanelControl.add(Eliminar,gbc);
-                Eliminar.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        new FrameBorrarUsuario(Integer.parseInt(DATA.get(0)));
-                         try {Search();} catch (SQLException e1) {e1.printStackTrace();}
-                    }
-                });
-
-                Eliminar.setFocusPainted(false);
-                Eliminar.setContentAreaFilled(false);
-                Eliminar.setBorderPainted(false);
-                Eliminar.setForeground(ThemeManager.COLOR_TEXT);
-                Eliminar.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            }
-        }
-
-        ArrayList<MyRow> ROWS = new ArrayList<>();
-        JPanel RowsPanel = ThemeManager.Panel(new GridBagLayout());
+        String[] headers;
+        JPanel TablePanel = ThemeManager.Panel(new GridBagLayout());
 
         public MyTable(String[] Headers){
+            this.headers = Headers;
             this.setLayout(new BorderLayout());        
             this.setBackground(ThemeManager.COLOR_BACKGROUND);
-            this.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
-            this.add(HeadersPanel(Headers),BorderLayout.NORTH);
-            this.add(new JScrollPane(RowsPanel),BorderLayout.CENTER);   
-            RowsPanel.setBackground(ThemeManager.COLOR_BACKGROUND);
-        }
-
-        JPanel HeadersPanel(String[] Headers){
-            JPanel newPanel = new JPanel(new GridBagLayout());
-            newPanel.setBackground(ThemeManager.COLOR_PRIMARY);
-
-            GridBagConstraints gbc = new GridBagConstraints();
-            gbc.fill = GridBagConstraints.HORIZONTAL;
-            gbc.weightx=1;gbc.gridx=0;gbc.gridy=0;
-            gbc.insets = new Insets(10,10,10,10);
+            this.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
             
-            for(int i = 0;i<Headers.length;i++){
-                if(i==0){continue;}
-                JLabel newLabel = ThemeManager.Label(Headers[i]);
-                newLabel.setFont(ThemeManager.TEXT_SUBTITLE);
-                newPanel.add(newLabel,gbc);gbc.gridx+=1;
-            }
-
-            gbc.weightx=0;
-            JLabel newLabel = ThemeManager.Label("Opciones");
-            newLabel.setFont(ThemeManager.TEXT_SUBTITLE);
-            newPanel.add(newLabel,gbc);
-            return newPanel;
+            TablePanel.setBackground(ThemeManager.COLOR_BACKGROUND);
+            // Agregamos el panel unificado (cabeceras + filas) al ScrollPane
+            this.add(new JScrollPane(TablePanel), BorderLayout.CENTER);   
         }
 
         void UpdateTable(ArrayList<ArrayList<String>> newRows){
-            for (Component C : RowsPanel.getComponents()) {RowsPanel.remove(C);}
-            ROWS.clear();
+            // Limpiamos el panel principal
+            TablePanel.removeAll();
 
             GridBagConstraints gbc = new GridBagConstraints();
             gbc.fill = GridBagConstraints.HORIZONTAL;
-            gbc.weightx=1;gbc.gridx=0;gbc.gridy=0;
-            gbc.insets = new Insets(10,10,5,10);
-            
-            for (ArrayList<String> R: newRows) {
-                MyRow newRow = new MyRow(R);
-                RowsPanel.add(newRow,gbc);
-                ROWS.add(newRow);
-                gbc.gridy+=1;
+
+            // ---------------------------------------------------------
+            // 1. DIBUJAR CABECERAS
+            // ---------------------------------------------------------
+            gbc.gridy = 0;
+            gbc.gridx = 0;
+            gbc.weightx = 1;
+            gbc.ipady=20;gbc.ipadx=20;
+
+            for(int i = 0; i < headers.length; i++){
+                if(i == 0) { continue; } // Saltamos el ID visualmente
+                
+                JLabel newLabel = ThemeManager.Label(headers[i]);
+                newLabel.setHorizontalAlignment(SwingConstants.CENTER);
+                newLabel.setFont(ThemeManager.TEXT_SUBTITLE);
+                newLabel.setOpaque(true);
+                newLabel.setBackground(ThemeManager.COLOR_PRIMARY);
+                TablePanel.add(newLabel, gbc);
+                gbc.gridx++;
             }
 
+            // Cabecera de la columna de Botones
+            gbc.weightx = 0; // Las opciones no necesitan expandirse tanto como el texto
+            JLabel opcionesLabel = ThemeManager.Label("Opciones");
+            opcionesLabel.setFont(ThemeManager.TEXT_SUBTITLE);
+            opcionesLabel.setOpaque(true);
+            opcionesLabel.setBackground(ThemeManager.COLOR_PRIMARY);
+            TablePanel.add(opcionesLabel, gbc);
+
+            // ---------------------------------------------------------
+            // 2. DIBUJAR FILAS DE DATOS
+            // ---------------------------------------------------------
+            gbc.gridy = 1;
+            
+            
+            for (ArrayList<String> R : newRows) {
+                gbc.gridx = 0;
+                gbc.weightx = 1;
+                gbc.ipady=20;gbc.ipadx=20;
+
+                // Obtenemos el ID de la fila (asumiendo que está en la posición 0) para pasarlo a los botones
+                final int rowId = (R.size() > 0 && R.get(0) != null) ? Integer.parseInt(R.get(0)) : -1;
+
+                // Iteramos sobre la longitud de las cabeceras para rellenar espacios vacíos
+                for(int i = 0; i < headers.length; i++){
+                    if(i == 0) { continue; } 
+                    gbc.insets=new Insets(10,0,10,0);
+                    if(i==1){gbc.insets=new Insets(10,10,10,0);}   
+
+                    String cellText = " "; // Por defecto un espacio para que el layout no colapse
+                    if (i < R.size() && R.get(i) != null && !R.get(i).trim().isEmpty()) {
+                        cellText = R.get(i);
+                    }
+                    
+                    JLabel cellLabel = ThemeManager.Label(cellText);
+                    cellLabel.setHorizontalAlignment(SwingConstants.CENTER);
+                    cellLabel.setOpaque(true);
+                    cellLabel.setBackground(ThemeManager.COLOR_BACKGROUND_LIGHT);
+                    TablePanel.add(cellLabel, gbc);
+                    gbc.gridx++;
+                }
+
+                // ---------------------------------------------------------
+                // 3. DIBUJAR BOTONES DE OPCIONES
+                // ---------------------------------------------------------
+                gbc.weightx = 0;
+                gbc.insets = new Insets(10, 0, 10, 10);
+                gbc.ipady=2;gbc.ipadx=2;
+
+                JPanel PanelControl = ThemeManager.Panel(new GridBagLayout());
+                PanelControl.setBackground(ThemeManager.COLOR_BACKGROUND_LIGHT);
+                
+                GridBagConstraints btnGbc = new GridBagConstraints();
+                btnGbc.gridy = 0;
+                
+                // Botón Editar
+                btnGbc.gridx = 0;
+                JButton Editar = new JButton(ThemeManager.SetImgIcon("img\\edit.png", ThemeManager.ICON_WIDTH_PX, ThemeManager.ICON_HEIGHT_PX));
+                EstilizarBoton(Editar);
+                Editar.addActionListener(e -> {
+                    new FrameModificarUsuario(rowId);
+                    try { Search(); } catch (SQLException e1) { e1.printStackTrace(); }
+                });
+                PanelControl.add(Editar, btnGbc);
+                
+                // Botón Eliminar
+                btnGbc.gridx = 1;
+                JButton Eliminar = new JButton(ThemeManager.SetImgIcon("img\\delete.png", ThemeManager.ICON_WIDTH_PX, ThemeManager.ICON_HEIGHT_PX));
+                EstilizarBoton(Eliminar);
+                Eliminar.addActionListener(e -> {
+                    new FrameBorrarUsuario(rowId);
+                    try { Search(); } catch (SQLException e1) { e1.printStackTrace(); }
+                });
+                PanelControl.add(Eliminar, btnGbc);
+
+                // Añadimos el panel de botones al final de la fila en el panel principal
+                TablePanel.add(PanelControl, gbc);
+                gbc.gridy++;
+            }
+
+            // ---------------------------------------------------------
+            // 4. ESPACIO FINAL PARA EMPUJAR HACIA ARRIBA
+            // ---------------------------------------------------------
             gbc.fill = GridBagConstraints.BOTH;
-            gbc.weighty=1;
-            RowsPanel.add(new JLabel(""),gbc);
+            gbc.weighty = 1;gbc.gridx=1;gbc.gridwidth=headers.length;
+            TablePanel.add(new JLabel(""), gbc);
 
             this.repaint();
             this.revalidate();
+        }
+
+        // Método auxiliar para no repetir las líneas de estilo en cada botón
+        private void EstilizarBoton(JButton btn) {
+            btn.setFocusPainted(false);
+            btn.setContentAreaFilled(false);
+            btn.setBorderPainted(false);
+            btn.setForeground(ThemeManager.COLOR_TEXT);
+            btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         }
     }
 
