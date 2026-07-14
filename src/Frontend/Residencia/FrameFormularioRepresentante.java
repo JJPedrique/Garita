@@ -185,8 +185,8 @@ public class FrameFormularioRepresentante extends JPanel {
         formPanel.add(txtTelefonoLocal, gbc);
 
         JButton btnGuardar = ThemeManager.Button(esEdicion ? "Actualizar Representante" : "Agregar Representante");
-        btnGuardar.setPreferredSize(new Dimension(260, 36));
-        btnGuardar.setMaximumSize(new Dimension(260, 36));
+        btnGuardar.setPreferredSize(new Dimension(220, 36));
+        btnGuardar.setMaximumSize(new Dimension(220, 36));
 
         btnGuardar.addActionListener(e -> guardar(
             (ViviendaComboItem) comboVivienda.getSelectedItem(),
@@ -197,13 +197,19 @@ public class FrameFormularioRepresentante extends JPanel {
             txtTelefonoLocal.getText().trim()
         ));
 
+        JButton btnCancelar = ThemeManager.GrayButton("Cancelar");
+        btnCancelar.setPreferredSize(new Dimension(120, 36));
+        btnCancelar.setMaximumSize(new Dimension(120, 36));
+        btnCancelar.addActionListener(e -> JDPadre.dispose());
+
         contenido.add(formPanel, BorderLayout.CENTER);
 
         JPanel bottom = new JPanel(new BorderLayout());
         bottom.setOpaque(false);
         bottom.setBorder(new EmptyBorder(14, 0, 4, 0));
-        JPanel wrapBtn = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        JPanel wrapBtn = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
         wrapBtn.setOpaque(false);
+        wrapBtn.add(btnCancelar);
         wrapBtn.add(btnGuardar);
         bottom.add(wrapBtn, BorderLayout.CENTER);
         contenido.add(bottom, BorderLayout.SOUTH);
@@ -230,7 +236,7 @@ public class FrameFormularioRepresentante extends JPanel {
         }
 
         if (!validarCedula(cedulaNumeros)) {
-            FrameMensaje.error(this, "Cédula inválida. Debe contener entre 6 y 8 dígitos.");
+            FrameMensaje.error(this, "Cédula inválida. Debe contener entre 5 y 8 dígitos.");
             return;
         }
 
@@ -246,6 +252,18 @@ public class FrameFormularioRepresentante extends JPanel {
             if (miUsuario == null) miUsuario = "Sistema_Java";
 
             if (esEdicion) {
+                boolean cedulaCambio = dataInicial.cedula == null || !dataInicial.cedula.equalsIgnoreCase(cedula);
+                if (cedulaCambio) {
+                    ResultSet rsDuplicado = ConexionPostgres.consultar(
+                        "SELECT activo FROM representantes WHERE cedula = ?",
+                        new Object[]{cedula}
+                    );
+                    if (rsDuplicado != null && rsDuplicado.next() && rsDuplicado.getBoolean("activo")) {
+                        FrameMensaje.error(this, "Ya existe un representante con esa cédula.");
+                        return;
+                    }
+                }
+
                 ConexionPostgres.comandoDML(
                     "DO $$ BEGIN PERFORM set_config('app.usuario_actual', '" + miUsuario + "', true); END $$; "
                                        + "UPDATE representantes SET id_vivienda = ?, nombre = ?, apellido = ?, cedula = ?, telefono = ? WHERE cedula = ?",

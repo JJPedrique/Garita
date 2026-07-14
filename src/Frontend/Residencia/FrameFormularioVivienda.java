@@ -71,18 +71,24 @@ public class FrameFormularioVivienda extends JPanel {
         formPanel.add(txtNumeroLocal, gbc);
 
         JButton btnGuardar = ThemeManager.Button(esEdicion ? "Actualizar Vivienda" : "Agregar Vivienda");
-        btnGuardar.setPreferredSize(new Dimension(230, 38));
-        btnGuardar.setMaximumSize(new Dimension(230, 38));
+        btnGuardar.setPreferredSize(new Dimension(200, 38));
+        btnGuardar.setMaximumSize(new Dimension(200, 38));
 
         btnGuardar.addActionListener(e -> guardar(txtCalleLocal.getText().trim(), txtNumeroLocal.getText().trim()));
+
+        JButton btnCancelar = ThemeManager.GrayButton("Cancelar");
+        btnCancelar.setPreferredSize(new Dimension(120, 38));
+        btnCancelar.setMaximumSize(new Dimension(120, 38));
+        btnCancelar.addActionListener(e -> JDPadre.dispose());
 
         contenido.add(formPanel, BorderLayout.CENTER);
 
         JPanel bottom = new JPanel(new BorderLayout());
         bottom.setOpaque(false);
         bottom.setBorder(new EmptyBorder(16, 0, 4, 0));
-        JPanel wrapBtn = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        JPanel wrapBtn = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
         wrapBtn.setOpaque(false);
+        wrapBtn.add(btnCancelar);
         wrapBtn.add(btnGuardar);
         bottom.add(wrapBtn, BorderLayout.CENTER);
         contenido.add(bottom, BorderLayout.SOUTH);
@@ -107,6 +113,18 @@ public class FrameFormularioVivienda extends JPanel {
 
         try {
             if (esEdicion) {
+                boolean numeroCambio = numeroOriginal == null || !numeroOriginal.equalsIgnoreCase(numero);
+                if (numeroCambio) {
+                    ResultSet rsDuplicado = ConexionPostgres.consultar(
+                        "SELECT activo FROM viviendas WHERE numero_vivienda = ?",
+                        new Object[]{numero}
+                    );
+                    if (rsDuplicado != null && rsDuplicado.next() && rsDuplicado.getBoolean("activo")) {
+                        FrameMensaje.error(this, "Ya existe una vivienda con ese número.");
+                        return;
+                    }
+                }
+
                 ConexionPostgres.comandoDML(
                     "DO $$ BEGIN PERFORM set_config('app.usuario_actual', '" + miUsuario + "', true); END $$; "
                                        + "UPDATE viviendas SET calle = ?, numero_vivienda = ? WHERE numero_vivienda = ?",

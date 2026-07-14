@@ -1,32 +1,15 @@
 package Frontend.Residencia;
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
 import javax.swing.border.EmptyBorder;
 import Backend.ConexionPostgres;
 import Backend.ThemeManager;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class MenuRepresentante extends JPanel {
-
-    private final DefaultTableModel tableModel = new DefaultTableModel(
-        new Object[]{"Nombre Completo", "Cédula", "Teléfono", "Opciones"}, 0
-    ) {
-        @Override
-        public boolean isCellEditable(int row, int column) {
-            return column == 3;
-        }
-
-        @Override
-        public Class<?> getColumnClass(int columnIndex) {
-            return columnIndex == 3 ? Object.class : String.class;
-        }
-    };
 
     private JTextField txtCedula;
     private JTextField txtNombre;
@@ -140,6 +123,20 @@ public class MenuRepresentante extends JPanel {
         btnBuscar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
         btnBuscar.addActionListener(e -> cargarRepresentantes());
 
+        txtCedula.addActionListener(e -> cargarRepresentantes());
+        txtNombre.addActionListener(e -> cargarRepresentantes());
+        txtApellido.addActionListener(e -> cargarRepresentantes());
+
+        JButton btnLimpiar = ThemeManager.GrayButton("Limpiar Filtros");
+        btnLimpiar.setAlignmentX(Component.CENTER_ALIGNMENT);
+        btnLimpiar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+        btnLimpiar.addActionListener(e -> {
+            txtCedula.setText("");
+            txtNombre.setText("");
+            txtApellido.setText("");
+            cargarRepresentantes();
+        });
+
         panelControles.add(tituloAgregar);
         panelControles.add(Box.createRigidArea(new Dimension(0, 12)));
         panelControles.add(btnAgregar);
@@ -151,6 +148,8 @@ public class MenuRepresentante extends JPanel {
         panelControles.add(panelFiltros);
         panelControles.add(Box.createRigidArea(new Dimension(0, 20)));
         panelControles.add(btnBuscar);
+        panelControles.add(Box.createRigidArea(new Dimension(0, 8)));
+        panelControles.add(btnLimpiar);
         panelControles.add(Box.createVerticalGlue());
 
         this.add(panelControles, BorderLayout.WEST);
@@ -337,78 +336,6 @@ public class MenuRepresentante extends JPanel {
         } catch (SQLException ex) {
             FrameMensaje.error(this, "No se pudo desactivar el representante: " + ex.getMessage());
         }
-    }
-
-    private class OpcionesRenderer extends JPanel implements javax.swing.table.TableCellRenderer {
-        private final JButton btnEditar = crearBoton("Editar");
-        private final JButton btnEliminar = crearBoton("Eliminar");
-
-        OpcionesRenderer() {
-            setOpaque(true);
-            setBackground(ThemeManager.COLOR_BACKGROUND_LIGHT);
-            setLayout(new FlowLayout(FlowLayout.CENTER, 6, 0));
-            add(btnEditar);
-            add(btnEliminar);
-        }
-
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            setBackground(isSelected ? ThemeManager.COLOR_BACKGROUND : ThemeManager.COLOR_BACKGROUND_LIGHT);
-            return this;
-        }
-    }
-
-    private class OpcionesEditor extends AbstractCellEditor implements javax.swing.table.TableCellEditor {
-        private final JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 6, 0));
-        private final JButton btnEditar = crearBoton("Editar");
-        private final JButton btnEliminar = crearBoton("Eliminar");
-        private String cedula;
-
-        OpcionesEditor() {
-            panel.setOpaque(true);
-            panel.setBackground(ThemeManager.COLOR_BACKGROUND_LIGHT);
-            panel.add(btnEditar);
-            panel.add(btnEliminar);
-
-            btnEditar.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    fireEditingStopped();
-                    editarRepresentante(cedula);
-                }
-            });
-
-            btnEliminar.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    fireEditingStopped();
-                    cambiarEstadoRepresentante(cedula);
-                }
-            });
-        }
-
-        @Override
-        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-            cedula = String.valueOf(table.getValueAt(row, 1));
-            panel.setBackground(ThemeManager.COLOR_BACKGROUND_LIGHT);
-            return panel;
-        }
-
-        @Override
-        public Object getCellEditorValue() {
-            return cedula;
-        }
-    }
-
-    private JButton crearBoton(String texto) {
-        JButton boton = new JButton(texto);
-        boton.setFont(ThemeManager.TEXT_SMALL);
-        boton.setForeground(ThemeManager.COLOR_TEXT);
-        boton.setBackground(ThemeManager.COLOR_PRIMARY);
-        boton.setFocusPainted(false);
-        boton.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
-        boton.setPreferredSize(new Dimension(74, 24));
-        return boton;
     }
 
     private void abrirFormularioRepresentante(boolean esEdicion, FrameFormularioRepresentante.RepresentanteData dataInicial) {

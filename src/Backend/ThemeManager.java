@@ -19,6 +19,8 @@ public class ThemeManager {
     public static final Color COLOR_SECONDARY           = Color.decode("#6ab848");
     public static final Color COLOR_ERROR               = Color.decode("#FF3131");
     public static final Color COLOR_ERROR_HOVER         = Color.decode("#bd0f0f");
+    public static final Color COLOR_NEUTRAL             = new Color(65, 65, 65);
+    public static final Color COLOR_NEUTRAL_HOVER       = new Color(85, 85, 85);
     public static final Color COLOR_WARNING             = Color.decode("#FFC107");
     public static final Color COLOR_INFO                = Color.decode("#4B0082");
     public static final Color COLOR_TEXT                = Color.decode("#FFFFFF");
@@ -109,6 +111,47 @@ public class ThemeManager {
             @Override
             public void mouseExited(java.awt.event.MouseEvent evt) {
                 newButton.setBackground(COLOR_ERROR);
+            }
+        });
+        return newButton;
+    }
+
+    /**
+     * Mismo patrón que RedButton: variante de Button() en tonos neutros/gris,
+     * pensada para acciones secundarias como "Cancelar" o "Limpiar Filtros".
+     */
+    public static JButton GrayButton(String text){
+        JButton newButton = new JButton(text) {
+            @Override
+            //JButton - Border Radius
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(getBackground());
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), ThemeManager.BORDER_RADIUS_PX, ThemeManager.BORDER_RADIUS_PX);
+                g2.dispose();
+                super.paintComponent(g);
+            }
+        };
+        
+        newButton.setMaximumSize(new Dimension(175, 50));
+        newButton.setForeground(COLOR_TEXT);
+        newButton.setBackground(COLOR_NEUTRAL);
+        newButton.setFont(TEXT_SUBTITLE);
+        newButton.setFocusPainted(false);
+        newButton.setBorderPainted(false);
+        newButton.setContentAreaFilled(false);
+        newButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        newButton.setHorizontalAlignment(SwingConstants.CENTER);
+
+        newButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                newButton.setBackground(COLOR_NEUTRAL_HOVER);
+            }
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                newButton.setBackground(COLOR_NEUTRAL);
             }
         });
         return newButton;
@@ -526,20 +569,9 @@ public class ThemeManager {
         lMsg.setForeground(Color.WHITE);
         lMsg.setFont(ThemeManager.TEXT_NORMAL);
 
-        JButton btnCancelar = ThemeManager.Button(textoCancelar);
-        btnCancelar.setBackground(new Color(65, 65, 65));
+        JButton btnCancelar = ThemeManager.GrayButton(textoCancelar);
         btnCancelar.setPreferredSize(new Dimension(120, 35));
         btnCancelar.addActionListener(e -> dialog.dispose());
-        btnCancelar.addMouseListener(new java.awt.event.MouseAdapter() {
-            @Override
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                btnCancelar.setBackground(new Color(85, 85, 85));
-            }
-            @Override
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                btnCancelar.setBackground(new Color(65, 65, 65));
-            }
-        });
 
         JButton btnAceptar = ThemeManager.Button(textoAceptar);
         btnAceptar.setBackground(acento);
@@ -611,20 +643,9 @@ public class ThemeManager {
         lMsg.setForeground(Color.WHITE);
         lMsg.setFont(ThemeManager.TEXT_NORMAL);
 
-        JButton btnCancelar = ThemeManager.Button(textoCancelar);
-        btnCancelar.setBackground(new Color(65, 65, 65));
+        JButton btnCancelar = ThemeManager.GrayButton(textoCancelar);
         btnCancelar.setPreferredSize(new Dimension(120, 35));
         btnCancelar.addActionListener(e -> dialog.dispose());
-        btnCancelar.addMouseListener(new java.awt.event.MouseAdapter() {
-            @Override
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                btnCancelar.setBackground(new Color(85, 85, 85));
-            }
-            @Override
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                btnCancelar.setBackground(new Color(65, 65, 65));
-            }
-        });
 
         JButton btnAceptar = ThemeManager.Button(textoAceptar);
         btnAceptar.setBackground(acento);

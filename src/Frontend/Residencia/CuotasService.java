@@ -57,13 +57,15 @@ public class CuotasService {
         ResultSet rs = ConexionPostgres.consultar(
             "SELECT c.id, c.descripcion, c.monto, c.fecha_emision, c.fecha_limite " +
             "FROM cuotas c " +
+            "JOIN viviendas v ON v.id = ? " +
             "WHERE c.activo = true " +
+            "AND c.fecha_emision >= v.fecha_registro " +
             "AND NOT EXISTS (" +
             "    SELECT 1 FROM pagos_realizados pr WHERE pr.id_cuota = c.id AND pr.id_vivienda = ?" +
             ") " +
             "ORDER BY c.fecha_emision ASC, c.id ASC " +
             "LIMIT 1",
-            new Object[]{idVivienda}
+            new Object[]{idVivienda, idVivienda}
         );
 
         if (rs != null && rs.next()) {
@@ -83,12 +85,14 @@ public class CuotasService {
         ResultSet rs = ConexionPostgres.consultar(
             "SELECT c.id, c.descripcion, c.monto, c.fecha_emision, c.fecha_limite " +
             "FROM cuotas c " +
+            "JOIN viviendas v ON v.id = ? " +
             "WHERE c.activo = true " +
+            "AND c.fecha_emision >= v.fecha_registro " +
             "AND NOT EXISTS (" +
             "    SELECT 1 FROM pagos_realizados pr WHERE pr.id_cuota = c.id AND pr.id_vivienda = ?" +
             ") " +
             "ORDER BY c.fecha_emision ASC, c.id ASC",
-            new Object[]{idVivienda}
+            new Object[]{idVivienda, idVivienda}
         );
 
         while (rs != null && rs.next()) {

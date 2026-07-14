@@ -72,10 +72,20 @@ public class FramePagarCuota extends JPanel {
         restringirSoloNumeros(txtReferencia, 4);
 
         JButton btnPagar = ThemeManager.Button("Pagar Cuota");
-        btnPagar.setPreferredSize(new Dimension(280, 38));
-        btnPagar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 38));
+        btnPagar.setPreferredSize(new Dimension(180, 38));
+        btnPagar.setMaximumSize(new Dimension(180, 38));
 
         btnPagar.addActionListener(e -> pagar(txtReferencia.getText().trim(), comboTipoPago.getSelectedItem().toString()));
+
+        JButton btnCancelar = ThemeManager.GrayButton("Cancelar");
+        btnCancelar.setPreferredSize(new Dimension(120, 38));
+        btnCancelar.setMaximumSize(new Dimension(120, 38));
+        btnCancelar.addActionListener(e -> JDPadre.dispose());
+
+        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
+        panelBotones.setOpaque(false);
+        panelBotones.add(btnCancelar);
+        panelBotones.add(btnPagar);
 
         gbc.gridx = 0;
         gbc.gridy = 0;
@@ -103,7 +113,8 @@ public class FramePagarCuota extends JPanel {
 
         gbc.gridy = 6;
         gbc.insets = new Insets(8, 5, 0, 5);
-        contenido.add(btnPagar, gbc);
+        gbc.fill = GridBagConstraints.NONE;
+        contenido.add(panelBotones, gbc);
 
         add(encabezado, BorderLayout.NORTH);
         add(contenido, BorderLayout.CENTER);

@@ -1,12 +1,9 @@
 package Frontend.Residencia;
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
 import javax.swing.border.EmptyBorder;
 import Backend.ConexionPostgres;
 import Backend.ThemeManager;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -14,19 +11,6 @@ import java.util.List;
 
 public class MenuVivienda extends JPanel {
 
-    private DefaultTableModel tableModel = new DefaultTableModel(
-        new Object[]{"Num Vivienda", "Calle", "Estado", "Opciones"}, 0
-    ) {
-        @Override
-        public boolean isCellEditable(int row, int column) {
-            return column == 3;
-        }
-
-        @Override
-        public Class<?> getColumnClass(int columnIndex) {
-            return columnIndex == 3 ? Object.class : String.class;
-        }
-    };
     private JTextField txtNum;
     private JTextField txtCalle;
 
@@ -127,6 +111,18 @@ public class MenuVivienda extends JPanel {
         btnBuscar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
         btnBuscar.addActionListener(e -> cargarViviendas());
 
+        txtNum.addActionListener(e -> cargarViviendas());
+        txtCalle.addActionListener(e -> cargarViviendas());
+
+        JButton btnLimpiar = ThemeManager.GrayButton("Limpiar Filtros");
+        btnLimpiar.setAlignmentX(Component.CENTER_ALIGNMENT);
+        btnLimpiar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+        btnLimpiar.addActionListener(e -> {
+            txtNum.setText("");
+            txtCalle.setText("");
+            cargarViviendas();
+        });
+
         panelControles.add(tituloAgregar);
         panelControles.add(Box.createRigidArea(new Dimension(0, 12)));
         panelControles.add(btnAgregar);
@@ -138,6 +134,8 @@ public class MenuVivienda extends JPanel {
         panelControles.add(panelFiltros);
         panelControles.add(Box.createRigidArea(new Dimension(0, 20)));
         panelControles.add(btnBuscar);
+        panelControles.add(Box.createRigidArea(new Dimension(0, 8)));
+        panelControles.add(btnLimpiar);
         panelControles.add(Box.createVerticalGlue());
 
         this.add(panelControles, BorderLayout.WEST);
@@ -178,6 +176,7 @@ public class MenuVivienda extends JPanel {
             "    SELECT 1 FROM cuotas c " +
             "    WHERE c.activo = true " +
             "    AND c.fecha_limite < NOW() " +
+            "    AND c.fecha_emision >= v.fecha_registro " +
             "    AND NOT EXISTS (" +
             "        SELECT 1 FROM pagos_realizados pr WHERE pr.id_cuota = c.id AND pr.id_vivienda = v.id" +
             "    )" +
@@ -308,7 +307,7 @@ public class MenuVivienda extends JPanel {
 
         btnPagar.addActionListener(e -> abrirVentanaPagoCuota(vivienda.id, vivienda.numero, vivienda.calle));
         btnVerDeudas.addActionListener(e -> mostrarCuotasPendientes(vivienda.id, vivienda.numero, vivienda.calle));
-        btnEditar.addActionListener(e -> editarVivienda(vivienda.numero, vivienda.calle, vivienda.activo));
+        btnEditar.addActionListener(e -> editarVivienda(vivienda.numero, vivienda.calle));
         btnEliminar.addActionListener(e -> cambiarEstadoVivienda(vivienda.numero, vivienda.activo));
 
         panel.add(btnPagar);
@@ -364,7 +363,7 @@ public class MenuVivienda extends JPanel {
         return boton;
     }
 
-    private void editarVivienda(String numeroVivienda, String calleActual, boolean activoActual) {
+    private void editarVivienda(String numeroVivienda, String calleActual) {
         abrirFormularioVivienda(true, numeroVivienda, calleActual);
     }
 
@@ -396,84 +395,6 @@ public class MenuVivienda extends JPanel {
         } catch (SQLException ex) {
             FrameMensaje.error(this, "No se pudo desactivar la vivienda: " + ex.getMessage());
         }
-    }
-
-    private class OpcionesRenderer extends JPanel implements javax.swing.table.TableCellRenderer {
-        private final JButton btnEditar = crearBoton("Editar");
-        private final JButton btnEliminar = crearBoton("Eliminar");
-
-        OpcionesRenderer() {
-            setOpaque(true);
-            setBackground(ThemeManager.COLOR_BACKGROUND_LIGHT);
-            setLayout(new FlowLayout(FlowLayout.CENTER, 6, 0));
-            add(btnEditar);
-            add(btnEliminar);
-        }
-
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            btnEliminar.setText("Eliminar");
-            setBackground(isSelected ? ThemeManager.COLOR_BACKGROUND : ThemeManager.COLOR_BACKGROUND_LIGHT);
-            return this;
-        }
-    }
-
-    private class OpcionesEditor extends AbstractCellEditor implements javax.swing.table.TableCellEditor {
-        private final JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 6, 0));
-        private final JButton btnEditar = crearBoton("Editar");
-        private final JButton btnEliminar = crearBoton("Eliminar");
-        private String numeroVivienda;
-        private String calle;
-        private boolean activo;
-
-        OpcionesEditor() {
-            panel.setOpaque(true);
-            panel.setBackground(ThemeManager.COLOR_BACKGROUND_LIGHT);
-            panel.add(btnEditar);
-            panel.add(btnEliminar);
-
-            btnEditar.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    fireEditingStopped();
-                    editarVivienda(numeroVivienda, calle, activo);
-                }
-            });
-
-            btnEliminar.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    fireEditingStopped();
-                    cambiarEstadoVivienda(numeroVivienda, activo);
-                }
-            });
-        }
-
-        @Override
-        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-            numeroVivienda = String.valueOf(table.getValueAt(row, 0));
-            calle = String.valueOf(table.getValueAt(row, 1));
-            activo = "Activo".equalsIgnoreCase(String.valueOf(table.getValueAt(row, 2)));
-            btnEliminar.setText("Eliminar");
-            panel.setBackground(ThemeManager.COLOR_BACKGROUND_LIGHT);
-            return panel;
-        }
-
-        @Override
-        public Object getCellEditorValue() {
-            return numeroVivienda;
-        }
-    }
-
-    private JButton crearBoton(String texto) {
-        JButton boton = new JButton(texto);
-        boton.setFont(ThemeManager.TEXT_SMALL);
-        boton.setForeground(ThemeManager.COLOR_TEXT);
-        boton.setBackground(ThemeManager.COLOR_PRIMARY);
-        boton.setFocusPainted(false);
-        boton.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
-        boton.setPreferredSize(new Dimension(74, 24));
-        return boton;
     }
 
     private void abrirFormularioVivienda(boolean esEdicion, String numeroOriginal, String calleInicial) {
