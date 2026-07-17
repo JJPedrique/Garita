@@ -45,6 +45,8 @@ public class PanelCodigoVerificacion extends JPanel{
         GBC.gridx = 0; GBC.gridy = 2; GBC.weightx = 1.0; GBC.weighty = 0.0; GBC.ipady = 50; add(pButton, GBC);
 
         // Panel Encabezado
+        lHeaderTitle.setText(Integer.toString(randCode));
+
         pHeader.setLayout(GBL);
         GridBagConstraints GBC_Regreso = new GridBagConstraints(); // Esto hace que el boton de regreso se ponga en toda la izquieda
         GBC_Regreso.anchor = GridBagConstraints.FIRST_LINE_START; 
