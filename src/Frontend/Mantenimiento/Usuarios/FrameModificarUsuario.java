@@ -15,12 +15,12 @@ public class FrameModificarUsuario extends JDialog{
     String POST_SQL = "DELETE FROM usuarios WHERE id = ?;";
 
 
-    JTextField InputNombre = ThemeManager.Textfield();
-    JTextField InputApellido = ThemeManager.Textfield();
-    JTextField InputCedula = ThemeManager.Textfield();
-    JTextField InputTelefono = ThemeManager.Textfield();
+    JTextField InputNombre = ThemeManager.Textfield("Ej: Carlos");
+    JTextField InputApellido = ThemeManager.Textfield("Ej: Mendoza");
+    JTextField InputCedula = ThemeManager.Textfield("Ej: V-12345678");
+    JTextField InputTelefono = ThemeManager.Textfield("Ej: 000-1234567");
     JComboBox<String> InputRol = ThemeManager.StringComboBox();
-    JTextField InputClave = ThemeManager.Textfield();
+    JTextField InputClave = ThemeManager.Textfield("Ej: Garita123.");
 
     String ROLES[] = {"Vigilancia","Junta","Administrador"};
 
@@ -146,22 +146,28 @@ public class FrameModificarUsuario extends JDialog{
         String strRol = InputRol.getSelectedItem().toString();
         String strClave = InputClave.getText().trim();
 
-        if(strNombre.isEmpty()){ThemeManager.MostrarMensajeError(this,"ERROR - Falta el campo Nombre");return;}
-        if(strApellido.isEmpty()){ThemeManager.MostrarMensajeError(this,"ERROR - Falta el campo Apellido");return;}
-        if(strCedula.isEmpty()){ThemeManager.MostrarMensajeError(this,"ERROR - Falta el campo ");return;}
-        if(strTelefono.isEmpty()){ThemeManager.MostrarMensajeError(this,"ERROR - Falta el campo Teléfono");return;}  
-        if(strClave.isEmpty()){ThemeManager.MostrarMensajeError(this,"ERROR - Falta el campo");return;}
+        if(strNombre.isEmpty()){ThemeManager.MostrarMensajeError(this,"Falta el campo \"Nombre\".");return;}
+        if(strApellido.isEmpty()){ThemeManager.MostrarMensajeError(this,"Falta el campo \"Apellido\".");return;}
+        if(strCedula.isEmpty()){ThemeManager.MostrarMensajeError(this,"Falta el campo \"Cédula\".");return;}
+        if(strTelefono.isEmpty()){ThemeManager.MostrarMensajeError(this,"Falta el campo \"Teléfono\".");return;}  
+        if(strClave.isEmpty()){ThemeManager.MostrarMensajeError(this,"Falta el campo \"Clave\".");return;}
+    
+        if(strNombre.length()>20){ThemeManager.MostrarMensajeError(this,"El campo \"Nombre\" debe contener un máximo de 20 caracteres.");return;}
+        if(strApellido.length()>20){ThemeManager.MostrarMensajeError(this,"El campo \"Apellido\" debe contener un máximo de 20 caracteres.");return;}
+        if(strCedula.length()>13){ThemeManager.MostrarMensajeError(this,"El campo \"Cédula\" debe contener un máximo de 13 caracteres");return;}
+        if(strTelefono.length()>13){ThemeManager.MostrarMensajeError(this,"El campo \"Teléfono\" debe contener un máximo de 13 caracteres");return;}  
+        if(strClave.length()>16){ThemeManager.MostrarMensajeError(this,"El campo \"Clave\" debe contener un máximo de 16 caracteres");return;}
     
         if(!strNombre.matches("^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\\s]+$")){
-            ThemeManager.MostrarMensajeError(this,"ERROR - Nombre no válido");return;}
+            ThemeManager.MostrarMensajeError(this,"ERROR - Nombre no válido, solo debe Contener letras y espacios");return;}
         if(!strApellido.matches("^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\\s]+$")){
-            ThemeManager.MostrarMensajeError(this,"ERROR - Apellido no válido");return;}
-        if(!strCedula.matches("^[VEve]?[-]?\\d{7,8}$")){
+            ThemeManager.MostrarMensajeError(this,"ERROR - Apellido no válido, solo debe Contener letras y espacios");return;}
+        if(!strCedula.matches("^[VEve][-]\\d{7,8}$")){
             ThemeManager.MostrarMensajeError(this,"ERROR - Cédula no válida");return;}
         if(!strTelefono.matches("^0\\d{3}[-\\s]?\\d{7}$")){
             ThemeManager.MostrarMensajeError(this,"ERROR - Teléfono no válido");return;}
         if(!strClave.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d\\W_]{8,}$")){
-            ThemeManager.MostrarMensajeError(this,"ERROR - La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número");return;}
+            ThemeManager.MostrarMensajeError(this,"ERROR - La contraseña debe tener:\nal menos 8 caracteres \nuna mayúscula \nuna minúscula \nun número");return;}
 
         
         ResultSet RS_DATA = ConexionPostgres.consultar(PRE_SQL,new Object[]{strCedula});

@@ -12,6 +12,7 @@ public class SubMenuUsuarios extends JPanel {
 
     class MyTable extends JPanel {
         String[] headers;
+        String[] headersText = {"id","Nombre","Apellido", "Rol", "Cédula", "Teléfono"};
         JPanel TablePanel = ThemeManager.Panel(new GridBagLayout());
 
         public MyTable(String[] Headers){
@@ -40,10 +41,9 @@ public class SubMenuUsuarios extends JPanel {
             gbc.weightx = 1;
             gbc.ipady=20;gbc.ipadx=20;
 
-            for(int i = 0; i < headers.length; i++){
-                if(i == 0) { continue; } // Saltamos el ID visualmente
-                
-                JLabel newLabel = ThemeManager.Label(headers[i]);
+            for(int i = 1; i < headersText.length; i++){
+
+                JLabel newLabel = ThemeManager.Label(headersText[i]);
                 newLabel.setHorizontalAlignment(SwingConstants.CENTER);
                 newLabel.setFont(ThemeManager.TEXT_SUBTITLE);
                 newLabel.setOpaque(true);
@@ -157,10 +157,9 @@ public class SubMenuUsuarios extends JPanel {
     String Headers[] = {"id","Nombre", "Apellido", "Rol", "Cedula", "Telefono"};
     String SQL = "SELECT id,nombre,apellido,rol, Cedula, telefono FROM usuarios";
 
-    JTextField inputNombre =  ThemeManager.Textfield();
-    JTextField inputCedula =  ThemeManager.Textfield();
-    JTextField inputApellido = ThemeManager.Textfield();
-
+    JTextField inputNombre =  ThemeManager.Textfield("Ej: Carlos");
+    JTextField inputApellido = ThemeManager.Textfield("Ej: Mendoza");
+    JTextField inputCedula =  ThemeManager.Textfield("Ej: V-12345678");
     //Table
     MyTable UserTable;
 
@@ -232,19 +231,16 @@ public class SubMenuUsuarios extends JPanel {
         newPanel.add(Apellido,gbc);        
         
         gbc.gridy=6;
-        JLabel Cedula = ThemeManager.Label("Cedula");  
+        JLabel Cedula = ThemeManager.Label("Cédula");  
         newPanel.add(Cedula,gbc);
 
         gbc.gridy=4;gbc.gridx=1;gbc.weightx=1;
-        inputNombre =  ThemeManager.Textfield();
         newPanel.add(inputNombre,gbc);
 
         gbc.gridy=5;
-        inputApellido =  ThemeManager.Textfield();
         newPanel.add(inputApellido,gbc);
     
         gbc.gridy=6;
-        inputCedula =  ThemeManager.Textfield();
         newPanel.add(inputCedula,gbc);
 
         gbc.gridwidth=2;gbc.gridy=7;gbc.gridx=0;  
@@ -275,7 +271,7 @@ public class SubMenuUsuarios extends JPanel {
         
         if(!strNombre.isEmpty()){
             if(!strNombre.matches("^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\\s]+$")){
-                ThemeManager.MostrarMensajeError(this,"EL NOMBRE DEBE SER ALFA-NUMERICO");
+                ThemeManager.MostrarMensajeError(this,"El campo \"Nombre\" solo debe Contener letras y espacios.");
                 return;
             }    
 
@@ -285,7 +281,7 @@ public class SubMenuUsuarios extends JPanel {
 
         if(!strApellido.isEmpty()){
             if(!strApellido.matches("^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\\s]+$")){
-                ThemeManager.MostrarMensajeError(this,"EL APELLIDO DEBE SER ALFA-NUMERICO");
+                ThemeManager.MostrarMensajeError(this,"El campo \"Apellido\" solo debe Contener letras y espacios.");
                 return;
             }    
 
@@ -295,7 +291,7 @@ public class SubMenuUsuarios extends JPanel {
 
         if(!strCedula.isEmpty()){
             if(!strCedula.matches("^[VEve][-]\\d{7,8}$")){
-                ThemeManager.MostrarMensajeError(this,"LA CEDULA DEBE SER ALFA-NUMERICO");
+                ThemeManager.MostrarMensajeError(this,"El campo \"Cédula\" no es valido.");
                 return;
             }    
 

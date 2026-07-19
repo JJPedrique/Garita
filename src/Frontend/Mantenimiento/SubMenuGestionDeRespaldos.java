@@ -51,12 +51,12 @@ public class SubMenuGestionDeRespaldos extends JPanel {
     void Respaldar(){
        try {ConexionPostgres.backupDatabase();
         ThemeManager.MostrarMensajeExito(this,"Se ha generado un respaldo en la carpeta descargas");
-        } catch (Exception e) {ThemeManager.MostrarMensajeError(this,"ERROR - No se logro Respaldar");}
+        } catch (Exception e) {ThemeManager.MostrarMensajeError(this,"Ocurrio un Problema, no se logro Respaldar.");}
     }
    
     void Restaurar(){
        try {ConexionPostgres.restoreDatabase();
         ThemeManager.MostrarMensajeExito(this,"Se han restaurado los datos correctamente");
-        } catch (Exception e) {ThemeManager.MostrarMensajeError(this,"ERROR - No se logro Restaurar");}
+        } catch (Exception e) {ThemeManager.MostrarMensajeError(this,"Ocurrio un Problema, no se logro Restaurar.");}
     }
 }
