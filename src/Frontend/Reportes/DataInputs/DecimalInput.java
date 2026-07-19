@@ -7,7 +7,7 @@ import Backend.ThemeManager;
 public class DecimalInput extends Input {
     JLabel title;
     JComboBox<String> OptionsMenu;
-    JTextField input;
+    JTextField input = ThemeManager.Textfield("Solo Decimales...");
 
     public DecimalInput(String label){
         this.setBackground(ThemeManager.COLOR_BACKGROUND_LIGHT);
@@ -27,7 +27,6 @@ public class DecimalInput extends Input {
         this.add(OptionsMenu,gbc);
 
         gbc.gridx=0;gbc.gridy=1; gbc.gridwidth=2;
-        input = ThemeManager.Textfield();
         this.add(input,gbc);
 
         gbc.gridx=2;gbc.gridy=0;gbc.gridwidth=1;gbc.gridheight=2; gbc.weightx=0;
@@ -53,8 +52,8 @@ public class DecimalInput extends Input {
         String strInput = input.getText().trim();
         if(strInput.isEmpty()){return "";}
 
-        if(!strInput.matches("\\d*\\.?\\d+")){
-            ThemeManager.MostrarMensajeError(this, title.getText() + " DEBE SER DECIMAL");
+        if(!strInput.matches("\\d*\\[.,]?\\d+")){
+            ThemeManager.MostrarMensajeError(this,"El campo " + title.getText() + " tiene que ser númerico, decimal y positivo");
             return "???";
         }
         return strInput;

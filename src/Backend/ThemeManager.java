@@ -181,7 +181,7 @@ public class ThemeManager {
         JComboBox<String> newComboBox = new JComboBox<>();
         newComboBox.setFont(TEXT_NORMAL);
         newComboBox.setForeground(COLOR_TEXT_DARK);
-        newComboBox.setBackground(COLOR_SECONDARY);
+        newComboBox.setBackground(COLOR_INPUT);
         return newComboBox;
     }
 

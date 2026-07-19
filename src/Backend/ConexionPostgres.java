@@ -215,12 +215,14 @@ public class ConexionPostgres {
             int resultado = selector.showOpenDialog(null);
             if (resultado != JFileChooser.APPROVE_OPTION) {System.out.println("Restauración cancelada por el usuario.");return;}
             File archivoSeleccionado = selector.getSelectedFile();
-    
+           
+            Statement stmt = conexion.createStatement();
+            stmt.execute("DROP SCHEMA public CASCADE; CREATE SCHEMA public;");
+                
             ProcessBuilder pb = new ProcessBuilder(
                 pgRestorePath, 
                 "-h", "localhost", 
                 "-U", "postgres", 
-                "--clean",             
                 "-d", "Garita", 
                 archivoSeleccionado.getAbsolutePath()      
             );
@@ -235,6 +237,7 @@ public class ConexionPostgres {
                 System.out.println("¡Base de datos restaurada con éxito desde el archivo seleccionado!");
             } else {
                 System.out.println("Hubo un error al restaurar. Código de salida: " + codigoSalida);
+                
             }
         
 

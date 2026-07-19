@@ -7,7 +7,7 @@ import Backend.ThemeManager;
 public class StringInput extends Input{
     JLabel title;
     JComboBox<String> OptionsMenu;
-    JTextField input;
+    JTextField input =  ThemeManager.Textfield("Solo Letras y Espacios");
 
     public StringInput(String label){
         this.setBackground(ThemeManager.COLOR_BACKGROUND_LIGHT);
@@ -26,8 +26,7 @@ public class StringInput extends Input{
         for (String o : Options) {OptionsMenu.addItem(o);}
         this.add(OptionsMenu,gbc);
 
-        gbc.gridx=0;gbc.gridy=1; gbc.gridwidth=2;
-        input =  ThemeManager.Textfield();
+        gbc.gridx=0;gbc.gridy=1; gbc.gridwidth=2;        
         this.add(input,gbc);
 
         gbc.gridx=2;gbc.gridy=0;gbc.gridwidth=1;gbc.gridheight=2; gbc.weightx=0;
@@ -45,8 +44,8 @@ public class StringInput extends Input{
         String strInput = input.getText().trim();
         if(strInput.isEmpty()){return "";}
 
-        if(!strInput.matches("^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\\s]+$")){
-            ThemeManager.MostrarMensajeError(this, title.getText() + " DEBE SER ALFA-NUMERICO");
+        if(!strInput.matches("^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ0-9\\s]+$")){
+            ThemeManager.MostrarMensajeError(this,"El campo " + title.getText() + " solo debe contener letras, espacios y números.");
             return "???";
         }
 

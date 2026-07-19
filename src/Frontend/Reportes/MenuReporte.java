@@ -11,7 +11,6 @@ import org.openpdf.text.pdf.PdfWriter;
 
 import java.awt.event.*;
 import org.openpdf.text.*;
-import org.openpdf.text.pdf.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -33,8 +32,11 @@ public class MenuReporte extends JPanel {
         this.setBackground(ThemeManager.COLOR_BACKGROUND);
         this.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         
-        TablePanel.setBackground(ThemeManager.COLOR_BACKGROUND);
-        this.add(new JScrollPane(TablePanel), BorderLayout.CENTER);   
+        TablePanel.setBackground(ThemeManager.COLOR_TEXT_DARK);
+        JScrollPane newScroll = new JScrollPane(TablePanel);
+        this.add(newScroll, BorderLayout.CENTER);  
+        newScroll.setBorder(BorderFactory.createEmptyBorder());
+        newScroll.setViewportBorder(null);        
     }
 
     void UpdateTable(ArrayList<String> newColumns, ArrayList<ArrayList<String>> newRows) {
@@ -109,81 +111,94 @@ public class MenuReporte extends JPanel {
     static {
         Map<String, String> mapaTemporal = new HashMap<>();
         
-        mapaTemporal.put("Vivienda", "SELECT viviendas.calle AS Calle, " +
-                "viviendas.numero_vivienda AS Vivienda, " +
-                "COUNT(representantes.id) AS Representantes, " +
-                "COUNT(carnets.id) AS Carnets " +
-                "FROM viviendas " +
-                "JOIN representantes ON viviendas.id = representantes.id_vivienda " +
-                "JOIN carnets ON viviendas.id = carnets.id_vivienda " +
-                "GROUP BY viviendas.calle, viviendas.numero_vivienda");
+        mapaTemporal.put("Listado de Viviendas","SELECT DISTINCT ON (V.id) " +
+                        " V.calle AS \"Calle\"," +
+                        " V.numero_vivienda AS \"Número de Vivienda\", " +
+                        " CASE " +
+                        " WHEN R.id IS NULL THEN 'No asignado' " +
+                        " ELSE TRIM(CONCAT(R.nombre, ' ', R.apellido)) " +
+                        " END AS \"Propietario\"," +
+                        " COALESCE(CAST(R.cedula AS VARCHAR), 'No asignada') AS \"Cédula\", " +
+                        " COALESCE(R.telefono, 'No asignado') AS \"Teléfono\"" +
+                        " FROM viviendas AS V" +
+                        " LEFT JOIN representantes AS R ON V.id = R.id_vivienda" +
+                        " WHERE V.activo = True");
 
-        mapaTemporal.put("Vecinos", "SELECT viviendas.calle AS Calle, " +
-                "viviendas.numero_vivienda AS Vivienda, " +
-                "representantes.nombre AS Nombre, " +
-                "representantes.apellido AS Apellido, " +
-                "representantes.cedula AS Cedula, " +
-                "representantes.telefono AS Telefono " +
-                "FROM representantes " +
-                "JOIN viviendas ON viviendas.id = representantes.id_vivienda ");
+        mapaTemporal.put("Listado de Representantes","SELECT V.calle AS \"Calle\"," +
+                        " V.numero_vivienda AS \"Número de Vivienda\", " +
+                        " CONCAT(R.nombre,' ',R.apellido) AS \"Representante\", " +
+                        " R.cedula AS \"Cédula\", " +
+                        " R.telefono AS \"Teléfono\"" +
+                        " FROM viviendas AS V" +
+                        " LEFT JOIN representantes AS R ON  V.id = R.id_vivienda" +
+                        " WHERE V.activo = True AND R.activo = True");
 
-        mapaTemporal.put("Carnets", "SELECT viviendas.calle AS Calle, " + 
-                "viviendas.numero_vivienda AS Vivienda, " +
-                "carnets.codigo AS Codigo " + 
-                "FROM carnets " +
-                "JOIN viviendas ON viviendas.id = carnets.id_vivienda");
+        mapaTemporal.put("Listado de Carnets","SELECT C.codigo AS \"Código\"," +
+                        " V.numero_vivienda AS \"Número de Vivienda\"," +
+                        " V.calle AS \"Calle\"" +
+                        " FROM viviendas AS V" +
+                        " LEFT JOIN carnets AS C ON  V.id = C.id_vivienda" +
+                        " WHERE V.activo = True AND C.activo = True");
 
-        mapaTemporal.put("Registros de Acceso", "SELECT accesos.fecha_hora AS \"Fecha de Acceso\"," + 
-                " accesos.tipo AS Tipo, " + 
-                " accesos.estado AS Estado, " + 
-                " viviendas.calle AS Calle, " + 
-                " viviendas.numero_vivienda AS Vivienda, " + 
-                " carnets.codigo AS Codigo, " + 
-                " accesos.nombre_visita AS Visita " + 
-                "FROM accesos " + 
-                "LEFT JOIN carnets ON carnets.id = accesos.id_carnet " + 
-                "LEFT JOIN viviendas ON viviendas.id = carnets.id_vivienda");
+        mapaTemporal.put("Lista de accesos por Carnets", "SELECT A.fecha_hora AS \"Fecha-Hora\", " +
+                        " A.tipo AS \"Tipo\", " +
+                        " A.estado AS \"Estado\", " +
+                        " C.codigo AS \"Carnet\", " +
+                        " V.calle AS \"Calle\", " +
+                        " V.numero_vivienda AS \"Número Vivienda\"" +
+                        " FROM accesos AS A" +
+                        " JOIN carnets AS C ON C.id = A.id_carnet" +
+                        " JOIN viviendas AS V ON V.id = C.id_vivienda" +
+                        " WHERE A.nombre_visita IS NULL");
+                        
+        mapaTemporal.put("Lista de accesos por Visita","SELECT A.fecha_hora AS \"Fecha-Hora\", " +
+                        " A.tipo AS \"Tipo\", " +
+                        " A.estado AS \"Estado\", " +
+                        " A.nombre_visita AS \"Nombre de Visita\"" +
+                        " FROM accesos AS A" +
+                        " WHERE A.id_carnet IS NULL");
 
-        mapaTemporal.put("Cuotas", "SELECT cuotas.descripcion AS Descripcion, " + 
-                "cuotas.fecha_emision AS \"Fecha de Emision\", " + 
-                "cuotas.monto AS Monto, " + 
-                "cuotas.fecha_limite AS \"Fecha Limite de pago\", " + 
-                "COUNT(pagos_realizados.id) AS \"Cuotas Pagadas\", " + 
-                "(SELECT COUNT(*) FROM viviendas) - COUNT(pagos_realizados.id) AS \"Cuotas No Pagadas\" " + 
-                "FROM cuotas " + 
-                "LEFT JOIN pagos_realizados ON cuotas.id = pagos_realizados.id_cuota " + 
-                "GROUP BY descripcion,fecha_emision, monto, fecha_limite");
+        mapaTemporal.put("Listado de Cuotas","SELECT C.descripcion AS \"Descripción\"," +
+                        " C.monto AS \"Monto\"," +
+                        " C.fecha_emision AS \"Fecha Emisión\"," +
+                        " C.fecha_limite AS \"Fecha Limite\"," +
+                        " COUNT(PR.id) AS \"Pagaron\"," +
+                        " C.monto*COUNT(PR.id) AS \"Acumulado\"" +
+                        " FROM cuotas AS C" +
+                        " JOIN pagos_realizados AS PR ON C.id = PR.id_cuota" +
+                        " WHERE C.borrada = False AND C.activo = True" +
+                        " GROUP BY C.id");
 
-        mapaTemporal.put("Pagos Realizado", "SELECT viviendas.calle AS Calle, " + 
-                "viviendas.numero_vivienda AS Vivienda, " + 
-                "cuotas.monto AS Monto, " + 
-                "cuotas.descripcion AS Descripcion, " + 
-                "pagos_realizados.tipo_pago AS \"Tipo de Pago\", " + 
-                "pagos_realizados.referencia AS Referencia, " + 
-                "pagos_realizados.fecha_de_pago AS \"Fecha de Pago\" " + 
-                "FROM pagos_realizados " + 
-                "JOIN cuotas ON cuotas.id = pagos_realizados.id_cuota " + 
-                "JOIN viviendas ON viviendas.id = pagos_realizados.id_vivienda");
+        mapaTemporal.put("Listado de Morosidad", "SELECT V.calle \"Calle\"," +
+                        " V.numero_vivienda \"Número de Vivienda\"," +
+                        " solvencia(V.id) AS \"Estado\"," +
+                        " deuda(V.id) AS \"Deuda\"" +
+                        " FROM viviendas AS  V" +
+                        " WHERE V.activo = True");
+        
+        mapaTemporal.put("Historial de Pagos", "SELECT V.calle AS \"Calle\"," +
+                        " V.numero_vivienda AS \"Número de Vivienda\"," +
+                        " C.descripcion AS \"Descripción\"," +
+                        " C.monto AS \"Monto\"," +
+                        " PR.tipo_pago AS \"Tipo de Pago\", " +
+                        " PR.referencia AS \"Referencia\"" +
+                        " FROM pagos_realizados AS PR" +
+                        " JOIN viviendas AS V ON V.id = PR.id_vivienda" +
+                        " JOIN cuotas AS C ON V.id = PR.id_cuota");
 
-        mapaTemporal.put("Bitacora", "SELECT bitacoras.usuario AS Usuario, " + 
-                "bitacoras.accion AS Accion, " + 
-                "bitacoras.tabla_modificada AS \"Tabla Modificada\", " + 
-                "bitacoras.fecha_modificacion AS \"Fecha de Modificacion\" " + 
-                "FROM bitacoras");
+        mapaTemporal.put("Listado de Usuarios", "SELECT U.rol AS \"Rol\", " +
+                        " CONCAT(U.nombre,' ',U.apellido) AS \"Nombre Completo\"," +
+                        " U.cedula AS \"Cédula\", " +
+                        " U.telefono AS \"Teléfono\"" +
+                        " FROM usuarios AS U" +
+                        " WHERE activo = true");
 
-        mapaTemporal.put("Lista de Morosos", "SELECT viviendas.calle,viviendas.numero_vivienda, " + //
-                        "( " + //
-                        "SELECT CONCAT(representantes.nombre,' ',representantes.apellido) " + //
-                        "FROM representantes " + //
-                        "WHERE representantes.id_vivienda = viviendas.id " + //
-                        "ORDER BY representantes.id " + //
-                        "LIMIT 1 " + //
-                        ") as Representante, " + //
-                        "solvencia(viviendas.id) AS Estado, " + //
-                        "deuda(viviendas.id) AS Debe " + //
-                        "FROM viviendas ");
+        mapaTemporal.put("Historial de Bitacora","SELECT B.usuario AS \"Usuario\", " +
+                        " B.accion AS \"Acción\", " +
+                        " B.tabla_modificada AS \"Módulo\", " +
+                        " B.fecha_modificacion AS \"Fecha\"" +
+                        " FROM bitacoras AS B");
 
-        mapaTemporal.put("Usuarios", "SELECT concat(nombre,' ',apellido) AS \"Nombre Completo\",rol, Cedula, telefono FROM usuarios");
 
         CONSULTAS = Collections.unmodifiableMap(mapaTemporal);
     }
@@ -229,11 +244,8 @@ public class MenuReporte extends JPanel {
         Menu.setBackground(ThemeManager.COLOR_BACKGROUND);
         Menu.setFont(ThemeManager.TEXT_NORMAL);
 
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, Menu, Table);
-        splitPane.setContinuousLayout(true);
-        splitPane.setBackground(ThemeManager.COLOR_BACKGROUND);
-        splitPane.setOneTouchExpandable(true); 
-        this.add(splitPane,BorderLayout.CENTER);    
+        this.add(Menu,BorderLayout.WEST);   
+        this.add(Table, BorderLayout.CENTER);           
 
         //UPDATES
         KeyStroke enterKey = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
@@ -243,7 +255,7 @@ public class MenuReporte extends JPanel {
             public void actionPerformed(ActionEvent e) {SearchSQL();}
         });
 
-        ChangeModule("Vivienda");
+        ChangeModule("Listado de Viviendas");
         SearchSQL();
     }
 
@@ -258,10 +270,10 @@ public class MenuReporte extends JPanel {
         JLabel modulos = ThemeManager.Label("Modulo");
         newPanel.add(modulos,gbc);
 
-        gbc.gridx=1;
+        gbc.gridx=1;gbc.ipady=10;
         Modulos = ThemeManager.StringComboBox();
         for(String k : CONSULTAS.keySet()){Modulos.addItem(k);}  
-        Modulos.setSelectedItem("Vivienda");
+        Modulos.setSelectedItem("Listado de Viviendas");
         newPanel.add(Modulos,gbc);
         Modulos.addActionListener(new ActionListener() {
             @Override
@@ -273,9 +285,13 @@ public class MenuReporte extends JPanel {
             }
         });
 
-        gbc.gridx=0; gbc.gridy=1;
+        gbc.gridx=0; gbc.gridy=1;gbc.ipady=0;
         gbc.gridwidth=2; gbc.weightx=1;gbc.weighty=1;
-        newPanel.add(new JScrollPane(ColumnFilterPanel),gbc);
+    
+        JScrollPane newScroll = new JScrollPane(ColumnFilterPanel);
+        newPanel.add(newScroll,gbc);
+        newScroll.setBorder(BorderFactory.createEmptyBorder());
+        newScroll.setViewportBorder(null);   
 
         return newPanel;
     }
@@ -310,7 +326,11 @@ public class MenuReporte extends JPanel {
         gbc.gridx=0; gbc.gridy=1;
         gbc.gridwidth=3; gbc.weightx=1;gbc.weighty=1;
         gbc.fill = GridBagConstraints.BOTH;
-        newPanel.add(new JScrollPane(RowFilterPanel),gbc);
+
+        JScrollPane newScroll = new JScrollPane(RowFilterPanel);
+        newPanel.add(newScroll,gbc);
+        newScroll.setBorder(BorderFactory.createEmptyBorder());
+        newScroll.setViewportBorder(null);
 
         return newPanel;
     }
@@ -323,11 +343,12 @@ public class MenuReporte extends JPanel {
         gbc.gridy=0;gbc.gridx=0; gbc.weightx=1;
         gbc.fill=GridBagConstraints.HORIZONTAL;
         gbc.insets = new Insets(5,5,5,5);    
+        gbc.ipady=10;
 
         JLabel ordenar = ThemeManager.Label("Ordenar de manera");
         newPanel.add(ordenar,gbc);   
 
-        gbc.gridx=1; 
+        gbc.gridy=1; gbc.gridx=0; 
         OrderColumn = ThemeManager.StringComboBox();
         OrderColumn.addActionListener(new ActionListener() {
             @Override
@@ -337,7 +358,7 @@ public class MenuReporte extends JPanel {
         });
         newPanel.add(OrderColumn,gbc);
 
-        gbc.gridx=2;     
+        gbc.gridx=1;     
         String OrderByValues[] = {"Ascendente","Descendente"};
         OrderBy = ThemeManager.StringComboBox();
         for(String k : OrderByValues){OrderBy.addItem(k);}
@@ -347,19 +368,23 @@ public class MenuReporte extends JPanel {
         });          
         newPanel.add(OrderBy,gbc);
 
-        gbc.gridy=1; gbc.gridx=0;
-        JLabel limite = ThemeManager.Label("Limite");
-        newPanel.add(limite,gbc);    
+        gbc.gridy=2; gbc.gridx=0;
+        JLabel empezar = ThemeManager.Label("Empezar desde fila");
+        newPanel.add(empezar,gbc);    
         
         gbc.gridx=1; 
         LimitFrom = new JSpinner( new SpinnerNumberModel(0, 0, 1000, 1));
         newPanel.add(LimitFrom,gbc);
 
-        gbc.gridx=2; 
+        gbc.gridy=3; gbc.gridx=0;
+        JLabel limite = ThemeManager.Label("Maximo de filas");
+        newPanel.add(limite,gbc);   
+
+        gbc.gridx=1; 
         LimitTo = new JSpinner( new SpinnerNumberModel(100, 0, 1000, 1));
         newPanel.add(LimitTo,gbc);
 
-        gbc.gridy=2;gbc.gridx=0; gbc.gridwidth=3;
+        gbc.gridy=4;gbc.gridx=0; gbc.gridwidth=3;gbc.ipady=0;
         JButton BtnImprimir =  ThemeManager.Button("Exportar a PDF");
         newPanel.add(BtnImprimir,gbc);
         BtnImprimir.addActionListener(new ActionListener() {
@@ -369,7 +394,7 @@ public class MenuReporte extends JPanel {
             }
         });
  
-        gbc.gridy=3; gbc.weighty=1;gbc.fill= GridBagConstraints.BOTH;
+        gbc.gridy=5; gbc.weighty=1;gbc.fill= GridBagConstraints.BOTH;
         newPanel.add(new JLabel(),gbc);
 
         return newPanel;
@@ -552,7 +577,7 @@ public class MenuReporte extends JPanel {
         try {
             String rutaDescargas = System.getProperty("user.home") + 
                                 java.io.File.separator + "Downloads" + java.io.File.separator + 
-                                "Reporte Garita -"+ Modulos.getSelectedItem().toString()+".pdf";
+                                "Reporte Garita - "+ Modulos.getSelectedItem().toString()+".pdf";
             PdfWriter.getInstance(documento, new FileOutputStream(rutaDescargas));
             documento.open();
 

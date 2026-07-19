@@ -24,7 +24,7 @@ public class FrameBorrarUsuario {
         boolean confirmar = ThemeManager.MostrarConfirmacion(
             new JPanel(),
             "Sistema Garita - Eliminar Usuario",
-            "¿Desea eliminar la usuario " + Nombre + " " + Apellido + " - " + Cedula + "? Se eliminará permanentemente.",
+            "¿Desea eliminar el usuario " + Nombre + " " + Apellido + " - " + Cedula + "? Se eliminará permanentemente.",
             ThemeManager.COLOR_ERROR,
             "Eliminar",
             "Cancelar"

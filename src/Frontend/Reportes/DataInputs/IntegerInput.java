@@ -7,7 +7,7 @@ import Backend.ThemeManager;
 public class IntegerInput extends Input {
     JLabel title;
     JComboBox<String> OptionsMenu;
-    JTextField input;
+    JTextField input =  ThemeManager.Textfield("Solo Número enteros...");
 
     public IntegerInput(String label){
         this.setBackground(ThemeManager.COLOR_BACKGROUND_LIGHT);
@@ -32,7 +32,6 @@ public class IntegerInput extends Input {
         this.add(OptionsMenu,gbc);
 
         gbc.gridx=0;gbc.gridy=1; gbc.gridwidth=2;
-        input =  ThemeManager.Textfield();
         input.setFont(ThemeManager.TEXT_NORMAL);
         input.setForeground(ThemeManager.COLOR_TEXT);
         input.setBackground(ThemeManager.COLOR_BACKGROUND);
@@ -75,7 +74,7 @@ public class IntegerInput extends Input {
         if(strInput.isEmpty()){return "";}
          
         if(!strInput.matches("[0-9]+")){
-            ThemeManager.MostrarMensajeError(this, title.getText() +  " DEBE SER NUMERICO");
+            ThemeManager.MostrarMensajeError(this,"El campo " + title.getText() +  " tiene que ser númerico y entero.");
             return "???";
         }    
         return strInput;

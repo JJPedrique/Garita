@@ -12,7 +12,6 @@ public class SubMenuUsuarios extends JPanel {
 
     class MyTable extends JPanel {
         String[] headers;
-        String[] headersText = {"id","Nombre","Apellido", "Rol", "Cédula", "Teléfono"};
         JPanel TablePanel = ThemeManager.Panel(new GridBagLayout());
 
         public MyTable(String[] Headers){
@@ -21,9 +20,13 @@ public class SubMenuUsuarios extends JPanel {
             this.setBackground(ThemeManager.COLOR_BACKGROUND);
             this.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
             
-            TablePanel.setBackground(ThemeManager.COLOR_BACKGROUND);
+            TablePanel.setBackground(ThemeManager.COLOR_TEXT_DARK);
             // Agregamos el panel unificado (cabeceras + filas) al ScrollPane
-            this.add(new JScrollPane(TablePanel), BorderLayout.CENTER);   
+            
+            JScrollPane newScroll = new JScrollPane(TablePanel);
+            this.add(newScroll, BorderLayout.CENTER);  
+            newScroll.setBorder(BorderFactory.createEmptyBorder());
+            newScroll.setViewportBorder(null);            
         }
 
         void UpdateTable(ArrayList<ArrayList<String>> newRows){
@@ -41,9 +44,9 @@ public class SubMenuUsuarios extends JPanel {
             gbc.weightx = 1;
             gbc.ipady=20;gbc.ipadx=20;
 
-            for(int i = 1; i < headersText.length; i++){
+            for(int i = 1; i < headers.length; i++){
 
-                JLabel newLabel = ThemeManager.Label(headersText[i]);
+                JLabel newLabel = ThemeManager.Label(headers[i]);
                 newLabel.setHorizontalAlignment(SwingConstants.CENTER);
                 newLabel.setFont(ThemeManager.TEXT_SUBTITLE);
                 newLabel.setOpaque(true);
@@ -152,10 +155,8 @@ public class SubMenuUsuarios extends JPanel {
         }
     }
 
-    ConexionPostgres DB = new ConexionPostgres();
-
-    String Headers[] = {"id","Nombre", "Apellido", "Rol", "Cedula", "Telefono"};
-    String SQL = "SELECT id,nombre,apellido,rol, Cedula, telefono FROM usuarios";
+    String[] Headers = {"id","Nombre","Apellido", "Rol", "Cédula", "Teléfono"};
+    String SQL = "SELECT id,nombre AS \"Nombre\",apellido AS \"Apellido\",rol AS \"Rol\", Cedula AS \"Cédula\", telefono AS \"Teléfono\" FROM usuarios";
 
     JTextField inputNombre =  ThemeManager.Textfield("Ej: Carlos");
     JTextField inputApellido = ThemeManager.Textfield("Ej: Mendoza");
@@ -270,30 +271,30 @@ public class SubMenuUsuarios extends JPanel {
         String strCedula = inputCedula.getText().trim();
         
         if(!strNombre.isEmpty()){
-            if(!strNombre.matches("^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\\s]+$")){
-                ThemeManager.MostrarMensajeError(this,"El campo \"Nombre\" solo debe Contener letras y espacios.");
-                return;
-            }    
+            //if(!strNombre.matches("^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\\s]+$")){
+            //    ThemeManager.MostrarMensajeError(this,"El campo \"Nombre\" solo debe Contener letras y espacios.");
+            //    return;
+            //}    
 
             PARAM.add("%"+strNombre+"%");
             COND.add("nombre ILIKE  ?");
         }
 
         if(!strApellido.isEmpty()){
-            if(!strApellido.matches("^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\\s]+$")){
-                ThemeManager.MostrarMensajeError(this,"El campo \"Apellido\" solo debe Contener letras y espacios.");
-                return;
-            }    
+            //if(!strApellido.matches("^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\\s]+$")){
+            //    ThemeManager.MostrarMensajeError(this,"El campo \"Apellido\" solo debe Contener letras y espacios.");
+            //    return;
+            //}    
 
             PARAM.add("%"+strApellido+"%");
             COND.add("apellido ILIKE  ?");
         }
 
         if(!strCedula.isEmpty()){
-            if(!strCedula.matches("^[VEve][-]\\d{7,8}$")){
-                ThemeManager.MostrarMensajeError(this,"El campo \"Cédula\" no es valido.");
-                return;
-            }    
+            //if(!strCedula.matches("^[VEve][-]\\d{7,8}$")){
+            //    ThemeManager.MostrarMensajeError(this,"El campo \"Cédula\" no es valido.");
+            //    return;
+            //}    
 
             PARAM.add("%"+strCedula+"%");
             COND.add("cedula ILIKE  ?");
@@ -305,7 +306,7 @@ public class SubMenuUsuarios extends JPanel {
 
 
         ArrayList<ArrayList<String>> Datas = new ArrayList<>();
-        ResultSet RS_DATA = DB.consultar(MAIN_QUERY,PARAM.toArray());
+        ResultSet RS_DATA = ConexionPostgres.consultar(MAIN_QUERY,PARAM.toArray());
 
         while (RS_DATA.next()) {            
             ArrayList<String> newData = new ArrayList<>();
