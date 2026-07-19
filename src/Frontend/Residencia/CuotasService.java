@@ -137,11 +137,6 @@ public class CuotasService {
         return new DatosConstancia("SIN REPRESENTANTE REGISTRADO", "NO REGISTRADA");
     }
 
-    /**
-     * Una vivienda es "Moroso" solo si tiene al menos una cuota pendiente cuya
-     * fecha límite ya pasó. Una cuota pendiente que todavía está dentro de su
-     * plazo (fecha límite futura) no cuenta como morosidad.
-     */
     public static boolean tieneCuotaVencida(List<CuotaPendiente> pendientes) {
         java.util.Date ahora = new java.util.Date();
         for (CuotaPendiente cuota : pendientes) {
@@ -152,10 +147,6 @@ public class CuotasService {
         return false;
     }
 
-    /**
-     * Entre las cuotas pendientes, devuelve la vencida más antigua (la que
-     * realmente origina la morosidad). Si no hay ninguna vencida, devuelve null.
-     */
     public static CuotaPendiente obtenerCuotaVencidaMasAntigua(List<CuotaPendiente> pendientes) {
         java.util.Date ahora = new java.util.Date();
         CuotaPendiente masAntigua = null;
@@ -170,11 +161,6 @@ public class CuotasService {
         return masAntigua;
     }
 
-    /**
-     * Genera el PDF de constancia/recibo de pago y lo abre con la aplicación
-     * predeterminada del sistema. Lanza SQLException/DocumentException/
-     * FileNotFoundException para que el llamador decida cómo notificar el error.
-     */
     public static void generarReciboPagoPDF(int idVivienda, String numeroVivienda, String calle,
                                              CuotaPendiente cuota, String tipoPago, String referencia)
             throws SQLException, DocumentException, FileNotFoundException {
@@ -187,10 +173,6 @@ public class CuotasService {
             boolean esMoroso = tieneCuotaVencida(pendientesActuales);
             String estadoVivienda = esMoroso ? "Moroso" : "Solvente";
 
-            // Si está moroso, el mes/año de referencia es el de la cuota vencida
-            // más antigua (la que realmente origina la morosidad), no el de la cuota
-            // que se acaba de pagar en esta transacción. Si está solvente, se usa la
-            // cuota recién pagada como referencia de "al día hasta".
             CuotaPendiente cuotaVencidaMasAntigua = esMoroso ? obtenerCuotaVencidaMasAntigua(pendientesActuales) : null;
             java.sql.Timestamp fechaReferencia = cuotaVencidaMasAntigua != null ? cuotaVencidaMasAntigua.fechaLimite : cuota.fechaLimite;
 
@@ -199,7 +181,7 @@ public class CuotasService {
 
             String nombreArchivo = "Constancia_Solvencia_" + numeroVivienda + "_" +
                 new SimpleDateFormat("yyyyMMdd_HHmmss").format(new java.util.Date()) + ".pdf";
-            File carpetaFacturas = new File("Garita" + File.separator + "facturas");
+            File carpetaFacturas = obtenerCarpetaDescargas();
             if (!carpetaFacturas.exists()) {
                 carpetaFacturas.mkdirs();
             }
@@ -265,6 +247,20 @@ public class CuotasService {
                 documento.close();
             }
         }
+    }
+
+    private static File obtenerCarpetaDescargas() {
+        String home = System.getProperty("user.home");
+        File descargasEs = new File(home, "Descargas");
+        File descargasEn = new File(home, "Downloads");
+
+        if (descargasEs.exists() && descargasEs.isDirectory()) {
+            return descargasEs;
+        }
+        if (descargasEn.exists() && descargasEn.isDirectory()) {
+            return descargasEn;
+        }
+        return descargasEn;
     }
 
     private static void agregarCeldaInfo(PdfPTable tabla, String etiqueta, String valor) {
