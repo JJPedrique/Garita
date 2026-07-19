@@ -12,8 +12,10 @@ import Backend.ConexionPostgres;
 import Backend.ThemeManager;
 
 public class VentanaProgramarCuota extends JDialog {
-    private final JTextField inputDescription = new JTextField();
-    private final JTextField txtMonto = new JTextField();
+    // Campos para la descripción con formato "Cuota ENE 2026"
+    private final JComboBox<String> cmbMes = new JComboBox<>(new String[]{"ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"});
+    private final JTextField txtAño = ThemeManager.Textfield();
+    private final JTextField txtMonto = ThemeManager.Textfield("15.0");
     private final MenuCuotas menuPadre; 
 
     private final JDateChooser jdcDesde = new JDateChooser();
@@ -28,6 +30,19 @@ public class VentanaProgramarCuota extends JDialog {
     private final Calendar calendario = Calendar.getInstance();
     private final Date currentDate = new Date(); 
 
+    JPanel cabecera = new JPanel(new BorderLayout());
+    
+    JLabel titulo = new JLabel("Programar Cuota", SwingConstants.CENTER);
+    JPanel cuerpo = new JPanel(new GridBagLayout());
+
+    JLabel lblDesc = new JLabel("Descripción Cuota:");
+    JLabel lblMonto = new JLabel("Monto ($):");
+    JLabel lblFechaEmision = new JLabel("Emisión:");
+    JLabel lblFechaFinal = new JLabel("Límite:");
+
+    JButton btnGuardar = ThemeManager.Button("Programar Cuota");
+
+
     public VentanaProgramarCuota(JFrame framePadre, MenuCuotas menuPadre) {
         super(framePadre, "Programar Cuota", true); 
         this.menuPadre = menuPadre;
@@ -35,64 +50,57 @@ public class VentanaProgramarCuota extends JDialog {
         DesdeEditor.setEditable(false);
         HastaEditor.setEditable(false);
 
-        setUndecorated(true);
-        setSize(400, 380); 
+        // Configurar el campo de año para solo números
+        txtAño.setColumns(4);
+        txtAño.setDocument(new javax.swing.text.PlainDocument() {
+            @Override
+            public void insertString(int offs, String str, javax.swing.text.AttributeSet a) throws javax.swing.text.BadLocationException {
+                if (str == null) return;
+                if (!str.matches("\\d*")) return;
+                if (getLength() + str.length() > 4) return;
+                super.insertString(offs, str, a);
+            }
+        });
+
+        setSize(500, 420); 
         setLocationRelativeTo(framePadre); 
         setLayout(new BorderLayout());
 
-        JPanel cabecera = new JPanel(new BorderLayout());
         cabecera.setBackground(ThemeManager.COLOR_PRIMARY);
-        cabecera.setPreferredSize(new Dimension(400, 40));
-        
-        JButton btnAtras = new JButton("←");
-        btnAtras.setFont(new Font("Dialog", Font.BOLD, 16));
-        btnAtras.setForeground(Color.WHITE);
-        btnAtras.setBackground(ThemeManager.COLOR_PRIMARY);
-        btnAtras.setFocusPainted(false);
-        btnAtras.setBorder(BorderFactory.createEmptyBorder(0, 15, 0, 15));
-        btnAtras.addActionListener(e -> dispose());
-        cabecera.add(btnAtras, BorderLayout.WEST);
+        cabecera.setPreferredSize(new Dimension(500, 40));
 
-        JLabel titulo = new JLabel("Agregar Cuota", SwingConstants.CENTER);
         titulo.setForeground(Color.WHITE);
         titulo.setFont(ThemeManager.TEXT_SUBTITLE);
         cabecera.add(titulo, BorderLayout.CENTER);
         add(cabecera, BorderLayout.NORTH);
 
-        JPanel cuerpo = new JPanel(new GridBagLayout());
-        cuerpo.setBackground(ThemeManager.COLOR_BACKGROUND_LIGHT);
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(8, 12, 8, 12);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        
+        // Fila 0: Descripción (Mes + Año)
         gbc.gridx = 0; gbc.gridy = 0; gbc.weightx = 0;
-        JLabel lblDesc = new JLabel("Descripción:");
-        lblDesc.setForeground(ThemeManager.COLOR_TEXT);
         cuerpo.add(lblDesc, gbc);
 
         gbc.gridx = 1; gbc.weightx = 1;
-        inputDescription.setBackground(ThemeManager.COLOR_BACKGROUND);
-        inputDescription.setForeground(ThemeManager.COLOR_TEXT);
-        inputDescription.setCaretColor(Color.WHITE);
-        cuerpo.add(inputDescription, gbc);
+        JPanel panelDescripcion = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        panelDescripcion.setOpaque(false);
+        
 
         
+        panelDescripcion.add(cmbMes);
+        panelDescripcion.add(txtAño);
+        cuerpo.add(panelDescripcion, gbc);
+
+        // Fila 1: Monto
         gbc.gridx = 0; gbc.gridy = 1; gbc.weightx = 0;
-        JLabel lblMonto = new JLabel("Monto ($):");
-        lblMonto.setForeground(ThemeManager.COLOR_TEXT);
         cuerpo.add(lblMonto, gbc);
 
         gbc.gridx = 1; gbc.weightx = 1;
-        txtMonto.setBackground(ThemeManager.COLOR_BACKGROUND);
-        txtMonto.setForeground(ThemeManager.COLOR_TEXT);
-        txtMonto.setCaretColor(Color.WHITE);
         cuerpo.add(txtMonto, gbc);
 
-        
+        // Fila 2: Fecha Emisión
         gbc.gridx = 0; gbc.gridy = 2; gbc.weightx = 0;
-        JLabel lblFechaEmision = new JLabel("Emisión:");
-        lblFechaEmision.setForeground(ThemeManager.COLOR_TEXT);
         cuerpo.add(lblFechaEmision, gbc);
 
         gbc.gridx = 1; gbc.weightx = 1;
@@ -105,12 +113,10 @@ public class VentanaProgramarCuota extends JDialog {
         panelFechaDesde.add(jspHoraDesde);
         cuerpo.add(panelFechaDesde, gbc);
         
-        
+        // Fila 3: Fecha Límite
         gbc.gridx = 0; gbc.gridy = 3; gbc.weightx = 0;
-        JLabel lblFechaFinal = new JLabel("Límite:");
-        lblFechaFinal.setForeground(ThemeManager.COLOR_TEXT);
         cuerpo.add(lblFechaFinal, gbc);
-
+        
         gbc.gridx = 1; gbc.weightx = 1;
         JSpinner.DateEditor editorHasta = new JSpinner.DateEditor(jspHoraHasta, "HH:mm:ss");
         jspHoraHasta.setEditor(editorHasta);
@@ -121,34 +127,28 @@ public class VentanaProgramarCuota extends JDialog {
         panelFechaHasta.add(jspHoraHasta);
         cuerpo.add(panelFechaHasta, gbc);
 
+        gbc.insets = new Insets(20, 12, 8, 12);
+        gbc.gridx = 0; gbc.gridy = 4; gbc.weighty = 0; gbc.weightx = 0;
+        gbc.gridwidth = 2; gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        cuerpo.add(btnGuardar, gbc);
+        
         add(cuerpo, BorderLayout.CENTER);
 
-
-        JButton btnGuardar = new JButton("Agregar Cuota");
-        btnGuardar.setFont(ThemeManager.TEXT_SUBTITLE);
-        btnGuardar.setForeground(ThemeManager.COLOR_TEXT);
-        btnGuardar.setBackground(ThemeManager.COLOR_PRIMARY);
-        btnGuardar.setFocusPainted(false);
-        btnGuardar.setPreferredSize(new Dimension(400, 45));
-        add(btnGuardar, BorderLayout.SOUTH);
-
+        // Establecer año por defecto
+        txtAño.setText(String.valueOf(Calendar.getInstance().get(Calendar.YEAR)));
 
         btnGuardar.addActionListener(e -> {
-            String strDesc = inputDescription.getText().trim();
+            String mes = (String) cmbMes.getSelectedItem();
+            String año = txtAño.getText().trim();
+            String strDesc = "Cuota " + mes + " " + año;
             String montoStr = txtMonto.getText().trim();
 
-            if(strDesc.isEmpty()){
-                JOptionPane.showMessageDialog(this,"LA DESCRIPCIÓN NO PUEDE ESTAR VACÍA");
+            if (año.isEmpty() || año.length() != 4) {
+                JOptionPane.showMessageDialog(this, "DEBE INGRESAR UN AÑO VÁLIDO (4 dígitos)");
                 return;
             }
-            if(strDesc.length() > 14){
-                JOptionPane.showMessageDialog(this,"LA DESCRIPCIÓN NO PUEDE TENER MÁS DE 14 CARACTERES");
-                return;
-            }
-            if(!strDesc.matches("^[a-zA-Z0-9ñÑ ]+$")){
-                JOptionPane.showMessageDialog(this,"LA DESCRIPCIÓN DEBE SER ALFA-NUMÉRICA");
-                return;
-            }   
+
             if (!montoStr.matches("^[0-9]{1,4}+(\\.[0-9]{1,2})?$")) {
                 JOptionPane.showMessageDialog(this, "Monto inválido, tiene que seguir el siguiente formato 'xxxx.xx'.", "Sistema Garita - ERROR X", JOptionPane.ERROR_MESSAGE);
                 return;
@@ -213,7 +213,7 @@ public class VentanaProgramarCuota extends JDialog {
             }
         });
 
-        // Configuración de Spinners (solo lectura en teclado pero interactivos)
+        // Configuración de Spinners
         JSpinner.DefaultEditor editorHoraDesde = (JSpinner.DefaultEditor) jspHoraDesde.getEditor();
         editorHoraDesde.getTextField().setEnabled(true);
         editorHoraDesde.getTextField().setEditable(false);
@@ -222,13 +222,13 @@ public class VentanaProgramarCuota extends JDialog {
         editorHoraHasta.getTextField().setEnabled(true);
         editorHoraHasta.getTextField().setEditable(false);
 
-        // Inicialización y renderizado de DateChoosers según el ThemeManager
         ThemeManager.SetupDateChooser(jdcDesde);
         ThemeManager.SetupDateChooser(jdcHasta);
 
         jdcDesde.getDateEditor().setDate(currentDate);
         calendario.add(Calendar.MONTH, 2);
         jdcHasta.getDateEditor().setDate(calendario.getTime());
+        SetTheme();
     }
 
     private boolean existeCuota(String descripcion) {
@@ -244,5 +244,37 @@ public class VentanaProgramarCuota extends JDialog {
             System.err.println("Error al verificar la duplicidad de la cuota.");
         }
         return false;
+    }
+
+    public void SetTheme() {
+        cuerpo.setBackground(ThemeManager.COLOR_BACKGROUND);
+        cabecera.setBackground(ThemeManager.COLOR_PRIMARY);
+
+        titulo.setFont(ThemeManager.TEXT_TITLE);
+        titulo.setForeground(ThemeManager.COLOR_TEXT);
+
+        // Estilos para el combo y campo de año
+        /*
+        cmbMes.setBackground(ThemeManager.COLOR_SECONDARY);
+        cmbMes.setForeground(ThemeManager.COLOR_TEXT);
+        cmbMes.setFont(ThemeManager.TEXT_SUBTITLE);
+        
+        txtAño.setBackground(ThemeManager.COLOR_SECONDARY);
+        txtAño.setForeground(ThemeManager.COLOR_TEXT);
+        txtAño.setFont(ThemeManager.TEXT_SUBTITLE);
+        */
+        
+
+        lblFechaEmision.setForeground(ThemeManager.COLOR_TEXT);
+        lblFechaEmision.setFont(ThemeManager.TEXT_SUBTITLE);
+        
+        lblMonto.setForeground(ThemeManager.COLOR_TEXT);
+        lblMonto.setFont(ThemeManager.TEXT_SUBTITLE);
+        
+        lblDesc.setForeground(ThemeManager.COLOR_TEXT);
+        lblDesc.setFont(ThemeManager.TEXT_SUBTITLE);
+        
+        lblFechaFinal.setForeground(ThemeManager.COLOR_TEXT);
+        lblFechaFinal.setFont(ThemeManager.TEXT_SUBTITLE);
     }
 }
