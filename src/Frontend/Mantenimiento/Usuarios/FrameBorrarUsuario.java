@@ -53,14 +53,14 @@ public class FrameBorrarUsuario extends JDialog {
         gbc.weightx = 1;gbc.weighty = 1;
         gbc.insets = new Insets(5, 5, 5, 5);
 
-        JLabel Seguro = ThemeManager.Label("Seguro que quieres borrar este usuario?");
+        JLabel Seguro = ThemeManager.Label("¿Seguro que quieres borrar este usuario?");
         Seguro.setFont(ThemeManager.TEXT_SUBTITLE);
         Seguro.setVerticalAlignment(SwingConstants.CENTER);
         Seguro.setHorizontalAlignment(SwingConstants.CENTER);
 
         newPanel.add(Seguro,gbc);
         gbc.gridy=1;
-        JLabel Info = ThemeManager.Label("Se perderan los datos para siempre");
+        JLabel Info = ThemeManager.Label("Se perderán los datos para siempre");
         Info.setVerticalAlignment(SwingConstants.CENTER);
         Info.setHorizontalAlignment(SwingConstants.CENTER);
 

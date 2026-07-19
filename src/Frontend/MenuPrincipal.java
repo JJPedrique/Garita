@@ -6,6 +6,7 @@ import Backend.ThemeManager;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.net.URI;
 
 import Frontend.Bitacora.MenuBitacora;
 import Frontend.ControlDeAcceso.MenuControlDeAcceso;
@@ -75,19 +76,32 @@ public class MenuPrincipal extends JPanel {
    JButton HelpButton() {
         JButton btn = ThemeManager.SideBarButton("Ayuda");
 
-        btn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    File archivoHtml = new File("src/Frontend/Ayuda/help.html");
-                    if (archivoHtml.exists()) {
-                        Desktop.getDesktop().browse(archivoHtml.toURI());
-                    } else {
-                        System.out.println("El archivo no existe.");
+        btn.addActionListener(e -> {
+            // 1. Define la ruta de tu archivo PDF
+            File archivoPdf = new File("src\\Frontend\\Ayuda\\Manual de Usuario.pdf"); 
+
+            // 2. Verifica si el entorno soporta la clase Desktop
+            if (Desktop.isDesktopSupported()) {
+                Desktop desktop = Desktop.getDesktop();
+                
+                // 3. Verifica si la acción BROWSE (navegador) está permitida
+                if (desktop.isSupported(Desktop.Action.BROWSE)) {
+                    try {
+                        // Convertimos el archivo local a formato URI (file://...)
+                        URI uri = archivoPdf.toURI();
+                        
+                        // Abrimos en el navegador predeterminado
+                        desktop.browse(uri);
+                        
+                    } catch (IOException ex) {
+                        ThemeManager.MostrarMensajeError(this, "Error al intentar abrir el archivo.");
+                        ex.printStackTrace();
                     }
-                } catch (IOException ex) {
-                    ex.printStackTrace();
+                } else {
+                    ThemeManager.MostrarMensajeError(this, "La acción de navegar no está soportada en este sistema.");
                 }
+            } else {
+                ThemeManager.MostrarMensajeError(this, "La funcionalidad Desktop no está soportada en esta plataforma.");
             }
         });
 
