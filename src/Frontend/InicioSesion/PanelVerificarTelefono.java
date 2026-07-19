@@ -23,7 +23,7 @@ public class PanelVerificarTelefono extends JPanel {
     private final JButton bRegresar = ThemeManager.Button("");
     
     private final JPanel pInput = new JPanel();
-    private final JLabel lSubTitulo = new JLabel("<html><center>Ingrese su usuario y número telefónico <br> para recibir un código.</center></html>");
+    private final JLabel lSubTitulo = new JLabel("<html><center>Ingrese su cédula y número telefónico <br> para recibir un código.</center></html>");
     private final JLabel lInputUsuario = new ThemeManager.RoundIconLabel("img\\user.png");
     private final JTextField tfInputUsuario = ThemeManager.Textfield();
     private final JLabel lInputTelefono = new ThemeManager.RoundIconLabel("img\\phone.png");
@@ -127,12 +127,12 @@ public class PanelVerificarTelefono extends JPanel {
             String telefono = tfInputTelefono.getText().trim();
 
             if (usuario.isEmpty() && telefono.isEmpty()) {
-                ThemeManager.MostrarMensajeError(this,"Por favor, introduzca su usuario y teléfono.");
+                ThemeManager.MostrarMensajeError(this,"Por favor, introduzca su cédula y teléfono.");
                 return;
             }
 
             if (usuario.isEmpty()) {
-                ThemeManager.MostrarMensajeError(this,"Por favor, introduzca su usuario.");
+                ThemeManager.MostrarMensajeError(this,"Por favor, introduzca su cédula.");
                 return;
             }
 
@@ -142,7 +142,7 @@ public class PanelVerificarTelefono extends JPanel {
             }
 
             if (!usuario.matches("(?i)^V-[1-9]\\d{0,7}$")){
-                ThemeManager.MostrarMensajeError(this,"Formato de usuario invalido. \nSiga el siguiente ejemplo: V-12345678");
+                ThemeManager.MostrarMensajeError(this,"Formato de cédula invalida. \nSiga el siguiente ejemplo: V-12345678");
                 tfInputUsuario.requestFocusInWindow();
                 return;
             }
@@ -164,7 +164,7 @@ public class PanelVerificarTelefono extends JPanel {
                 }
 
                 if(TUPLA.isEmpty()){
-                    ThemeManager.MostrarMensajeError(this,"Usuario o Teléfono incorrecto.");
+                    ThemeManager.MostrarMensajeError(this,"Cédula o Teléfono incorrecto.");
                     return;
                 }
 

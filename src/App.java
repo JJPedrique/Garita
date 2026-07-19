@@ -8,7 +8,6 @@ import Frontend.InicioSesion.MenuInicioSesion;
 public class App {
     
     static int WIDTH=1600,HEIGHT=900;
-
     public static void main(String[] args) throws Exception {
         ConexionPostgres.conexion = ConexionPostgres.conectar();
         ConexionPostgres.InitDatabase();
@@ -19,8 +18,8 @@ public class App {
 
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        window.add(new MenuPrincipal());
-        //window.add(new MenuInicioSesion());
+        // window.add(new MenuPrincipal());
+        window.add(new MenuInicioSesion());
         
         window.setVisible(true);
     }
