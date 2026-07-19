@@ -13,7 +13,7 @@ public class DateInput extends Input{
     JDateChooser ToDate; JSpinner ToTime;
     
     public DateInput(String label){
-        this.setBackground(ThemeManager.COLOR_BACKGROUND_LIGHT);
+        this.setBackground(ThemeManager.COLOR_BACKGROUND);
         this.setLayout(new GridBagLayout());
         GridBagConstraints gbc =  new GridBagConstraints();
         gbc.gridy=0;gbc.gridx=0;
@@ -53,9 +53,6 @@ public class DateInput extends Input{
         ToTime = new JSpinner(new SpinnerDateModel());
         ToTime.setEditor(new JSpinner.DateEditor(ToTime, "HH:mm:ss"));
         this.add(ToTime,gbc);
-
-        gbc.gridx=3;gbc.gridy=1;gbc.gridwidth=1;gbc.gridheight=2; gbc.weightx=0;
-        this.add(BtnRemover,gbc);
     }
    
     @Override

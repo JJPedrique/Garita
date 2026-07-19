@@ -185,6 +185,15 @@ public class ThemeManager {
         return newComboBox;
     }
 
+    public static JCheckBox CheckBox(String text){
+        JCheckBox newCheckbox = new JCheckBox(text);
+        newCheckbox.setSelected(true);
+        newCheckbox.setBackground(ThemeManager.COLOR_BACKGROUND);
+        newCheckbox.setForeground(ThemeManager.COLOR_TEXT);
+        newCheckbox.setFont(ThemeManager.TEXT_NORMAL);
+        return newCheckbox;
+    }
+
     public static JPanel Panel(LayoutManager LM){
         JPanel newPanel = new JPanel(LM);
         newPanel.setBackground(COLOR_BACKGROUND_LIGHT);

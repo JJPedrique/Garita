@@ -10,7 +10,7 @@ public class IntegerInput extends Input {
     JTextField input =  ThemeManager.Textfield("Solo Número enteros...");
 
     public IntegerInput(String label){
-        this.setBackground(ThemeManager.COLOR_BACKGROUND_LIGHT);
+        this.setBackground(ThemeManager.COLOR_BACKGROUND);
         this.setLayout(new GridBagLayout());
         GridBagConstraints gbc =  new GridBagConstraints();
         gbc.gridy=0;gbc.gridx=0;
@@ -36,22 +36,6 @@ public class IntegerInput extends Input {
         input.setForeground(ThemeManager.COLOR_TEXT);
         input.setBackground(ThemeManager.COLOR_BACKGROUND);
         this.add(input,gbc);
-
-        gbc.gridx=2;gbc.gridy=0;gbc.gridwidth=1;gbc.gridheight=2; gbc.weightx=0;
-        BtnRemover.setFont(ThemeManager.TEXT_NORMAL);
-        BtnRemover.setForeground(ThemeManager.COLOR_TEXT);
-        BtnRemover.setBackground(ThemeManager.COLOR_PRIMARY);
-        BtnRemover.setFont(ThemeManager.TEXT_SUBTITLE);
-        this.add(BtnRemover,gbc);
-        
-        BtnRemover.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                BtnRemover.setBackground(ThemeManager.COLOR_SECONDARY);
-            }
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                BtnRemover.setBackground(ThemeManager.COLOR_PRIMARY);
-            }
-        });
     }
 
     @Override

@@ -111,7 +111,7 @@ public class MenuReporte extends JPanel {
     static {
         Map<String, String> mapaTemporal = new HashMap<>();
         
-        mapaTemporal.put("Listado de Viviendas","SELECT DISTINCT ON (V.id) " +
+        mapaTemporal.put("Listado de Viviendas","SELECT " +
                         " V.calle AS \"Calle\"," +
                         " V.numero_vivienda AS \"Número de Vivienda\", " +
                         " CASE " +
@@ -123,15 +123,6 @@ public class MenuReporte extends JPanel {
                         " FROM viviendas AS V" +
                         " LEFT JOIN representantes AS R ON V.id = R.id_vivienda" +
                         " WHERE V.activo = True");
-
-        mapaTemporal.put("Listado de Representantes","SELECT V.calle AS \"Calle\"," +
-                        " V.numero_vivienda AS \"Número de Vivienda\", " +
-                        " CONCAT(R.nombre,' ',R.apellido) AS \"Representante\", " +
-                        " R.cedula AS \"Cédula\", " +
-                        " R.telefono AS \"Teléfono\"" +
-                        " FROM viviendas AS V" +
-                        " LEFT JOIN representantes AS R ON  V.id = R.id_vivienda" +
-                        " WHERE V.activo = True AND R.activo = True");
 
         mapaTemporal.put("Listado de Carnets","SELECT C.codigo AS \"Código\"," +
                         " V.numero_vivienda AS \"Número de Vivienda\"," +
@@ -265,9 +256,17 @@ public class MenuReporte extends JPanel {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridy=0;gbc.gridx=0;
         gbc.fill=GridBagConstraints.BOTH;
-        gbc.insets = new Insets(5,5,5,5);
+        gbc.insets = new Insets(10,10,10,10);
+        
+        gbc.gridwidth=2;
+        JLabel Text = ThemeManager.Label("FILTRAR COLUMNAS");
+        Text.setFont(ThemeManager.TEXT_SUBTITLE);
+        Text.setHorizontalAlignment(SwingConstants.CENTER);
+        newPanel.add(Text,gbc);
 
+        gbc.gridy=1;gbc.gridwidth=1;
         JLabel modulos = ThemeManager.Label("Modulo");
+        
         newPanel.add(modulos,gbc);
 
         gbc.gridx=1;gbc.ipady=10;
@@ -285,9 +284,10 @@ public class MenuReporte extends JPanel {
             }
         });
 
-        gbc.gridx=0; gbc.gridy=1;gbc.ipady=0;
+        gbc.gridx=0; gbc.gridy=2;gbc.ipady=0;
         gbc.gridwidth=2; gbc.weightx=1;gbc.weighty=1;
-    
+
+        ColumnFilterPanel.setBackground(ThemeManager.COLOR_BACKGROUND);
         JScrollPane newScroll = new JScrollPane(ColumnFilterPanel);
         newPanel.add(newScroll,gbc);
         newScroll.setBorder(BorderFactory.createEmptyBorder());
@@ -303,30 +303,19 @@ public class MenuReporte extends JPanel {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridy=0;gbc.gridx=0;
         gbc.fill=GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(5,5,5,5);
-
-        JLabel modulos = ThemeManager.Label("Columna");
-        newPanel.add(modulos,gbc);
-
-        gbc.gridx=1;gbc.weightx=1;
-        RowFilterSelector = ThemeManager.StringComboBox();
-        newPanel.add(RowFilterSelector,gbc);
-
-        gbc.gridx=2;gbc.weightx=0;
-        JButton BtnAgregar = ThemeManager.Button("+");
-        newPanel.add(BtnAgregar,gbc);
-        BtnAgregar.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                AddCondition(RowFilterSelector.getSelectedItem().toString());
-                SearchSQL();
-            }
-        });
+        gbc.insets = new Insets(10,10,10,10);
+        gbc.weightx=1;
+         
+        JLabel Text = ThemeManager.Label("FILTRAR FILAS");
+        Text.setFont(ThemeManager.TEXT_SUBTITLE);
+        Text.setHorizontalAlignment(SwingConstants.CENTER);
+        newPanel.add(Text,gbc);
         
-        gbc.gridx=0; gbc.gridy=1;
-        gbc.gridwidth=3; gbc.weightx=1;gbc.weighty=1;
-        gbc.fill = GridBagConstraints.BOTH;
+        gbc.fill=GridBagConstraints.BOTH;
+        gbc.gridx=0; gbc.gridy=1;gbc.ipady=0;
+        gbc.weightx=1;gbc.weighty=1;
 
+        RowFilterPanel.setBackground(ThemeManager.COLOR_BACKGROUND);
         JScrollPane newScroll = new JScrollPane(RowFilterPanel);
         newPanel.add(newScroll,gbc);
         newScroll.setBorder(BorderFactory.createEmptyBorder());
@@ -342,13 +331,20 @@ public class MenuReporte extends JPanel {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridy=0;gbc.gridx=0; gbc.weightx=1;
         gbc.fill=GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(5,5,5,5);    
-        gbc.ipady=10;
+        gbc.insets = new Insets(10,10,10,10);    
+        gbc.ipady=10;gbc.gridwidth=2;
 
+
+        JLabel Text = ThemeManager.Label("OTROS");
+        Text.setFont(ThemeManager.TEXT_SUBTITLE);
+        Text.setHorizontalAlignment(SwingConstants.CENTER);
+        newPanel.add(Text,gbc);
+
+        gbc.gridy=1;gbc.gridwidth=1;
         JLabel ordenar = ThemeManager.Label("Ordenar de manera");
         newPanel.add(ordenar,gbc);   
 
-        gbc.gridy=1; gbc.gridx=0; 
+        gbc.gridy=2; gbc.gridx=0; 
         OrderColumn = ThemeManager.StringComboBox();
         OrderColumn.addActionListener(new ActionListener() {
             @Override
@@ -368,7 +364,7 @@ public class MenuReporte extends JPanel {
         });          
         newPanel.add(OrderBy,gbc);
 
-        gbc.gridy=2; gbc.gridx=0;
+        gbc.gridy=3; gbc.gridx=0;
         JLabel empezar = ThemeManager.Label("Empezar desde fila");
         newPanel.add(empezar,gbc);    
         
@@ -376,7 +372,7 @@ public class MenuReporte extends JPanel {
         LimitFrom = new JSpinner( new SpinnerNumberModel(0, 0, 1000, 1));
         newPanel.add(LimitFrom,gbc);
 
-        gbc.gridy=3; gbc.gridx=0;
+        gbc.gridy=4; gbc.gridx=0;
         JLabel limite = ThemeManager.Label("Maximo de filas");
         newPanel.add(limite,gbc);   
 
@@ -384,7 +380,7 @@ public class MenuReporte extends JPanel {
         LimitTo = new JSpinner( new SpinnerNumberModel(100, 0, 1000, 1));
         newPanel.add(LimitTo,gbc);
 
-        gbc.gridy=4;gbc.gridx=0; gbc.gridwidth=3;gbc.ipady=0;
+        gbc.gridy=5;gbc.gridx=0; gbc.gridwidth=3;gbc.ipady=0;
         JButton BtnImprimir =  ThemeManager.Button("Exportar a PDF");
         newPanel.add(BtnImprimir,gbc);
         BtnImprimir.addActionListener(new ActionListener() {
@@ -394,7 +390,7 @@ public class MenuReporte extends JPanel {
             }
         });
  
-        gbc.gridy=5; gbc.weighty=1;gbc.fill= GridBagConstraints.BOTH;
+        gbc.gridy=6; gbc.weighty=1;gbc.fill= GridBagConstraints.BOTH;
         newPanel.add(new JLabel(),gbc);
 
         return newPanel;
@@ -435,67 +431,40 @@ public class MenuReporte extends JPanel {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx=1;
         gbc.gridy = 0; 
+        gbc.insets = new Insets(10,10,10,10);
+
 
         for(String k : TableHeader.keySet()){
-            JCheckBox newCheck = new JCheckBox(k);
-            ColumnFilterPanel.add(newCheck,gbc);
-            ColumnFilter.add(newCheck);
-            gbc.gridy++;
-
-            newCheck.setSelected(true);
-            newCheck.setBackground(ThemeManager.COLOR_BACKGROUND_LIGHT);
-            newCheck.setForeground(ThemeManager.COLOR_TEXT);
-            newCheck.setFont(ThemeManager.TEXT_NORMAL);
+            JCheckBox newCheck = ThemeManager.CheckBox(k);
             newCheck.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {SearchSQL();}
             });
 
-            RowFilterSelector.addItem(k);
-            OrderColumn.addItem(k);
-        }
+            ColumnFilterPanel.add(newCheck,gbc);
+            ColumnFilter.add(newCheck);
 
-        gbc.weighty=1;gbc.fill= GridBagConstraints.BOTH;
-        ColumnFilterPanel.add(new JLabel(),gbc);
-        this.revalidate();
-        this.repaint();
-    }
-
-    void AddCondition(String Column){
-        if(RowFilterPanel.getComponentCount() != 0){RowFilterPanel.remove(RowFilterPanel.getComponentCount()-1);}
-
-        Input tempCondition = null;
-        switch (TableHeader.get(Column)) {
-            case "character varying": tempCondition = new StringInput(Column); break;
-            case "bigint": tempCondition = new IntegerInput(Column); break;
-            case "numeric": tempCondition = new DecimalInput(Column); break;
-            case "timestamp without time zone": tempCondition = new DateInput(Column); break;
-            default: tempCondition = new StringInput(Column); break;
-        }
-
-        final Input newCondition = tempCondition;
-        newCondition.BtnRemover.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                RowFilter.remove(newCondition);
-                RowFilterPanel.remove(newCondition);
-                RowFilterPanel.revalidate();
-                RowFilterPanel.repaint();
-                SearchSQL();
+            Input tempCondition = null;
+            switch (TableHeader.get(k)) {
+                case "character varying": tempCondition = new StringInput(k); break;
+                case "bigint": tempCondition = new IntegerInput(k); break;
+                case "numeric": tempCondition = new DecimalInput(k); break;
+                case "timestamp without time zone": tempCondition = new DateInput(k); break;
+                default: tempCondition = new StringInput(k); break;
             }
-        });
+             RowFilterPanel.add(tempCondition,gbc);
+            RowFilter.add(tempCondition);
+            
+            gbc.gridy++;
 
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1;
-        gbc.gridx = 0; gbc.gridy = RowFilter.size();
-        gbc.insets = new Insets(5, 5, 5, 5);
-        
-        RowFilterPanel.add(newCondition,gbc);
-        RowFilter.add(newCondition);
-        
-        gbc.gridy++;
+            RowFilterSelector.addItem(k);
+            OrderColumn.addItem(k);            
+        }
+
         gbc.weighty=1;gbc.fill= GridBagConstraints.BOTH;
-        RowFilterPanel.add(new JLabel(),gbc);
+        ColumnFilterPanel.add(ThemeManager.Label(""),gbc);
+        RowFilterPanel.add(ThemeManager.Label(""),gbc);
+
         this.revalidate();
         this.repaint();
     }

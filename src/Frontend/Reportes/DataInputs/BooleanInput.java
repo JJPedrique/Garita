@@ -9,7 +9,7 @@ public class BooleanInput extends Input{
     JComboBox<String> OptionsMenu;
 
     public BooleanInput(String label){
-        this.setBackground(ThemeManager.COLOR_BACKGROUND_LIGHT);
+        this.setBackground(ThemeManager.COLOR_BACKGROUND);
         this.setLayout(new GridBagLayout());
 
         GridBagConstraints gbc =  new GridBagConstraints();
@@ -25,9 +25,6 @@ public class BooleanInput extends Input{
         OptionsMenu = ThemeManager.StringComboBox();
         for(String k : Options){OptionsMenu.addItem(k);}             
         this.add(OptionsMenu,gbc);
-
-        gbc.gridx=2;gbc.gridy=0;gbc.gridwidth=1;gbc.gridheight=2; gbc.weightx=0;
-        this.add(BtnRemover,gbc);
     }
 
     @Override

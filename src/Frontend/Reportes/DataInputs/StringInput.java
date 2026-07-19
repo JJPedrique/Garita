@@ -10,7 +10,7 @@ public class StringInput extends Input{
     JTextField input =  ThemeManager.Textfield("Solo Letras y Espacios");
 
     public StringInput(String label){
-        this.setBackground(ThemeManager.COLOR_BACKGROUND_LIGHT);
+        this.setBackground(ThemeManager.COLOR_BACKGROUND);
         this.setLayout(new GridBagLayout());
         GridBagConstraints gbc =  new GridBagConstraints();
         gbc.gridy=0;gbc.gridx=0;
@@ -28,9 +28,6 @@ public class StringInput extends Input{
 
         gbc.gridx=0;gbc.gridy=1; gbc.gridwidth=2;        
         this.add(input,gbc);
-
-        gbc.gridx=2;gbc.gridy=0;gbc.gridwidth=1;gbc.gridheight=2; gbc.weightx=0;
-        this.add(BtnRemover,gbc);   
     }
     
     @Override
