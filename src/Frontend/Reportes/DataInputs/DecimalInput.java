@@ -17,7 +17,8 @@ public class DecimalInput extends Input {
         gbc.fill=GridBagConstraints.HORIZONTAL;
         gbc.insets = new Insets(5, 5,0,5);
 
-        title = ThemeManager.Label(label);;
+        title = new JLabel(label);
+        title.setForeground(ThemeManager.COLOR_TEXT);;
         this.add(title,gbc);
 
         gbc.gridx=1; gbc.weightx=1;    
@@ -49,7 +50,8 @@ public class DecimalInput extends Input {
         String strInput = input.getText().trim();
         if(strInput.isEmpty()){return "";}
 
-        if(!strInput.matches("\\d*\\[.,]?\\d+")){
+        // Se corrigió la expresión regular para validar enteros y decimales positivos
+        if(!strInput.matches("\\d+([.,]\\d+)?")){
             ThemeManager.MostrarMensajeError(this,"El campo " + title.getText() + " tiene que ser númerico, decimal y positivo");
             return "???";
         }

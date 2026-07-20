@@ -17,7 +17,8 @@ public class StringInput extends Input{
         gbc.fill=GridBagConstraints.HORIZONTAL;
         gbc.insets = new Insets(5, 5,0,5);
 
-        title = ThemeManager.Label(label);
+        title = new JLabel(label);
+        title.setForeground(ThemeManager.COLOR_TEXT);;
         this.add(title,gbc);
 
         gbc.gridx=1; gbc.weightx=1;    
@@ -33,7 +34,7 @@ public class StringInput extends Input{
     @Override
     public String GetCondition(){
         if(OptionsMenu.getSelectedItem().toString() == "Contiene"){ return "\"" +title.getText() +"\" LIKE ?";}
-        else{return title.getText() + " NOT ILIKE ?";}       
+        else{return "\""+title.getText() + "\" NOT ILIKE ?";}       
     }
 
     @Override
