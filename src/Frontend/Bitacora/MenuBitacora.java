@@ -240,6 +240,11 @@ public class MenuBitacora extends JPanel {
         this.add(pFunctions, BorderLayout.WEST);
         this.add(pTabla, BorderLayout.CENTER);
 
+        dcDesde.setEnabled(false);
+        dcHasta.setEnabled(false);
+        spHoraDesde.setEnabled(false);
+        spHoraHasta.setEnabled(false);
+
         SetEvents();
     }
     //endregion
@@ -385,6 +390,7 @@ public class MenuBitacora extends JPanel {
 
         pTablaBody.revalidate();
         pTablaBody.repaint();
+
     }
     //endregion
 

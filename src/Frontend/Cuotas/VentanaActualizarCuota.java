@@ -182,20 +182,20 @@ public class VentanaActualizarCuota extends JDialog {
         Boolean nuevoEstado = true;
 
         if (txtAño.getText().trim().isEmpty() || txtAño.getText().trim().length() != 4) {
-            JOptionPane.showMessageDialog(this, "DEBE INGRESAR UN AÑO VÁLIDO (4 dígitos)");
+            ThemeManager.MostrarMensajeError(this, "DEBE INGRESAR UN AÑO VÁLIDO (4 dígitos)");
             return;
         }
 
         if (!nuevoMonto.matches("^[0-9]+(\\.[0-9]{1,2})?$")) {
-            JOptionPane.showMessageDialog(this, "EL MONTO DEBE SER NUMÉRICO (EJ: 10 o 12.50)");
+           ThemeManager.MostrarMensajeError(this, "EL MONTO DEBE SER NUMÉRICO (EJ: 10 o 12.50)");
             return;
         }
         if (jdcLimite.getDate() == null) {
-            JOptionPane.showMessageDialog(this, "DEBE SELECCIONAR UNA FECHA LÍMITE");
+           ThemeManager.MostrarMensajeError(this, "DEBE SELECCIONAR UNA FECHA LÍMITE");
             return;
         }
         if (!radioActivo.isSelected() && !radioInactivo.isSelected()) {
-            JOptionPane.showMessageDialog(this, "DEBE SELECCIONAR UN ESTADO");
+           ThemeManager.MostrarMensajeError(this, "DEBE SELECCIONAR UN ESTADO");
             return;
         }
 
@@ -203,10 +203,8 @@ public class VentanaActualizarCuota extends JDialog {
         if (radioInactivo.isSelected()) nuevoEstado = false;
 
         if (existeCuotaDuplicada(nuevaDesc, idCuota)) {
-            JOptionPane.showMessageDialog(this, 
-                "ERROR: Ya existe otra cuota registrada con la descripción '" + nuevaDesc + "'.", 
-                "Cuota Duplicada", 
-                JOptionPane.ERROR_MESSAGE);
+           ThemeManager.MostrarMensajeError(this, 
+                "ERROR: Ya existe otra cuota registrada con la descripción '" + nuevaDesc + "'.");
             return; 
         }
 
@@ -231,10 +229,8 @@ public class VentanaActualizarCuota extends JDialog {
                 java.sql.Timestamp tsEmisionActual = rs.getTimestamp("fecha_emision");
                 
                 if (tsNuevaLimite.before(tsEmisionActual)) {
-                    JOptionPane.showMessageDialog(this, 
-                        "ERROR: La nueva fecha límite no puede ser anterior a la fecha de emisión original (" + tsEmisionActual + ").", 
-                        "Error de Fechas", 
-                        JOptionPane.ERROR_MESSAGE);
+                    ThemeManager.MostrarMensajeError(this, 
+                        "La fecha límite no puede ser anterior a la fecha de emisión original.");
                     return;
                 }
             }
@@ -248,12 +244,12 @@ public class VentanaActualizarCuota extends JDialog {
 
             ConexionPostgres.comandoDML(queryUpdate, valores);
             
-            JOptionPane.showMessageDialog(this, "Cuota actualizada correctamente.", "Sistema Garita", JOptionPane.INFORMATION_MESSAGE);
+            ThemeManager.MostrarMensajeExito(this, "Cuota actualizada correctamente.");
             dispose();
             this.menuPadre.Search(); 
             
         } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(this, "Error al actualizar la base de datos: " + ex.getMessage(), "Error SQL", JOptionPane.ERROR_MESSAGE);
+            ThemeManager.MostrarMensajeError(this, "Error al actualizar la base de datos: " + ex.getMessage());
             ex.printStackTrace();
         }
     }

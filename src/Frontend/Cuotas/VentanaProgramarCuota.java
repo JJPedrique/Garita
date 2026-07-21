@@ -145,19 +145,17 @@ public class VentanaProgramarCuota extends JDialog {
             String montoStr = txtMonto.getText().trim();
 
             if (año.isEmpty() || año.length() != 4) {
-                JOptionPane.showMessageDialog(this, "DEBE INGRESAR UN AÑO VÁLIDO (4 dígitos)");
+                ThemeManager.MostrarMensajeError(this, "DEBE INGRESAR UN AÑO VÁLIDO (4 dígitos)");
                 return;
             }
 
             if (!montoStr.matches("^[0-9]{1,4}+(\\.[0-9]{1,2})?$")) {
-                JOptionPane.showMessageDialog(this, "Monto inválido, tiene que seguir el siguiente formato 'xxxx.xx'.", "Sistema Garita - ERROR X", JOptionPane.ERROR_MESSAGE);
+                ThemeManager.MostrarMensajeError(this, "Monto inválido, tiene que seguir el siguiente formato 'xxxx.xx'.");
                 return;
             }
             if (existeCuota(strDesc)) {
-                JOptionPane.showMessageDialog(this, 
-                    "ERROR: Ya existe una cuota programada con la descripción '" + strDesc + "'.", 
-                    "Cuota Duplicada", 
-                    JOptionPane.ERROR_MESSAGE);
+                ThemeManager.MostrarMensajeError(this, 
+                    "ERROR: Ya existe una cuota programada con la descripción '" + strDesc + "'.");
                 return; 
             }
 
@@ -182,29 +180,28 @@ public class VentanaProgramarCuota extends JDialog {
             java.sql.Timestamp tsLimite = new java.sql.Timestamp(calLimite.getTimeInMillis());
 
             if(tsLimite.before(tsEmision)){
-                JOptionPane.showMessageDialog(this, 
-                    "ERROR: La fecha límite de pago no puede ser anterior a la fecha de emisión.", 
-                    "Error de Fechas", 
-                    JOptionPane.ERROR_MESSAGE);
+                ThemeManager.MostrarMensajeError(this, 
+                    "La fecha límite de pago no puede ser anterior a la fecha de emisión.");
                 return;
             }
 
             String miUsuario = Backend.SesionUsuario.getInstancia().getCedula();
             if (miUsuario == null) miUsuario = "Sistema_Java";
             String queryInsert = "DO $$ BEGIN PERFORM set_config('app.usuario_actual', '" + miUsuario + "', true); END $$; "
-                               + "INSERT INTO cuotas (descripcion, monto, fecha_emision, fecha_limite, activo) VALUES (?, ?, ?, ?, ?)";
+                               + "INSERT INTO cuotas (descripcion, monto, fecha_emision, fecha_limite, activo, borrada) VALUES (?, ?, ?, ?, ?, ?)";
 
             Object[] valores = new Object[] {
                 strDesc,                        
                 Double.parseDouble(montoStr),   
                 tsEmision,                     
                 tsLimite,                       
-                false                            
+                false,
+                false                          
             };
 
             try {
                 ConexionPostgres.comandoDML(queryInsert, valores);
-                JOptionPane.showMessageDialog(this, "Cuota creada correctamente.", "Sistema Garita", JOptionPane.INFORMATION_MESSAGE);
+                ThemeManager.MostrarMensajeExito(this, "Cuota creada correctamente.");
                 dispose();
                 this.menuPadre.Search(); 
             } catch (SQLException ex) {

@@ -95,7 +95,7 @@ class JTarjetaCuota {
                             if (miUsuario == null) miUsuario = "Sistema_Java";
                             
                             String queryDelete = "DO $$ BEGIN PERFORM set_config('app.usuario_actual', '" + miUsuario + "', true); END $$; "
-                                            + "UPDATE cuotas set borrada = false WHERE id = ?::integer";
+                                            + "UPDATE cuotas set borrada = true, activo = false, descripcion = 'DEL_' || id WHERE id = ?::integer";
                             ConexionPostgres.comandoDML(queryDelete, new Object[]{id});
                             menuPadre.Search();
                         } catch (SQLException ex) {
@@ -427,7 +427,7 @@ public class MenuCuotas extends JPanel {
 
         StringBuilder Query = new StringBuilder(
             "SELECT id, descripcion, monto, fecha_emision, fecha_limite, activo " +
-            "FROM cuotas WHERE 1=1 AND borrada = true "
+            "FROM cuotas WHERE 1=1 AND borrada = false "
         );
 
         ArrayList<Object> Parametros = new ArrayList<>();
