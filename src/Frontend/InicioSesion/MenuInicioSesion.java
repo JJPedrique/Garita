@@ -37,6 +37,7 @@ public class MenuInicioSesion extends JPanel {
     private final JButton bSalir = ThemeManager.Button("Salir");
 
     public static int idUsuario;
+    public static String rolUsuario;
 
     //region Panel
     public MenuInicioSesion() {
@@ -206,7 +207,7 @@ public class MenuInicioSesion extends JPanel {
         try {
             
             ResultSet RS = ConexionPostgres.consultar(
-                "SELECT id, concat(nombre,' ',apellido) AS nombre_completo, intentos_fallidos, clave FROM usuarios WHERE cedula = ? LIMIT 1;",
+                "SELECT id, concat(nombre,' ',apellido) AS nombre_completo, intentos_fallidos, clave, rol FROM usuarios WHERE cedula = ? LIMIT 1;",
                 new Object[]{usuario}
             );
 
@@ -216,6 +217,7 @@ public class MenuInicioSesion extends JPanel {
                 T.add(RS.getString("nombre_completo"));
                 T.add(RS.getInt("intentos_fallidos"));
                 T.add(RS.getString("clave"));
+                T.add(RS.getString("rol"));
             }
 
             if(T.isEmpty()){
@@ -241,7 +243,8 @@ public class MenuInicioSesion extends JPanel {
             }
             return;
         }
-        
+            rolUsuario = T.get(4).toString();
+            System.out.println(rolUsuario);
             ThemeManager.MostrarMensajeExito(this, "¡Inicio de sesión exitoso!\n Bienvenido/a, " + T.get(1) + ".");
 
             Backend.SesionUsuario.getInstancia().iniciarSesion(usuario, T.get(1).toString());
@@ -252,8 +255,8 @@ public class MenuInicioSesion extends JPanel {
                 ventanaPadre.dispose();
                 JFrame window = new JFrame("Sistema Garita - Menú Principal");
 
-                window.setSize(1600,900);
-                window.setMinimumSize(new Dimension(1600,900));
+                window.setSize(1400,600);
+                window.setMinimumSize(new Dimension(1400,600));
                 window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
                 try {
                     window.add(new MenuPrincipal());

@@ -11,6 +11,7 @@ import java.net.URI;
 import Frontend.Bitacora.MenuBitacora;
 import Frontend.ControlDeAcceso.MenuControlDeAcceso;
 import Frontend.Cuotas.MenuCuotas;
+import Frontend.InicioSesion.MenuInicioSesion;
 import Frontend.Mantenimiento.MenuMantenimiento;
 import Frontend.Reportes.MenuReporte;
 import Frontend.Residencia.MenuResidencia;
@@ -24,12 +25,23 @@ public class MenuPrincipal extends JPanel {
         setLayout(new BorderLayout());
         this.add(SideBar(),BorderLayout.WEST);
 
-        Main.add("Residencia", new MenuResidencia());
-        Main.add("ControlDeAcceso", new MenuControlDeAcceso());
-        Main.add("Cuotas", new MenuCuotas());
-        Main.add("Reportes", new MenuReporte());
-        Main.add("Bitacora", new MenuBitacora());
-        Main.add("Mantenimiento", new MenuMantenimiento());
+        if(MenuInicioSesion.rolUsuario.equals("Vigilancia")){
+            Main.add("ControlDeAcceso", new MenuControlDeAcceso());
+        }
+        else if(MenuInicioSesion.rolUsuario.equals("Junta")){
+            Main.add("Residencia", new MenuResidencia());
+            Main.add("ControlDeAcceso", new MenuControlDeAcceso());
+            Main.add("Cuotas", new MenuCuotas());
+            Main.add("Reportes", new MenuReporte());
+        }
+        else{ // ROL ADMINISTRADOR
+            Main.add("Residencia", new MenuResidencia());
+            Main.add("ControlDeAcceso", new MenuControlDeAcceso());
+            Main.add("Cuotas", new MenuCuotas());
+            Main.add("Reportes", new MenuReporte());
+            Main.add("Bitacora", new MenuBitacora());
+            Main.add("Mantenimiento", new MenuMantenimiento());
+        }
         
         this.add(Main,BorderLayout.CENTER);
     }
@@ -48,12 +60,25 @@ public class MenuPrincipal extends JPanel {
 
         newPanel.add(lblTitulo);
 
-        newPanel.add(SidebarButton("Residencia", "Residencia"));
-        newPanel.add(SidebarButton("Control de Acceso", "ControlDeAcceso"));
-        newPanel.add(SidebarButton("Cuotas", "Cuotas"));   
-        newPanel.add(SidebarButton("Reportes", "Reportes"));
-        newPanel.add(SidebarButton("Bitacora", "Bitacora"));
-        newPanel.add(SidebarButton("Mantenimiento", "Mantenimiento"));
+        if(MenuInicioSesion.rolUsuario.equals("Vigilancia")){
+            newPanel.add(SidebarButton("Control de Acceso", "ControlDeAcceso"));
+        }
+        else if(MenuInicioSesion.rolUsuario.equals("Junta")){
+            newPanel.add(SidebarButton("Residencia", "Residencia"));
+            newPanel.add(SidebarButton("Control de Acceso", "ControlDeAcceso"));
+            newPanel.add(SidebarButton("Cuotas", "Cuotas"));   
+            newPanel.add(SidebarButton("Reportes", "Reportes"));
+        }
+        else{ // ROL ADMINISTRADOR
+            newPanel.add(SidebarButton("Residencia", "Residencia"));
+            newPanel.add(SidebarButton("Control de Acceso", "ControlDeAcceso"));
+            newPanel.add(SidebarButton("Cuotas", "Cuotas"));   
+            newPanel.add(SidebarButton("Reportes", "Reportes"));
+            newPanel.add(SidebarButton("Bitacora", "Bitacora"));
+            newPanel.add(SidebarButton("Mantenimiento", "Mantenimiento"));
+        }
+    
+        
         newPanel.add(HelpButton());
         newPanel.add(ExitButton());
         

@@ -2,12 +2,12 @@ import java.awt.*;
 import javax.swing.*;
 
 import Backend.ConexionPostgres;
-import Frontend.MenuPrincipal;
+// import Frontend.MenuPrincipal;
 import Frontend.InicioSesion.MenuInicioSesion;
 
 public class App {
-    
-    static int WIDTH=1600,HEIGHT=900;
+
+    static int WIDTH=500,HEIGHT=500;
     public static void main(String[] args) throws Exception {
         ConexionPostgres.conexion = ConexionPostgres.conectar();
         ConexionPostgres.InitDatabase();
