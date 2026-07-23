@@ -728,10 +728,38 @@ public class ThemeManager {
         }
     }
     public static void SetupDateChooser(JDateChooser jdc) {
-        jdc.setDateFormatString("yyyy-MM-dd");
-        jdc.getJCalendar().getYearChooser().setFont(ThemeManager.TEXT_NORMAL);
-        jdc.getJCalendar().getMonthChooser().getComboBox().setFont(ThemeManager.TEXT_NORMAL);
-        jdc.getJCalendar().getDayChooser().getDayPanel().setFont(ThemeManager.TEXT_NORMAL);
-        jdc.setPreferredSize(new java.awt.Dimension(0, 32));
+        jdc.setDateFormatString("dd/MM/yyyy");
+        jdc.setOpaque(false);
+
+        JTextField tfDate = (JTextField) jdc.getDateEditor().getUiComponent();
+        tfDate.setEditable(false);
+        tfDate.setBackground(ThemeManager.COLOR_INPUT);
+        tfDate.setForeground(ThemeManager.COLOR_TEXT_DARK);
+        tfDate.setFont(ThemeManager.TEXT_NORMAL);
+        tfDate.setBorder(BorderFactory.createEmptyBorder(4, 6, 4, 6));
+        tfDate.setPreferredSize(new Dimension(80, 25));
+
+        JButton bCalendario = jdc.getCalendarButton();
+        bCalendario.setBackground(ThemeManager.COLOR_PRIMARY);
+        bCalendario.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 5));
+        bCalendario.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        bCalendario.setPreferredSize(new Dimension(30, 25));
+    }
+    
+    public static void SetupTimeSpinnerCuota(JSpinner JTime) {
+
+        JSpinner.DateEditor timeEditor = new JSpinner.DateEditor(JTime, "HH:mm");
+        JTime.setEditor(timeEditor);
+        JTime.setBorder(BorderFactory.createEmptyBorder());
+        JTime.setBackground(ThemeManager.COLOR_INPUT);
+
+        JTextField TF = timeEditor.getTextField();
+        TF.setEditable(false); 
+        
+        TF.setBackground(ThemeManager.COLOR_INPUT);
+        TF.setForeground(ThemeManager.COLOR_TEXT_DARK);
+        TF.setFont(ThemeManager.TEXT_NORMAL);
+        TF.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
+        TF.setHorizontalAlignment(JTextField.CENTER);
     }
 }

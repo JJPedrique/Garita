@@ -221,6 +221,8 @@ public class VentanaProgramarCuota extends JDialog {
 
         ThemeManager.SetupDateChooser(jdcDesde);
         ThemeManager.SetupDateChooser(jdcHasta);
+        ThemeManager.SetupTimeSpinnerCuota(jspHoraDesde);
+        ThemeManager.SetupTimeSpinnerCuota(jspHoraHasta);
 
         jdcDesde.getDateEditor().setDate(currentDate);
         calendario.add(Calendar.MONTH, 2);
@@ -274,4 +276,5 @@ public class VentanaProgramarCuota extends JDialog {
         lblFechaFinal.setForeground(ThemeManager.COLOR_TEXT);
         lblFechaFinal.setFont(ThemeManager.TEXT_SUBTITLE);
     }
+    
 }

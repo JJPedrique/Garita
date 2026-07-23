@@ -174,6 +174,7 @@ public class MenuBitacora extends JPanel {
         cbAccion.addItem("Representantes");
         cbAccion.addItem("Usuarios");
         cbAccion.addItem("Viviendas");
+        cbAccion.addItem("Mantenimiento");
         cbAccion.setSelectedIndex(0);
 
         Calendar CAL = Calendar.getInstance();
@@ -322,7 +323,13 @@ public class MenuBitacora extends JPanel {
         String sTablas = (String) cbAccion.getSelectedItem();
         if (!"Todas".equals(sTablas)) {
             Query.append(" AND b.tabla_modificada = ? ");
-            Parametros.add(sTablas.toLowerCase());
+            if(sTablas != "Mantenimiento"){
+                Parametros.add(sTablas.toLowerCase());
+            }else{
+                Parametros.add(sTablas);
+            }
+
+
         }
 
         if (cbTime.isSelected()) {
@@ -359,6 +366,7 @@ public class MenuBitacora extends JPanel {
         try {
             Object[] paramsArray = Parametros.isEmpty() ? null : Parametros.toArray();
             ResultSet RS = ConexionPostgres.consultar(Query.toString(), paramsArray);
+            System.out.println(Query);
             
             while (RS != null && RS.next()) {
                 String sNombreCompleto = RS.getString("nombre_completo");

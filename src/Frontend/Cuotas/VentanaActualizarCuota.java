@@ -9,6 +9,7 @@ import Backend.ThemeManager;
 import com.toedter.calendar.JDateChooser;
 import com.toedter.calendar.JTextFieldDateEditor;
 import java.sql.ResultSet;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -135,6 +136,7 @@ public class VentanaActualizarCuota extends JDialog {
         cargarDatosIniciales(descripcion, monto, fechaLimite);
         
         ThemeManager.SetupDateChooser(jdcLimite);
+        ThemeManager.SetupTimeSpinnerCuota(jspHoraLimite);
 
         SetTheme();
     }
@@ -157,12 +159,14 @@ public class VentanaActualizarCuota extends JDialog {
         }
         
         txtMonto.setText(monto);
+        
         try {
-            java.util.Date date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(fechaLimite);
+            java.util.Date date = new SimpleDateFormat("yyyy-MM-dd HH:mm").parse(fechaLimite);
             jdcLimite.setDate(date);
             jspHoraLimite.setValue(date);
         } catch (Exception e) {
             jdcLimite.setDate(new java.util.Date());
+            System.out.println(e);
         }
         
         JSpinner.DefaultEditor editorHoraDesde = (JSpinner.DefaultEditor) jspHoraLimite.getEditor();
@@ -298,4 +302,5 @@ public class VentanaActualizarCuota extends JDialog {
         radioInactivo.setForeground(ThemeManager.COLOR_TEXT);
         radioInactivo.setFont(ThemeManager.TEXT_SUBTITLE);
     }
+    
 }

@@ -1,4 +1,5 @@
 package Frontend.Mantenimiento;
+import javax.print.attribute.standard.MediaSize.NA;
 import javax.swing.*;
 
 import Backend.ConexionPostgres;
@@ -6,6 +7,7 @@ import Backend.ThemeManager;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.sql.SQLException;
 
 
 public class SubMenuGestionDeRespaldos extends JPanel {
@@ -60,6 +62,19 @@ public class SubMenuGestionDeRespaldos extends JPanel {
        try {ConexionPostgres.backupDatabase();
         ThemeManager.MostrarMensajeExito(this,"Se ha generado un respaldo en la carpeta descargas");
         } catch (Exception e) {ThemeManager.MostrarMensajeError(this,"Ocurrio un Problema, no se logro Respaldar.");}
+        
+        
+        try {
+        String miUsuario = Backend.SesionUsuario.getInstancia().getCedula();
+            if (miUsuario == null) miUsuario = "Sistema_Java";
+            String queryUpdate ="INSERT INTO bitacoras (usuario, accion, tabla_modificada, fecha_modificacion) VALUES (?, ?, ?, NOW())";
+
+            Object[] valores = { miUsuario, "SaveDB", "Mantenimiento" };
+
+                ConexionPostgres.comandoDML(queryUpdate, valores);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
     }
    
     void Restaurar(){
@@ -68,5 +83,6 @@ public class SubMenuGestionDeRespaldos extends JPanel {
             ThemeManager.MostrarMensajeExito(this,"Se han restaurado los datos correctamente, reinicie el programa para ver los cambios.");
             System.exit(0);
         } catch (Exception e) {ThemeManager.MostrarMensajeError(this,"Ocurrio un Problema, no se logro Restaurar.");}
+    
     }
 }
