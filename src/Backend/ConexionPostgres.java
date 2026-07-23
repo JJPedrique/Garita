@@ -1,5 +1,7 @@
 package Backend;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.*;
 import java.util.Map;
 
@@ -20,7 +22,8 @@ public class ConexionPostgres {
     public static final String USER = "postgres";
     private static final String PASSWORD = "1234";
 
-    private static final String URL = "jdbc:postgresql://localhost:5432/Garita"; 
+    private static final String DEFAULT = "jdbc:postgresql://localhost:5432/postgres"; 
+    private static final String URL = "jdbc:postgresql://localhost:5432/garita"; 
     static final String userHome = System.getProperty("user.home");
     static final String DEST_PATH = "C:/respaldos/Garita.backup";
 
@@ -123,46 +126,39 @@ public class ConexionPostgres {
         }
     }
 
-    public static void InitDatabase() throws Exception{
-        // psql -h localhost -U postgres -d Garita -f ruta/al/archivo.sql
-        ProcessBuilder pb = new ProcessBuilder(
-            psqlPath,
-            "-h",  "localhost", 
-            "-U",  "postgres",
-            "-d", "Garita",                      // -d indica la base de datos de destino
-            "-f", "src\\Backend\\BDD\\InitDatabase.sql" // -f indica el archivo .sql a ejecutar
-        );
+    public static void crearBaseDeDatos(String nombreDb) {
+        try (Connection conn = DriverManager.getConnection(DEFAULT, USER, PASSWORD);
+             Statement stmt = conn.createStatement()) {
 
-        // Configurar la contraseña en el entorno para que no la pida por consola
-        Map<String, String> env = pb.environment();
-        env.put("PGPASSWORD", PASSWORD);
-
-        // Redirigir el flujo de error para poder leerlo junto con la salida estándar
-        pb.redirectErrorStream(true);
-
-        try {
-            System.out.println("Ejecutando script SQL...");
-            Process proceso = pb.start();
-
-            // Es fundamental leer la salida del proceso para que no se bloquee
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(proceso.getInputStream()))) {
-                String linea;
-                while ((linea = reader.readLine()) != null) {
-                    //System.out.println("[psql] " + linea);
-                }
+            // Prevenir inyección SQL básica si el nombre viene de input externo
+            if (!nombreDb.matches("^[a-zA-Z0-9_]+$")) {
+                throw new IllegalArgumentException("Nombre de base de datos inválido.");
             }
 
-            // Esperar a que el proceso termine y obtener el código de salida
-            int codigoSalida = proceso.waitFor();
-            if (codigoSalida == 0) {
-                System.out.println("¡Script ejecutado con éxito!");
-            } else {
-                System.err.println("Hubo un error al ejecutar el script. Código de salida: " + codigoSalida);
-            }
+            String sql = "CREATE DATABASE " + nombreDb;
+            stmt.execute(sql);
+            System.out.println("Base de datos '" + nombreDb + "' creada exitosamente.");
 
-        } catch (IOException | InterruptedException e) {
-            System.err.println("Error al interactuar con el proceso de psql: " + e.getMessage());
-            e.printStackTrace();
+        } catch (Exception e) {
+            System.err.println("Error al crear la base de datos: " + e.getMessage());
+        }
+    }
+
+    public static void InicializarBaseDeDatos() throws Exception{
+        // PASO 2: Conectar a 'garita' y ejecutar la estructura
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+             Statement stmt = conn.createStatement()) {
+            
+            System.out.println("Ejecutando script de estructura y datos por defecto...");
+            String sqlEstructura = Files.readString(Path.of("src\\Backend\\BDD\\InitDatabase.sql"));
+            
+            stmt.executeUpdate(sqlEstructura); 
+            System.out.println("Estructura, funciones, triggers y usuarios por defecto generados correctamente.");
+
+        } catch (SQLException e) {
+            System.err.println("Error ejecutando el script de tablas: " + e.getMessage());
+        } catch (IOException e) {
+            System.err.println("Error leyendo el archivo 2: " + e.getMessage());
         }
     }
 

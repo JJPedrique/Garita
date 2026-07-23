@@ -15,7 +15,7 @@ public class MenuResidencia extends JPanel {
         UIManager.put("TabbedPane.contentBorderInsets", new Insets(0, 0, 0, 0));
 
         JTabbedPane TabMenu = new JTabbedPane();
-        TabMenu.add("Vivienda",new MenuVivienda());
+        TabMenu.add("Viviendas",new MenuVivienda());
         TabMenu.add("Representantes",new MenuRepresentante());       
         this.add(TabMenu, BorderLayout.CENTER);
         

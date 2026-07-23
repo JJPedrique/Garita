@@ -1,3 +1,6 @@
+-- Ejecutar conectado a la base de datos 'garita_db'
+
+-- 1. CREACIÓN DE TABLAS
 CREATE TABLE IF NOT EXISTS "usuarios" (
   "id" integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   "clave" varchar(16) NOT NULL,
@@ -12,9 +15,9 @@ CREATE TABLE IF NOT EXISTS "usuarios" (
 
 CREATE TABLE IF NOT EXISTS "bitacoras" (
   "id" integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  "usuario" varchar(13) NOT NULL,
+  "usuario" varchar(50) NOT NULL, -- Ampliado a 50 para coincidir con la variable de tu trigger
   "accion" varchar(6) NOT NULL,
-  "tabla_modificada" varchar(16) NOT NULL,
+  "tabla_modificada" varchar(30) NOT NULL, -- Ampliado para nombres de tablas largos
   "fecha_modificacion" timestamp NOT NULL
 );
 
@@ -79,16 +82,8 @@ COMMENT ON COLUMN "representantes"."cedula" IS 'Candidata';
 COMMENT ON COLUMN "carnets"."codigo" IS 'Candidata';
 COMMENT ON COLUMN "cuotas"."descripcion" IS 'Candidata';
 
--- Llaves foráneas
-ALTER TABLE "accesos" ADD FOREIGN KEY ("id_carnet") REFERENCES "carnets" ("id") DEFERRABLE INITIALLY IMMEDIATE;
-ALTER TABLE "representantes" ADD FOREIGN KEY ("id_vivienda") REFERENCES "viviendas" ("id") DEFERRABLE INITIALLY IMMEDIATE;
-ALTER TABLE "carnets" ADD FOREIGN KEY ("id_vivienda") REFERENCES "viviendas" ("id") DEFERRABLE INITIALLY IMMEDIATE;
-ALTER TABLE "pagos_realizados" ADD FOREIGN KEY ("id_vivienda") REFERENCES "viviendas" ("id") DEFERRABLE INITIALLY IMMEDIATE;
-ALTER TABLE "pagos_realizados" ADD FOREIGN KEY ("id_cuota") REFERENCES "cuotas" ("id") DEFERRABLE INITIALLY IMMEDIATE;
 
--- 2. RESTRICCIONES DE LLAVE FORÁNEA (Solo si no existen)
--- Para evitar errores de duplicados, envolvemos cada una en una verificación rápida
-
+-- 2. RESTRICCIONES DE LLAVE FORÁNEA (De forma segura y sin duplicados)
 DO $$ 
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE constraint_name = 'accesos_id_carnet_fkey') THEN
@@ -112,8 +107,8 @@ BEGIN
     END IF;
 END $$;
 
--- 3. FUNCIONES (El 'OR REPLACE' ya se encarga de actualizarlas si existen)
 
+-- 3. FUNCIONES
 CREATE OR REPLACE FUNCTION deuda(integer)
 RETURNS DECIMAL(6,2)
 AS $$
@@ -126,15 +121,16 @@ BEGIN
 	LEFT JOIN cuotas ON cuotas.id = pagos_realizados.id_cuota 
     where id_vivienda = $1; 
 
-    SELECT SUM(cuotas.id) INTO DEBE
+    -- CORRECCIÓN: Estaba sumando cuotas.id, se debe sumar cuotas.monto
+    SELECT SUM(cuotas.monto) INTO DEBE
     FROM cuotas; 
 
-    RETURN PAGADA - DEBE;
+    -- Manejo de nulos si no hay pagos o cuotas
+    RETURN COALESCE(PAGADA, 0) - COALESCE(DEBE, 0);
 END;
 $$ 
 LANGUAGE plpgsql;
 
--- OJO: Corregido un pequeño error de sintaxis en tu función original (usaba comillas dobles en "Solvente", deben ser simples 'Solvente')
 CREATE OR REPLACE FUNCTION solvencia(integer)
 RETURNS VARCHAR
 AS $$
@@ -149,7 +145,7 @@ BEGIN
     SELECT Count(cuotas.id) INTO CUOTAS
     FROM cuotas; 
 
-    IF PAGOS_REALIZADOS = CUOTAS THEN
+    IF PAGOS_REALIZADOS >= CUOTAS AND CUOTAS > 0 THEN
         RETURN 'Solvente';
     ELSE 
         RETURN 'Moroso';
@@ -182,8 +178,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 
--- 4. TRIGGERS (Evaluamos si existen antes de crearlos)
-
+-- 4. TRIGGERS
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trigger_auditoria_usuarios') THEN
@@ -218,3 +213,13 @@ BEGIN
         CREATE TRIGGER trigger_auditoria_bitacoras AFTER UPDATE OR DELETE ON bitacoras FOR EACH ROW EXECUTE FUNCTION registrar_en_bitacora();
     END IF;
 END $$;
+
+
+-- 5. INSERTAR USUARIOS POR DEFECTO
+-- Se utiliza ON CONFLICT para ignorar la inserción si las cédulas ya existen
+INSERT INTO "usuarios" ("clave", "rol", "nombre", "apellido", "cedula", "telefono", "activo")
+VALUES 
+  ('admin1234', 'Administrador', 'Administrador', 'Admin', 'V-00000000', '0000-1234567', true),
+  ('operador12', 'Operador', 'Operador', 'Operador', 'V-00000001', '0000-1234567', true),
+  ('vigilante1', 'Vigilante', 'Vigilante', 'Vigilante', 'V-00000002', '0000-1234567', true)
+ON CONFLICT ("cedula") DO NOTHING;

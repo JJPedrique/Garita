@@ -9,8 +9,10 @@ public class App {
 
     static int WIDTH=500,HEIGHT=500;
     public static void main(String[] args) throws Exception {
+        ConexionPostgres.crearBaseDeDatos("Garita");
+        ConexionPostgres.InicializarBaseDeDatos();
         ConexionPostgres.conexion = ConexionPostgres.conectar();
-        ConexionPostgres.InitDatabase();
+
 
         JFrame window = new JFrame("Sistema Garita");
         window.setSize(WIDTH,HEIGHT);
