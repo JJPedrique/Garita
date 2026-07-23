@@ -15,7 +15,7 @@ public class PanelRestaurarClave extends JPanel{
     private final GridBagConstraints GBC = new GridBagConstraints();
 
     private final JPanel pHeader = new JPanel();
-    private final JLabel lHeaderTitle= new JLabel("Restaurar Clave");
+    private final JLabel lHeaderTitle= new JLabel("RESTAURAR CLAVE");
     
     private final Icon iconRegreso = ThemeManager.SetImgIcon("img\\go_back.png", ThemeManager.ICON_WIDTH_PX*2, ThemeManager.ICON_HEIGHT_PX*2);
     private final JButton bRegresar = ThemeManager.Button("");

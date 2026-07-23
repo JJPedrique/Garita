@@ -37,7 +37,7 @@ public class PanelCodigoVerificacion extends JPanel {
     private final JTextField tfInputClave = ThemeManager.Textfield();
 
     private final JPanel pButton = new JPanel();
-    private final JButton bRecibirCodigo = ThemeManager.Button("Recibir Código");
+    private final JButton bRecibirCodigo = ThemeManager.Button("Verificar Código");
 
     public PanelCodigoVerificacion() {
         // Formato seguro de 6 dígitos (000000 - 999999)
