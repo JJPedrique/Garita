@@ -361,50 +361,26 @@ public class ThemeManager {
         return newTable;
     }
 
-    private static File resolveImageFile(String resourcePath) {
-        String normalizedPath = resourcePath.replace("/", File.separator).replace("\\", File.separator);
-
-        File[] candidates = new File[] {
-            new File(normalizedPath),
-            new File("Garita" + File.separator + normalizedPath),
-            new File(System.getProperty("user.dir"), normalizedPath),
-            new File(new File(System.getProperty("user.dir"), "Garita"), normalizedPath)
-        };
-
-        for (File candidate : candidates) {
-            if (candidate.exists() && candidate.isFile()) {
-                return candidate;
-            }
-        }
-
-        return null;
-    }
-
     public static ImageIcon SetImgIcon(String resourcePath, int width, int height) {
         try {
-            File file = resolveImageFile(resourcePath);
-            ImageIcon originalIcon = null;
-
-            if (file != null) {
-                originalIcon = new ImageIcon(file.getAbsolutePath());
-            } else {
-                String classpathPath = resourcePath.replace("\\", "/");
-                if (classpathPath.startsWith("/")) {
-                    classpathPath = classpathPath.substring(1);
-                }
-
-                java.net.URL resource = ThemeManager.class.getClassLoader().getResource(classpathPath);
-                if (resource != null) {
-                    originalIcon = new ImageIcon(resource);
-                }
+            String path = resourcePath.replace("\\", "/");
+            if (!path.startsWith("/")) {
+                path = "/" + path;
             }
 
-            if (originalIcon != null) {
+            java.net.URL imgUrl = ThemeManager.class.getResource(path);
+
+            if (imgUrl == null) {
+                imgUrl = ThemeManager.class.getClassLoader().getResource(path.substring(1));
+            }
+
+            if (imgUrl != null) {
+                ImageIcon originalIcon = new ImageIcon(imgUrl);
                 Image scaledImg = originalIcon.getImage().getScaledInstance(width, height, Image.SCALE_SMOOTH);
                 return new ImageIcon(scaledImg);
             }
 
-            System.err.println("Icono no encontrado: " + resourcePath);
+            System.err.println("Icono no encontrado en el JAR/Classpath: " + path);
         } catch (Exception e) {
             System.err.println("Error al procesar el icono " + resourcePath + ": " + e.getMessage());
         }
