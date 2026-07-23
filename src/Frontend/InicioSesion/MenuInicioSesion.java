@@ -177,7 +177,7 @@ public class MenuInicioSesion extends JPanel {
                 return;
             }
 
-            if (!usuario.matches("(?i)^V-[1-9]\\d{0,7}$")){
+            if (!usuario.matches("(?i)^V-\\d{1,8}$")){
                 ThemeManager.MostrarMensajeError(this, "Formato de usuario invalido. \nSiga el siguiente ejemplo: V-12345678");
                 tfInputUsuario.requestFocusInWindow();
                 return;
