@@ -219,7 +219,7 @@ END $$;
 -- Se utiliza ON CONFLICT para ignorar la inserción si las cédulas ya existen
 INSERT INTO "usuarios" ("clave", "rol", "nombre", "apellido", "cedula", "telefono", "activo")
 VALUES 
-  ('admin1234', 'Administrador', 'Administrador', 'Admin', 'V-00000001', '0000-1234567', true),
-  ('junta1234', 'Junta', 'Junta', 'Junta', 'V-00000002', '0000-1234567', true),
-  ('vigilante1234', 'Vigilancia', 'Vigilante', 'Vigilante', 'V-00000003', '0000-1234567', true)
+  ('admin1234', 'Administrador', 'Administrador', 'Admin', 'V-00000001', '0414-1234567', true),
+  ('junta1234', 'Junta', 'Junta', 'Junta', 'V-00000002', '0414-1234567', true),
+  ('vigilante1234', 'Vigilancia', 'Vigilante', 'Vigilante', 'V-00000003', '0414-1234567', true)
 ON CONFLICT ("cedula") DO NOTHING;
