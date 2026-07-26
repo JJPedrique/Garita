@@ -175,7 +175,7 @@ public class ConexionPostgres {
                 "-U", "postgres", 
                 "-F", "c",                 
                 "-f", archivo.getAbsolutePath(), 
-                "Garita"
+                "garita"
             );
 
             Map<String, String> entorno = pb.environment();
@@ -219,7 +219,7 @@ public class ConexionPostgres {
                 pgRestorePath, 
                 "-h", "localhost", 
                 "-U", "postgres", 
-                "-d", "Garita", 
+                "-d", "garita", 
                 archivoSeleccionado.getAbsolutePath()      
             );
 

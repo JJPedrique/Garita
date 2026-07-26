@@ -28,7 +28,7 @@ public class FrameModificarUsuario extends JDialog{
         idM = newId;
         this.setLayout(new BorderLayout());
         this.setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
-        this.setTitle("Agregar Usuario");
+        this.setTitle("Modificar Usuario");
         this.setSize(400, 350);
         this.setResizable(false);
 
