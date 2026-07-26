@@ -156,7 +156,7 @@ public class MenuReporte extends JPanel {
                         " COUNT(PR.id) AS \"Pagaron\"," +
                         " C.monto*COUNT(PR.id) AS \"Acumulado\"" +
                         " FROM cuotas AS C" +
-                        " JOIN pagos_realizados AS PR ON C.id = PR.id_cuota" +
+                        " LEFT JOIN pagos_realizados AS PR ON C.id = PR.id_cuota" +
                         " WHERE C.borrada = False AND C.activo = True" +
                         " GROUP BY C.id");
 
