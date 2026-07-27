@@ -7,6 +7,8 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 
 import Frontend.Bitacora.MenuBitacora;
 import Frontend.ControlDeAcceso.MenuControlDeAcceso;
@@ -98,35 +100,38 @@ public class MenuPrincipal extends JPanel {
         return btn;
     }
 
-   JButton HelpButton() {
+    JButton HelpButton() {
         JButton btn = ThemeManager.SideBarButton("Ayuda");
 
         btn.addActionListener(e -> {
-            // 1. Define la ruta de tu archivo PDF
-            File archivoPdf = new File("src\\img\\Manual de Usuario.pdf"); 
+            // 1. Nombre de la ruta del recurso dentro del JAR / classpath
+            // Asegúrate de que el PDF se encuentre en src/img/Manual de Usuario.pdf
+            String resourcePath = "/img/Manual de Usuario.pdf";
 
-            // 2. Verifica si el entorno soporta la clase Desktop
-            if (Desktop.isDesktopSupported()) {
-                Desktop desktop = Desktop.getDesktop();
+            try (InputStream pdfStream = getClass().getResourceAsStream(resourcePath)) {
                 
-                // 3. Verifica si la acción BROWSE (navegador) está permitida
-                if (desktop.isSupported(Desktop.Action.BROWSE)) {
-                    try {
-                        // Convertimos el archivo local a formato URI (file://...)
-                        URI uri = archivoPdf.toURI();
-                        
-                        // Abrimos en el navegador predeterminado
-                        desktop.browse(uri);
-                        
-                    } catch (IOException ex) {
-                        ThemeManager.MostrarMensajeError(this, "Error al intentar abrir el archivo.");
-                        ex.printStackTrace();
-                    }
-                } else {
-                    ThemeManager.MostrarMensajeError(this, "La acción de navegar no está soportada en este sistema.");
+                if (pdfStream == null) {
+                    ThemeManager.MostrarMensajeError(this, "No se encontró el manual dentro del programa.");
+                    return;
                 }
-            } else {
-                ThemeManager.MostrarMensajeError(this, "La funcionalidad Desktop no está soportada en esta plataforma.");
+
+                // 2. Crear un archivo temporal en el SO donde volcar el PDF
+                File tempPdf = File.createTempFile("Manual_de_Usuario_", ".pdf");
+                tempPdf.deleteOnExit(); // Se borrará automáticamente al cerrar la aplicación
+
+                // 3. Copiar los bytes del recurso interno al archivo temporal
+                Files.copy(pdfStream, tempPdf.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+                // 4. Abrir el archivo con el visor de PDF predeterminado del sistema
+                if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) {
+                    Desktop.getDesktop().open(tempPdf);
+                } else {
+                    ThemeManager.MostrarMensajeError(this, "No se puede abrir archivos en esta plataforma.");
+                }
+
+            } catch (IOException ex) {
+                ThemeManager.MostrarMensajeError(this, "Error al intentar abrir el manual.");
+                ex.printStackTrace();
             }
         });
 
