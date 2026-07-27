@@ -74,7 +74,7 @@ public class FrameFormularioVivienda extends JPanel {
         btnGuardar.setPreferredSize(new Dimension(200, 38));
         btnGuardar.setMaximumSize(new Dimension(200, 38));
 
-        btnGuardar.addActionListener(e -> guardar(txtCalleLocal.getText().trim(), txtNumeroLocal.getText().trim()));
+        btnGuardar.addActionListener(e -> guardar(txtCalleLocal.getText().trim(), txtNumeroLocal.getText().trim().toUpperCase()));
 
         JButton btnCancelar = ThemeManager.GrayButton("Cancelar");
         btnCancelar.setPreferredSize(new Dimension(120, 38));
@@ -248,7 +248,7 @@ public class FrameFormularioVivienda extends JPanel {
             @Override
             public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
                 if (string == null) return;
-                String filtrado = string.replaceAll("[^A-Za-z0-9\\-]", "");
+                String filtrado = string.replaceAll("[^A-Za-z0-9\\-]", "").toUpperCase();
                 if (filtrado.isEmpty()) return;
                 int espacioDisponible = maxLength - fb.getDocument().getLength();
                 if (espacioDisponible <= 0) return;
@@ -258,7 +258,7 @@ public class FrameFormularioVivienda extends JPanel {
 
             @Override
             public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
-                String filtrado = text == null ? "" : text.replaceAll("[^A-Za-z0-9\\-]", "");
+                String filtrado = text == null ? "" : text.replaceAll("[^A-Za-z0-9\\-]", "").toUpperCase();
                 int largoActual = fb.getDocument().getLength() - length;
                 int espacioDisponible = maxLength - largoActual;
                 if (espacioDisponible < 0) espacioDisponible = 0;

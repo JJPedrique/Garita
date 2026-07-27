@@ -417,9 +417,9 @@ public class ThemeManager {
     }
 
     public static void configurarDialogMensaje(JPanel JP, JDialog dialog, String msg, Color bgButton, Color cIcon, String iconChar) {
-        dialog.setSize(550, 180);
+        dialog.setSize(500, 180);
         dialog.setLocationRelativeTo(JP);
-        
+
         JPanel pRoot = new JPanel(new GridBagLayout());
         pRoot.setBackground(ThemeManager.COLOR_BACKGROUND_DARK);
         GridBagConstraints c = new GridBagConstraints();

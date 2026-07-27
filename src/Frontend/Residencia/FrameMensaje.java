@@ -17,11 +17,11 @@ public class FrameMensaje extends JPanel {
         GridBagConstraints c = new GridBagConstraints();
 
         JLabel icono = new JLabel(iconoChar, SwingConstants.CENTER);
-        icono.setPreferredSize(new Dimension(26, 26));
+        icono.setPreferredSize(new Dimension(36, 36));
         icono.setOpaque(true);
         icono.setBackground(acento);
         icono.setForeground(ThemeManager.COLOR_TEXT);
-        icono.setFont(new Font("Dialog", Font.BOLD, 14));
+        icono.setFont(new Font("Dialog", Font.BOLD, 18));
 
         JLabel texto = new JLabel("<html><div style='width:280px;'>" + mensaje + "</div></html>", SwingConstants.LEFT);
         texto.setForeground(ThemeManager.COLOR_TEXT);
@@ -65,7 +65,7 @@ public class FrameMensaje extends JPanel {
             dialogo.setModal(true);
         }
 
-        dialogo.setSize(460, 190);
+        dialogo.setSize(520, 220);
         dialogo.setLocationRelativeTo(padre);
         dialogo.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         dialogo.add(new FrameMensaje(dialogo, titulo, mensaje, acento, textoBoton, icono));
