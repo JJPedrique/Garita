@@ -103,7 +103,7 @@ public class MenuPrincipal extends JPanel {
 
         btn.addActionListener(e -> {
             // 1. Define la ruta de tu archivo PDF
-            File archivoPdf = new File("src\\Frontend\\Ayuda\\Manual de Usuario.pdf"); 
+            File archivoPdf = new File("src\\img\\Manual de Usuario.pdf"); 
 
             // 2. Verifica si el entorno soporta la clase Desktop
             if (Desktop.isDesktopSupported()) {
